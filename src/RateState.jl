@@ -1,6 +1,6 @@
 module RateState
 
-export dc3d, f
+export dc3d
 
 include("dc3d.jl")
 
