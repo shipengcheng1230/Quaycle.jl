@@ -5,3 +5,4 @@ deps/deps.jl
 
 .ftpconfig
 .DS_Store
+.vscode
