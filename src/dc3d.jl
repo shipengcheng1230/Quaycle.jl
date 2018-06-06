@@ -47,11 +47,9 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
 end
 
 function dc3d_wrapper(
-    loc::Vector{T}, α::T, dep::T, dip::T, 
-    coord_strike::Vector{T}, coord_dip::Vector{T}, dislocation::Vector{T}
-    ) where {T<:AbstractFloat}
+    loc::A, α::T, dep::T, dip::T, coord_strike::A, coord_dip::A, dislocation::A,
+    ) where {T<:AbstractFloat, A<:AbstractArray{T}}
 
-    # call fortran wrapper above
     res = dc3d_fortran(loc..., α, dep, dip, coord_strike..., coord_dip..., dislocation...)
 
     u = [res[2], res[3], res[4]]::Vector{T}
@@ -60,13 +58,6 @@ function dc3d_wrapper(
         res[6] res[9] res[12];
         res[7] res[10] res[13];
     ]::Array{T, 2}
+    
     return (res[1], u, ∇u)
-end
-
-function dc3d_wrapper(
-    loc::A, α::T, dep::T, dip::T, coord_strike::A, coord_dip::A, dislocation::A
-    ) where {T<:AbstractFloat, A<:AbstractArray{T,2}}
-
-    # column vector vs row vector
-    dc3d_wrapper(vec(loc), α, dep, dip, vec(coord_strike), vec(coord_dip), vec(dislocation))
 end
