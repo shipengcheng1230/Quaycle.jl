@@ -1,22 +1,12 @@
-##
-include("src/RateState.jl")
-importall RateState
+# checklist from DC3D manual
+flag, u, ∇u = dc3d_wrapper([10., 20., -30.], 2./3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])
+@test flag == 0
+@test all(@. isapprox(u, [-37.8981, 63.1789, 14.9607], atol=1e-4))
 
-## parameters setting
-α = 0.3
-x = 15.
-y = 30.
-z = -20.
-dep = 60.
-dip = 45.
-al1 = -50.
-al2 = 50.
-aw1 = 0.
-aw2 = -30.
-disl1 = 1.
-disl2 = 1.
-disl3 = 1.
+# positive z given
+flag, u, ∇u = dc3d_wrapper([10., 20., 30.], 2./3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])
+@test flag == 2
 
-res1 = dc3d_fortran(x, y, z, α, dep, dip, al1, al2, aw1, aw2, disl1, disl2, disl3)
-res2 = dc3d_wrapper([x, y, z], α, dep, dip, [al1, al2], [aw1, aw2], [disl1, disl2, disl3])
-res3 = dc3d_wrapper([x y z], α, dep, dip, [al1 al2], [aw1 aw2], [disl1 disl2 disl3])
+# sigularity at fault edge
+flag, u, ∇u = dc3d_wrapper([-80., 0., -50.], 2./3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])
+@test flag == 1

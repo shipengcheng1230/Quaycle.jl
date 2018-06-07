@@ -16,7 +16,7 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     uzz = Array{Float64}(1)
     flag = Array{Int64}(1)
     
-    # call okada's code which is remaned as "__dc3d__"
+    # call okada's code which is remaned as "__dc3d__" (see binding rename in external/okada.f90)
     # input args tuple must be syntactically written instead of a variable assigned
     # macros could be used to simplify this in the future
     ccall((:__dc3d__, "./src/external/dc3d.so"), Void,
