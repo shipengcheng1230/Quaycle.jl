@@ -1,5 +1,5 @@
 function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, aw1::T, aw2::T,
-    disl1::T, disl2::T, disl3::T) where {T<:AbstractFloat}
+    disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
     
     # initial return values
     ux = Array{Float64}(1)
@@ -16,7 +16,7 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     uzz = Array{Float64}(1)
     flag = Array{Int64}(1)
     
-    # call okada's code which is remaned as "__dc3d__" (see binding rename in external/okada.f90)
+    # call okada's code which is renamed as "__dc3d__" (see binding rename in external/okada.f90)
     # input args tuple must be syntactically written instead of a variable assigned
     # macros could be used to simplify this in the future
     ccall((:__dc3d__, "./src/external/dc3d.so"), Void,
@@ -36,7 +36,7 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
         flag,
     )
     
-    # results valid iif flag[1] == 0
+    # results valid iff flag[1] == 0
     return (
         flag[1],
         ux[1], uy[1], uz[1],
@@ -46,11 +46,12 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     )
 end
 
-function dc3d_wrapper(
-    loc::A, α::T, dep::T, dip::T, coord_strike::A, coord_dip::A, dislocation::A,
-    ) where {T<:AbstractFloat, A<:AbstractArray{T}}
 
-    res = dc3d_fortran(loc..., α, dep, dip, coord_strike..., coord_dip..., dislocation...)
+function dc3d_wrapper(
+    coord::A, α::T, depth_fault::T, dip::T, range_strike::A, range_dip::A, dislocation::A,
+    ) where {T <: AbstractFloat, A <: AbstractArray{T}}
+
+    res = dc3d_fortran(coord..., α, depth_fault, dip, range_strike..., range_dip..., dislocation...)
 
     u = [res[2], res[3], res[4]]::Vector{T}
     ∇u = [
