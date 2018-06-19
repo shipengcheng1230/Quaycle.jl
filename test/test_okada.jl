@@ -1,5 +1,5 @@
 using Base.Test
-using Displacement
+using JuEQ
 
 # checklist from DC3D manual
 flag, u, ∇u = dc3d_wrapper([10., 20., -30.], 2./3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])

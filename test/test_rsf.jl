@@ -1,6 +1,5 @@
 using Base.Test
-using DifferentialEquations
-using RateStateFriction
+using JuEQ
 
 @testset "RateStateFriction" begin
     @testset "Dieterich Law" begin
@@ -27,6 +26,5 @@ using RateStateFriction
         ]
 
     @test isapprox(sol[1, :], truth, rtol=1e-8)
-
     end
 end
