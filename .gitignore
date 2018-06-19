@@ -6,3 +6,5 @@ deps/deps.jl
 .ftpconfig
 .DS_Store
 .vscode
+
+src/external/dc3d.so.dSYM
