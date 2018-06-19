@@ -21,6 +21,9 @@ export # external loading system
 export # ODEs derivations
     dμ_dt, dθ_dt, dv_dt
 
+export # simulators
+    solve_model, rsf_odes!
+
 ## State evolution law
 abstract type EvolutionLaw end
 
