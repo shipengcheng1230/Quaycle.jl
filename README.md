@@ -14,3 +14,13 @@ This is a suite for numerically simulating earthquake sequences in [Julia](https
 This software in this ecosystem is developed as part of academic research in
 [Earthquake Physics Lab](http://weilab.uri.edu/) at
 [Graduate School of Oceanography](https://web.uri.edu/gso/), University of Rhode Island.
+
+
+## References
+Dieterich, James H. 1981Constitutive Properties of Faults With Simulated Gouge. In Mechanical Behavior of Crustal Rocks Pp. 103–120. American Geophysical Union (AGU). https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/GM024p0103, accessed June 8, 2018.
+
+
+Rice, James 1993Spatio-Temporal Complexity of Slip on a Fault. Journal of Geophysical Research: Solid Earth 98(B6): 9885–9907.
+
+
+Ruina, Andy 1983Slip Instability and State Variable Friction Laws. Journal of Geophysical Research: Solid Earth 88(B12): 10359–10370.
