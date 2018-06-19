@@ -10,7 +10,7 @@ This is a suite for numerically simulating earthquake sequences in [Julia](https
 - [ ] Applications on oceanic transform faults
 
 
-### Supporting
+## Supporting
 This software in this ecosystem is developed as part of academic research in
 [Earthquake Physics Lab](http://weilab.uri.edu/) at
 [Graduate School of Oceanography](https://web.uri.edu/gso/), University of Rhode Island.
