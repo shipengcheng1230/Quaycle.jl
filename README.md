@@ -17,10 +17,10 @@ This software in this ecosystem is developed as part of academic research in
 
 
 ## References
-Dieterich, James H. 1981Constitutive Properties of Faults With Simulated Gouge. In Mechanical Behavior of Crustal Rocks Pp. 103–120. American Geophysical Union (AGU). https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/GM024p0103, accessed June 8, 2018.
+Dieterich, J.H., 1981. Constitutive Properties of Faults With Simulated Gouge, in: Mechanical Behavior of Crustal Rocks. American Geophysical Union (AGU), pp. 103–120. https://doi.org/10.1029/GM024p0103
 
 
-Rice, James 1993Spatio-Temporal Complexity of Slip on a Fault. Journal of Geophysical Research: Solid Earth 98(B6): 9885–9907.
+Rice, J., 1993. Spatio-temporal complexity of slip on a fault. Journal of Geophysical Research: Solid Earth 98, 9885–9907. https://doi.org/10.1029/93JB00191
 
 
-Ruina, Andy 1983Slip Instability and State Variable Friction Laws. Journal of Geophysical Research: Solid Earth 88(B12): 10359–10370.
+Ruina, A., 1983. Slip instability and state variable friction laws. Journal of Geophysical Research: Solid Earth 88, 10359–10370. https://doi.org/10.1029/JB088iB12p10359
