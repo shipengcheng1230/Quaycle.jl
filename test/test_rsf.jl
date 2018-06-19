@@ -25,6 +25,6 @@ using JuEQ
         0.58848708,
         ]
 
-    @test isapprox(sol[1, :], truth, rtol=1e-8)
+    @test isapprox(sol[1, :], μ_truth, rtol=1e-8)
     end
 end
