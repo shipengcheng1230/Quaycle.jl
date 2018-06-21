@@ -1,4 +1,5 @@
-using Base.Test, JuEQ
+using Base.Test
+using JuEQ
 
 function example_dense_loading()
     tload = collect(0.: 1.: 40.)
@@ -79,4 +80,19 @@ end
         0.61497866,
     ]
     @test isapprox(μ, μ_truth, rtol=1e-8)
+end
+
+@testset "Different ODEs settings" begin
+    ld = example_dense_loading()
+    ev = DieterichLaw(0.005, 10.)
+    rsf = UnitRSFModel(0.01, 0.6, 1., 0., ev)
+
+    sol_vθ = simulate(rsf, ld, (0., 40.), Val{:vθ}, reltol=1e-8, abstol=1e-8, saveat=1., alg_hints=[:stiff])
+    μ = μ_equation(rsf, sol_vθ[1, :], sol_vθ[2, :])
+
+    sol_μθ = simulate(rsf, ld, (0., 40.), Val{:μθ}, reltol=1e-8, abstol=1e-8, saveat=1., alg_hints=[:stiff])
+    v = v_equation(rsf, sol_μθ[1, :], sol_μθ[2, :])
+
+    @test isapprox(sol_μθ[1, :], μ, rtol=1e-6)
+    @test isapprox(sol_vθ[1, :], v, rtol=1e-6)
 end
