@@ -1,4 +1,4 @@
-using Base.Test, DifferentialEquations, RateStateFriction
+using Base.Test, JuEQ
 
 function example_dense_loading()
     tload = collect(0.: 1.: 40.)
@@ -80,11 +80,3 @@ end
     ]
     @test isapprox(μ, μ_truth, rtol=1e-8)
 end
-
-##
-ld = example_dense_loading()
-ev = PRZLaw(0.005, 10.)
-rsf = UnitRSFModel(0.01, 0.6, 1., 0., ev)
-sol = simulate(rsf, ld, (0., 40.), reltol=1e-8, abstol=1e-8, saveat=1., alg_hints=[:stiff])
-μ = μ_equation(rsf, sol[1, :], sol[2, :])
-[@printf "%.8f, " x for x in μ]
