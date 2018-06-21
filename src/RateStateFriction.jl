@@ -4,122 +4,147 @@ using DifferentialEquations
 
 export # rate-state model settings
     RSFModel,
-    UniformRSFModel
+    UnitRSFModel
 
 export # state evolution laws
     EvolutionLaw,
     DieterichLaw, RuinaLaw, PRZLaw,
-    Dieterich, Ruina, PRZ,
-    dθdt
+    Dieterich, Ruina, PRZ
 
 export # external loading system
-    RSFTimeLoading,
-    ConstantTimeLoading,
-    DenseTimeLoading,
-    FunctionalTimeLoading
+    LoadingSystem,
+    SingleDegreeLoading,
+    ConstantSDLoading,
+    DenseSDLoading
 
-export # ODEs derivations
-    dμ_dt, dθ_dt, dv_dt
+export # system derivations
+    dϴdt, dμdt, dμdv, dμdθ, dvdt_dϴdt
 
-export # simulators
-    solve_model, rsf_odes!
+export # simulation tools
+    simulate, solve_model, build_model
+
+export # system equations
+    μ_equation
+
+export # odes settings
+	odes_v_θ!
 
 ## State evolution law
-abstract type EvolutionLaw end
+abstract type StateEvolutionLaw end
+abstract type OneStateEvolutionLaw <: StateEvolutionLaw end
 
-struct DieterichLaw <: EvolutionLaw end
-struct RuinaLaw <: EvolutionLaw end
-struct PRZLaw <: EvolutionLaw end
-
-const Dieterich = DieterichLaw()
-const Ruina = RuinaLaw()
-const PRZ = PRZLaw()
-
-function dθdt(::DieterichLaw, v, θ, L)
-    1.0 - v * θ / L
+struct DieterichLaw{T} <: OneStateEvolutionLaw where {T <: Number}
+    b::T
+    L::T
 end
 
-function dθdt(::RuinaLaw, v, θ, L)
-    x = v * θ / L
+struct RuinaLaw{T} <: OneStateEvolutionLaw where {T <: Number}
+    b::T
+    L::T
+end
+
+struct PRZLaw{T} <: OneStateEvolutionLaw where {T <: Number}
+    b::T
+    L::T
+end
+
+function dθdt(ev::DieterichLaw, v, θ)
+    1.0 - v * θ / ev.L
+end
+
+function dθdt(ev::RuinaLaw, v, θ)
+    x = v * θ / ev.L
     -x * log(x)
 end
 
-function dθdt(::PRZLaw, v, θ, L)
-    1.0 - (v * θ / 2L) ^ 2
+function dθdt(ev::PRZLaw, v, θ)
+    1.0 - (v * θ / 2ev.L) ^ 2
 end
 
 ## RSF model parameters
 abstract type RSFModel end
 
 # unit system
-struct UniformRSFModel{T, L} <: RSFModel where {T <: Number, L <: EvolutionLaw}
+struct UnitRSFModel{T, L} <: RSFModel where {T <: Number, L <: StateEvolutionLaw}
     a::T
-    b::T
-    L::T
-    μ0::T
-    k::T
+    μref::T
     vref::T
+    η::T
     θlaw::L
 end
 
 ## Loading types
-abstract type RSFTimeLoading end
+abstract type LoadingSystem end
+abstract type SingleDegreeLoading <: LoadingSystem end
 
-struct ConstantTimeLoading{T} <: RSFTimeLoading where {T <: Number}
+struct ConstantSDLoading{T} <: SingleDegreeLoading where {T <: Number}
+    k::T
     vload::T
 end
 
-struct DenseTimeLoading{A} <: RSFTimeLoading where {A <: AbstractVector}
+struct DenseSDLoading{T, A} <: SingleDegreeLoading where {T <: Number, A <: AbstractVector}
+    k::T
     tload::A
     vload::A
 end
 
-struct FunctionalTimeLoading{F} <: RSFTimeLoading where {F <: Function}
-    vload::F
+## Derivation of system variables: μ, v, θ
+function dμdt(ld::ConstantSDLoading, v::T, t::T) where {T <: Number}
+    ld.k * (ld.vload - v)
 end
 
-## Governing equations
-function μ_contrib_by_θ(rsf::RSFModel, θ)
-    rsf.b * log(rsf.vref * θ / rsf.L)
-end
-
-function μ_contrib_by_v(rsf::RSFModel, v)
-    rsf.a * log(v / rsf.vref)
-end
-
-function μ_equation(rsf::RSFModel, v, θ)
-    μ_contrib_by_θ(rsf, state) + μ_contrib_by_v(rsf, state)
-end
-
-## Derivation of system variable
-function dμdt(rsf::UniformRSFModel, ld::ConstantTimeLoading, μ, v, θ, t)
-    rsf.k * (ld.vload - v)
-end
-
-function dμdt(rsf::UniformRSFModel, ld::DenseTimeLoading, μ, v, θ, t)
+function dμdt(ld::DenseSDLoading, v, t)
     nearest = indmin(abs(t - ld.tload))
-    rsf.k * (ld.vload[nearest] - v)
+    ld.k * (ld.vload[nearest] - v)
 end
 
-function dvdt(rsf::UniformRSFModel, dμ, dθ, μ, v, θ)
-    dv = (dμ - rsf.b / θ * dθ) / (rsf.a / v)
+function dμdθ(ev::OneStateEvolutionLaw, θ)
+    ev.b / θ
 end
 
-## Model solvor
-function solve_model(
-    rsf::UniformRSFModel, ld::RSFTimeLoading, u0, tspan; kwargs...
-    )
-    prob = ODEProblem(rsf_odes!, u0, tspan, (rsf, ld))
+function dμdv(rsf::UnitRSFModel, v)
+    rsf.a / v
+end
+
+function dvdt_dϴdt(rsf::UnitRSFModel, ld::SingleDegreeLoading, v, θ, t)
+    dμ_dt = dμdt(ld, v, t)
+    dμ_dθ = dμdθ(rsf.θlaw, θ)
+    dμ_dv = dμdv(rsf, v)
+    dθ_dt = dθdt(rsf.θlaw, v, θ)
+    dv_dt = (dμ_dt - dμ_dθ * dθ_dt) / (dμ_dv + rsf.η)
+    return dv_dt, dθ_dt
+end
+
+## Simulation procedure
+function simulate(rsf::RSFModel, ld::LoadingSystem, tspan, u0=nothing; kwargs...)
+    prob = build_model(rsf, ld, tspan, u0)
+    sol = solve_model(prob; kwargs...)
+end
+
+function solve_model(prob::ODEProblem; kwargs...)
     sol = solve(prob; kwargs...)
 end
 
-# ODEs settings
-function rsf_odes!(du, u, p, t)
+function build_model(rsf::UnitRSFModel, ld::SingleDegreeLoading, tspan, u0)
+    if u0 == nothing
+		u0 = [rsf.vref, rsf.θlaw.L / rsf.vref]
+	end
+	# @code_warntype ODEProblem will show `Any`
+	prob = ODEProblem(odes_v_θ!, u0, tspan, (rsf, ld))
+end
+
+"""
+*u* reprensents in order : v, θ
+"""
+function odes_v_θ!(du, u, p, t)
     rsf, ld = p
-    dμ = dμdt(rsf, ld, u[1], u[2], u[3], t)
-    dθ = dθdt(rsf.θlaw, u[2], u[3], rsf.L)
-    dv = dvdt(rsf, dμ, dθ, u[1], u[2], u[3])
-    du[1], du[2], du[3] = dμ, dv, dθ
+    du[1], du[2] = dvdt_dϴdt(rsf, ld, u[1], u[2], t)
+end
+
+## Governing equations
+function μ_equation(rsf::UnitRSFModel, v, θ)
+    a, b, μref, vref, L = rsf.a, rsf.θlaw.b, rsf.μref, rsf.vref, rsf.θlaw.L
+    μref + a * log(v / vref) + b * log(vref * θ / L)
 end
 
 end
