@@ -23,10 +23,10 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     uzz = Array{Float64}(1)
     iret = Array{Int64}(1)
 
-    # call okada's code which is renamed as "__dc3d__" (see binding rename in external/okada.f90)
+    # call okada's code which is renamed as "__dc3d__" (see binding rename shown below)
     # input args tuple must be syntactically written instead of a variable assigned
     # macros could be used to simplify this in the future
-    ccall((:__dc3d__, "./src/external/dc3d.so"), Void,
+    ccall((:__dc3d__, "dc3d.so"), Void,
         (
             Ref{Float64},
             Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
@@ -52,6 +52,77 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
         uxz[1], uyz[1], uzz[1]
     )
 end
+```
+
+
+The corresponding fortran module is:
+```fortran
+MODULE okada
+  USE, INTRINSIC :: iso_c_binding
+  IMPLICIT NONE
+CONTAINS
+
+  SUBROUTINE dc3d_wrapper(&
+       & alpha, &
+       & x, y, z, &
+       & depth, dip, &
+       & al1, al2, &
+       & aw1, aw2, &
+       & disl1, disl2, disl3, &
+       & ux, uy, uz, &
+       & uxx, uyx, uzx, &
+       & uxy, uyy, uzy, &
+       & uxz, uyz, uzz, &
+       & iret) BIND(C, NAME='__dc3d__')
+
+    REAL*8 :: &
+         & alpha, &
+         & x, y, z, &
+         & depth, dip, &
+         & al1, al2, &
+         & aw1, aw2, &
+         & disl1, disl2, disl3, &
+         & ux, uy, uz, &
+         & uxx, uyx, uzx, &
+         & uxy, uyy, uzy, &
+         & uxz, uyz, uzz
+
+    INTEGER*8 :: iret
+
+    CALL dc3d(&
+         & alpha, &
+         & x, y, z, &
+         & depth, dip, &
+         & al1, al2, &
+         & aw1, aw2, &
+         & disl1, disl2, disl3, &
+         & ux, uy, uz, &
+         & uxx, uyx, uzx, &
+         & uxy, uyy, uzy, &
+         & uxz, uyz, uzz, &
+         & iret)
+
+  END SUBROUTINE dc3d_wrapper
+
+END MODULE okada
+```
+
+
+A sample of makefile is as below:
+```make
+# Build Okada's code for calculating deformation due to a fault model
+#
+CC = gfortran
+CFLAGS = -fPIC -w -O3
+LDFLAGS = -shared
+
+SRCS = dc3d.f okada.f90
+OBJS = $(SRCS:.c=.o)
+
+TARGET = dc3d.so
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS)
 ```
 """
 function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl::A) where {T <: Number, A <: AbstractArray{T}}
