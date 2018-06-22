@@ -395,7 +395,7 @@ function shared_constants_2(xi::T, et::T, q::T, sd::T, cd::T, kxi::T, ket::T) wh
     r = sqrt(r2)
 
     if r ≈ 0
-        return zero(T, 24)
+        return ntuple(_ -> zero(T), Val{24})
     end
 
     r3 = r * r2
