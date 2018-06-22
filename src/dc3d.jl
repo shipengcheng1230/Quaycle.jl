@@ -1,3 +1,9 @@
+"""
+*test/test_okada.dat* is obtained using [DC3dfortran](http://www.bosai.go.jp/study/application/dc3d/download/DC3Dfortran.txt)
+
+
+An example wrapper for DC3D in julia as below:
+```julia
 function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, aw1::T, aw2::T,
     disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
 
@@ -46,7 +52,8 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
         uxz[1], uyz[1], uzz[1]
     )
 end
-
+```
+"""
 function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl::A) where {T <: Number, A <: AbstractArray{T}}
 
 	if z > 0.
