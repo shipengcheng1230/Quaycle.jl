@@ -136,11 +136,12 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
 	return u
 end
 
-function ua(sc1, sc2, xi, et, q, disl)
+function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
+    ) where {T <: Number, A <: AbstractArray{T}, B1 <: NTuple{12, T}, B2 <: NTuple{24, T}}
 	alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
 	xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
 
-	u, du = zeros(12), zeros(12)
+	u, du = zeros(T, 12), zeros(T, 12)
 
     xy = xi * y11
     qx = q * x11
@@ -196,11 +197,12 @@ function ua(sc1, sc2, xi, et, q, disl)
     return u
 end
 
-function ub(sc1, sc2, xi, et, q, disl)
+function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
+    ) where {T <: Number, A <: AbstractArray{T}, B1 <: NTuple{12, T}, B2 <: NTuple{24, T}}
     alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
     xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
 
-    u, du = zeros(12), zeros(12)
+    u, du = zeros(T, 12), zeros(T, 12)
 
     rd = r + d
     d11 = 1. / (r * rd)
@@ -211,7 +213,8 @@ function ub(sc1, sc2, xi, et, q, disl)
             ai4 = 0.
         else
             x = sqrt(xi2 + q2)
-            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. * atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
+            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. *
+                atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
         end
         ai3 = (y * cd / rd - ale + sd * log(rd)) / cdcd
         ak1 = xi * (d11 - y11 * sd) / cd
@@ -290,11 +293,12 @@ function ub(sc1, sc2, xi, et, q, disl)
  end
 
 
-function uc(sc1, sc2, xi, et, q, z, disl)
+function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
+    ) where {T <: Number, A <: AbstractArray{T}, B1 <: NTuple{12, T}, B2 <: NTuple{24, T}}
     alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
     xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
 
-    u, du = zeros(12), zeros(12)
+    u, du = zeros(T, 12), zeros(T, 12)
 
     c = d + z
     x53 = (8. * r2 + 9. * r * xi + 3. * xi2) * x11 * x11 * x11 / r2
