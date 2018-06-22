@@ -7,4 +7,4 @@ deps/deps.jl
 .DS_Store
 .vscode
 
-src/external/dc3d.so.dSYM
+src/external
