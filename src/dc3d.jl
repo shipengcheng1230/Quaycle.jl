@@ -384,8 +384,8 @@ function shared_constants_1(α::T, dip::T) where {T <: Number}
     alp3 = (1. - α) / α
     alp4 = 1. - α
     alp5 = α
-    sd = sin(deg2rad(dip))
-    cd = cos(deg2rad(dip))
+    sd = sinpi(dip / 180.)
+    cd = cospi(dip / 180.)
     sdsd = sd^2
     cdcd = cd^2
     sdcd = sd * cd
@@ -400,10 +400,6 @@ function shared_constants_2(xi::T, et::T, q::T, sd::T, cd::T, kxi::T, ket::T) wh
     q2 = q * q
     r2 = xi2 + et2 + q2
     r = sqrt(r2)
-
-    if r ≈ 0
-        return ntuple(_ -> zero(T), Val{24})
-    end
 
     r3 = r * r2
     r5 = r3 * r2
