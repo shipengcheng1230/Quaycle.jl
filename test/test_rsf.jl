@@ -99,4 +99,6 @@ end
     @test isapprox(sol_vθ[1, :], v, rtol=1e-6)
     @test isapprox(sol_μvθ[1, :], μ, rtol=1e-6)
     @test isapprox(sol_μvθ[2, :], v, rtol=1e-6)
+    @test isapprox(sol_μθ[2, :], sol_vθ[2, :], rtol=1e-6)
+    @test isapprox(sol_μvθ[3, :], sol_μθ[2, :], rtol=1e-6)
 end
