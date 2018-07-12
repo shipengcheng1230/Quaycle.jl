@@ -117,7 +117,7 @@ end
 f! = (du, u, p, t) -> f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
 
 u0 = hcat(vz, θz)
-tspan = (0., 200)
+tspan = (0., tf)
 prob = ODEProblem(f!, u0, tspan)
 # this is the only kind of algorithms that works on this problem efficiently
 @time sol = solve(prob, OwrenZen5())
