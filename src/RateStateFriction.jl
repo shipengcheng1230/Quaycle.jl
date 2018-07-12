@@ -26,7 +26,7 @@ export # system equations
     μ_equation, v_equation
 
 export # odes settings
-	odes_v_θ!, odes_μ_θ!
+	odes_v_θ!, odes_μ_θ!, odes_μ_v_θ!
 
 ## State evolution law
 abstract type StateEvolutionLaw end
@@ -125,17 +125,18 @@ function solve_model(prob::ODEProblem; kwargs...)
 end
 
 function build_model(rsf::UnitRSFModel, ld::SingleDegreeLoading, tspan, depvar::Type{Val{:vθ}}, u0)
-    if u0 == nothing
-		u0 = [rsf.vref, rsf.θlaw.L / rsf.vref]
-	end
+    u0 == nothing && (u0 = [rsf.vref, rsf.θlaw.L / rsf.vref])
 	prob = ODEProblem(odes_v_θ!, u0, tspan, (rsf, ld))
 end
 
 function build_model(rsf::UnitRSFModel, ld::SingleDegreeLoading, tspan, depvar::Type{Val{:μθ}}, u0)
-	if u0 == nothing
-		u0 = [rsf.μref, rsf.θlaw.L / rsf.vref]
-	end
+	u0 == nothing && (u0 = [rsf.μref, rsf.θlaw.L / rsf.vref])
 	prob = ODEProblem(odes_μ_θ!, u0, tspan, (rsf, ld))
+end
+
+function build_model(rsf::UnitRSFModel, ld::SingleDegreeLoading, tspan, depvar::Type{Val{:μvθ}}, u0)
+    u0 == nothing && (u0 = [rsf.μref, rsf.vref, rsf.θlaw.L / rsf.vref])
+    prob = ODEProblem(odes_μ_v_θ!, u0, tspan, (rsf, ld))
 end
 
 """
@@ -154,6 +155,15 @@ function odes_μ_θ!(du, u, p, t)
 	v = v_equation(rsf, u[1], u[2])
 	du[1] = dμdt(ld, v, t)
 	du[2] = dθdt(rsf.θlaw, v, u[2])
+end
+
+"""
+*u* represents in order: μ, v, θ
+"""
+function odes_μ_v_θ!(du, u, p, t)
+    rsf, ld = p
+    du[1] = dμdt(ld, u[2], t)
+    du[2], du[3] = dvdt_dϴdt(rsf, ld, u[2], u[3], t)
 end
 
 ## Governing equations

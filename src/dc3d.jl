@@ -117,19 +117,17 @@ CFLAGS = -fPIC -w -O3
 LDFLAGS = -shared
 
 SRCS = dc3d.f okada.f90
-OBJS = $(SRCS:.c=.o)
+OBJS = \$(SRCS:.c=.o)
 
 TARGET = dc3d.so
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS)
+\$(TARGET): \$(OBJS)
+	\$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
 ```
 """
 function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl::A) where {T <: Number, A <: AbstractArray{T}}
 
-	if z > 0.
-		return zeros(T, 12)
-    end
+    z > 0. && return zeros(T, 12)
 
 	u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
 
@@ -150,10 +148,10 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
     r21 = hypot(xi[2], et[1], q)
     r22 = hypot(xi[2], et[2], q)
 
-	if (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.)  kxi[1] = 1. end
-	if (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.)  kxi[2] = 1. end
-	if (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.)  ket[1] = 1. end
-	if (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.)  ket[2] = 1. end
+	(xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
+	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
 	for k = 1: 2, j = 1: 2
 		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
@@ -187,10 +185,10 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
     r21 = hypot(xi[2], et[1], q)
     r22 = hypot(xi[2], et[2], q)
 
-	if (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.)  kxi[1] = 1. end
-	if (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.)  kxi[2] = 1. end
-	if (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.)  ket[1] = 1. end
-	if (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.)  ket[2] = 1. end
+    (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
+	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
 	for k = 1: 2, j = 1: 2
 		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
@@ -207,8 +205,8 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
 			du[12] -= duc[2] * sd + duc[3] * cd
 		end
 		for i = 1: 12
-			if j + k ≠ 3  u[i] += du[i] end
-			if j + k == 3  u[i] -= du[i] end
+			j + k ≠ 3 && (u[i] += du[i])
+			j + k == 3 && (u[i] -= du[i])
 		end
 	end
 	return u

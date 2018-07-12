@@ -93,6 +93,12 @@ end
     sol_μθ = simulate(rsf, ld, (0., 40.), Val{:μθ}, reltol=1e-8, abstol=1e-8, saveat=1., alg_hints=[:stiff])
     v = v_equation(rsf, sol_μθ[1, :], sol_μθ[2, :])
 
+    sol_μvθ = simulate(rsf, ld, (0., 40.), Val{:μvθ}, reltol=1e-8, abstol=1e-8, saveat=1., alg_hints=[:stiff])
+
     @test isapprox(sol_μθ[1, :], μ, rtol=1e-6)
     @test isapprox(sol_vθ[1, :], v, rtol=1e-6)
+    @test isapprox(sol_μvθ[1, :], μ, rtol=1e-6)
+    @test isapprox(sol_μvθ[2, :], v, rtol=1e-6)
+    @test isapprox(sol_μθ[2, :], sol_vθ[2, :], rtol=1e-6)
+    @test isapprox(sol_μvθ[3, :], sol_μθ[2, :], rtol=1e-6)
 end

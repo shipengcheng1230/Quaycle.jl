@@ -8,3 +8,9 @@ deps/deps.jl
 .vscode
 
 src/external
+
+.idea/*
+
+demos/*.jld2
+demos/*.h5
+demos/.ipynb_checkpoints
