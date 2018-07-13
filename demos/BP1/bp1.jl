@@ -69,7 +69,7 @@ K = convert(Matrix, K)
 # don't have parallel ODE solver for now
 rmprocs(ncores)
 
-# save or load your stiffness matrix
+## save or load your stiffness matrix
 using JLD2, FileIO
 @save joinpath(@__DIR__, "stiff.jld2") K
 # load existing solution
@@ -127,8 +127,8 @@ using HDF5
 using RecursiveArrayTools
 
 # convert higher dimension array to matrix for writing HDF5
-ua = VectorOfArray(sol.u)
-u = convert(Array, ua)
+uu = VectorOfArray(sol.u)
+u = convert(Array, uu)
 
 # regularized form
 function shear_stress(v, θ, a)

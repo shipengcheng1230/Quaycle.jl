@@ -11,6 +11,6 @@ src/external
 
 .idea/*
 
-demos/*.jld2
-demos/*.h5
-demos/.ipynb_checkpoints
+demos/*/*.jld2
+demos/*/*.h5
+demos/*/.ipynb_checkpoints
