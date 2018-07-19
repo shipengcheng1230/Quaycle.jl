@@ -13,7 +13,7 @@ This is a suite for numerically simulating earthquake sequences in [Julia](https
 
 
 ## Developing
-At the current stage, I am implementing script-like code-snippets under [Demos](https://github.com/shipengcheng1230/JuEQ.jl/tree/master/demos) for various specific simulation problems. This will be served as guidance for the package development, especially for type systems in this package. 
+At the current stage, I am implementing script-like code-snippets under [Demos](https://github.com/shipengcheng1230/JuEQ.jl/tree/master/demos) for various specific simulation problems. This will be served as guidance for the package development, especially for type systems in this package. The demos, not fully tested, are mainly focued on usability, however, at a moderate consideration on performance.
 
 
 ## Supporting
