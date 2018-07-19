@@ -42,7 +42,64 @@ const al = hcat([x - Δl / 2.0 x + Δl / 2.0])
 const aw = hcat([ξ + Δd / 2.0 ξ - Δd / 2.0])
 
 KK = SharedArray{Float64}(2nl-1, nd, nd)
-# K = zeros(Float64, nl, nd, nl, nd)
+
+# define the kernel
+@everywhere function periodic_stiffness(_x, _y, _z, α, depth, dip, _al, _aw, disl, nrept, lenrept, μ)
+
+    @views function net_plane_shear_stress(u)
+        σzz = μ * (3u[12] + u[4] + u[8])
+        σyy = μ * (3u[8] + u[4] + u[12])
+        τyz = μ * (u[9] + u[11])
+        tn = (σzz - σyy) * sinpi(2dip / 180) / 2 + τyz * cospi(2dip / 180)
+    end
+
+    k = zero(Float64)
+    for r = -nrept: nrept
+        u = dc3d_okada(_x, _y, _z, α, depth, dip, _al + r * lenrept, _aw, disl)
+        tn = net_plane_shear_stress(u)
+        k += -tn / disl[2]
+    end
+    k
+end
+
+@everywhere function fill_K_chunk!(K, lrange, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+    @show lrange
+    _nl = Int((size(K, 1) + 1) / 2)
+    _nd = size(K, 2)
+
+    for l in lrange, j in 1: _nd, i in -_nl + 1: _nl - 1
+        if i < 0
+            K[i+_nl, j, l] = periodic_stiffness(x[1], y[j], z[j], α, depth, dip, al[1-i, :], aw[l, :], disl, nrept, lenrept, μ)
+        else
+            K[i+_nl, j, l] = periodic_stiffness(x[end], y[j], z[j], α, depth, dip, al[end-i, :], aw[l, :], disl, nrept, lenrept, μ)
+        end
+    end
+end
+
+@everywhere function local_range(K)
+    idx = indexpids(K)
+    nchunks = length(procs(K))
+    splits = [round(Int, s) for s in linspace(0, size(K, 3), nchunks + 1)]
+    splits[idx] + 1: splits[idx+1]
+end
+
+@everywhere function fill_K_shared_chunks!(K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+    fill_K_chunk!(K, local_range(K), x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+end
+
+function fill_K_shared!(K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+    @sync begin
+        for p in procs(K)
+            @async remotecall_wait(fill_K_shared_chunks!, p, K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+        end
+    end
+    K
+end
+
+K2 = SharedArray{Float64}(2nl-1, nd, nd)
+@time fill_K_shared!(K2, x, y, z, α, depth, dip, al, aw, disl, nrept, lf, μ)
+
+
 
 function fill_K!(K)
     @views function net_shear_stress(u)
