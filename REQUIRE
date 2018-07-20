@@ -4,3 +4,4 @@ DifferentialEquations
 RecursiveArrayTools
 JLD2
 HDF5
+ToeplitzMatrices
