@@ -1,10 +1,13 @@
 ##
+using Distributed
 addprocs(4)
+
+@everywhere using SharedArrays
 
 ## parameters setting
 # pre-defined
-const nl = 5 # cell # along strike
-const nd = 5 # cell # along dip
+const nl = 128 # cell # along strike
+const nd = 64 # cell # along dip
 const μ = 0.3 # Bar·km/mm
 const λ = μ # isotropic medium
 const lf = 60.0 # length of frictional law applied [km]
@@ -26,8 +29,6 @@ dc3d_file = joinpath(dirname(@__DIR__), "src/dc3d.jl")
 # fault setting
 const dip = 10.0 # dip angle [degree]
 const disl = [0., 1., 0.]
-const cd = cospi(dip / 180)
-const sd = sinpi(dip / 180)
 const c2d = cospi(2dip / 180)
 const s2d = sinpi(2dip / 180)
 const depth = 0.0 # depth of fault origin [km]
@@ -36,8 +37,8 @@ const depth = 0.0 # depth of fault origin [km]
 # centroid of each cell
 const x = collect(linspace(0, lf, nl)) - lf / 2
 const ξ = collect(linspace(0 - Δd / 2.0, -maxdep, nd))
-const y = ξ * cd
-const z = ξ * sd
+const y = ξ * cospi(dip / 180)
+const z = ξ * sinpi(dip / 180)
 const al = hcat([x - Δl / 2.0 x + Δl / 2.0])
 const aw = hcat([ξ + Δd / 2.0 ξ - Δd / 2.0])
 
@@ -92,9 +93,7 @@ end
 
 K1 = SharedArray{Float64}(nl, nd, nd)
 @time fill_K_shared!(K1, x, y, z, α, depth, dip, al, aw, disl, nrept, lf, μ)
-
-using ToeplitzMatrices
-using TensorOperations
+K = sdata(K1)
 
 K2 = zeros(nl, nd, nl, nd)
 for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
@@ -106,7 +105,10 @@ for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
     K1_[i, j, s, t] = K1[abs(i - s) + 1, j, t]
 end
 
-all(@. isapprox(K1_, K2, rtol=1e-9))
+all(@. isapprox(K1_, K2, rtol=1e-7))
+
+@everywhere using ToeplitzMatrices
+@everywhere using TensorOperations
 
 v0 = ones(nl, nd)
 v1 = zeros(nl, nd)
@@ -122,3 +124,14 @@ for l = 1: nd, j = 1: nd
 end
 
 all(@. isapprox(v1, v2, rtol=1e-9))
+
+using DifferentialEquations
+
+## profile
+using Plots, Images
+
+b = 0.0010 * ones(nl, nd)
+a = 0.0045 * ones(nl, nd)
+
+
+heatmap(a)

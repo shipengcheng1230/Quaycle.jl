@@ -32,7 +32,7 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const ngrid = Int(Wf / Δz)
 
 ## calculate stiffness matrix
-dc3d_file = joinpath(dirname(dirname(@__DIR__)), "src/dc3d.jl")
+dc3d_file = joinpath(dirname(@__DIR__), "src/dc3d.jl")
 # need string insertion here to work around
 @everywhere include($dc3d_file)
 
@@ -71,9 +71,9 @@ rmprocs(ncores)
 
 ## save or load your stiffness matrix
 using JLD2, FileIO
-@save joinpath(@__DIR__, "stiff.jld2") K
+@save joinpath(@__DIR__, "bp1_stiff.jld2") K
 # load existing solution
-@load joinpath(@__DIR__, "stiff.jld2") K
+@load joinpath(@__DIR__, "bp1_stiff.jld2") K
 
 ## profile settings
 z = (collect(1: ngrid) - 0.5) * Δz
