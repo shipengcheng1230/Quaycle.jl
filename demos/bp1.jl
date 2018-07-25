@@ -2,6 +2,7 @@
 # 2D vertical anti-shear-plain
 
 ## let's do parallel
+using Distributed
 ncores = 4
 addprocs(ncores)
 
@@ -35,6 +36,7 @@ const ngrid = Int(Wf / Δz)
 dc3d_file = joinpath(dirname(@__DIR__), "src/dc3d.jl")
 # need string insertion here to work around
 @everywhere include($dc3d_file)
+@everywhere using SharedArrays
 
 K = SharedArray{Float64}(ngrid, ngrid)
 
@@ -51,7 +53,7 @@ function fill_stiffness_matrix!(K)
     for i = 1: ngrid
         aw = [-Δz * i, -Δz * (i - 1)]
         # if no reduction op, @parallel will not wait for finish without @sync
-        @sync @parallel for j = 1: ngrid
+        @sync @distributed for j = 1: ngrid
             x = 0.
             y = -(j - 0.5) * Δz * cdip
             z = -(j - 0.5) * Δz * sdip
@@ -92,6 +94,7 @@ vz = fill!(zeros(z), Vinit)
 
 ## build ODEs
 using DifferentialEquations
+using LinearAlgebra
 
 ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv = [zeros(Float64, ngrid) for _ in 1: 5]
 
@@ -111,7 +114,7 @@ function f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
     @. dμ_dv = a * ϕ2
     @. dμ_dθ = b0 / θ * v * ϕ2
     @. dθ = 1 - v * θ / Dc
-    A_mul_B!(dμ_dt, K, Vp - v)
+    mul!(dμ_dt, K, Vp - v)
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
     @. dδ = v
 end
@@ -129,7 +132,7 @@ const Δt_aseismic = 0.1 # 0.1 year
 const seismic_slip_rate = 1e-3 * ms2mmyr # above which an event is deemed as seismic
 
 # Note that by this `affect!` function, seismic solutions are not rigorously intepolated at predefined Δt
-function affect!(integrator::DEIntegrator)
+function affect!(integrator)
     t_saved = integrator.sol.t[end]
     t = integrator.t
     if t - t_saved ≥ Δt_seismic
@@ -146,7 +149,7 @@ end
 cb = DiscreteCallback(condition, affect!, save_positions=(false, false))
 
 # this is the only kind of algorithms that works on this problem efficiently
-@time sol = solve(prob, OwrenZen5(), reltol=1e-6, abstol=1e-6, saveat=Δt_aseismic, callback=cb)
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, saveat=Δt_aseismic, callback=cb)
 
 ## save our solution for plotting
 using HDF5
