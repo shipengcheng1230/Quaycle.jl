@@ -1,18 +1,18 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 os:
-  - linux
-  - osx
+    - linux
+    - osx
 julia:
-  - 0.6
-  - 0.7
-notification:
-  email: false
+    - 0.7
+    - nightly
 matrix:
-  allow_failures:
-    -julia: 0.7
+    allow_failures:
+        - julia: nightly
+notifications:
+    email: false
 script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("JuEQ"); Pkg.test("JuEQ"; coverage=true)'
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - julia -e 'Pkg.clone(pwd()); Pkg.test("JuEQ"; coverage=true)'
 after_success:
-  - julia -e 'cd(Pkg.dir("JuEQ")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+    - julia -e 'cd(Pkg.dir("JuEQ")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

@@ -2,6 +2,7 @@
 # 2D vertical anti-shear-plain
 
 ## let's do parallel
+using Distributed
 ncores = 4
 addprocs(ncores)
 
@@ -35,12 +36,13 @@ const ngrid = Int(Wf / Δz)
 dc3d_file = joinpath(dirname(@__DIR__), "src/dc3d.jl")
 # need string insertion here to work around
 @everywhere include($dc3d_file)
+@everywhere using SharedArrays
 
 K = SharedArray{Float64}(ngrid, ngrid)
 
 # fault settings
 const depth = 0.0
-const al = [-500.0, 500.] # periodic boundary condition
+const al = [-2000.0, 2000.] # periodic boundary condition
 const disl = [1., 0., 0.]
 const dip = 90.0
 const cdip = cospi(dip / 180)
@@ -51,7 +53,7 @@ function fill_stiffness_matrix!(K)
     for i = 1: ngrid
         aw = [-Δz * i, -Δz * (i - 1)]
         # if no reduction op, @parallel will not wait for finish without @sync
-        @sync @parallel for j = 1: ngrid
+        @sync @distributed for j = 1: ngrid
             x = 0.
             y = -(j - 0.5) * Δz * cdip
             z = -(j - 0.5) * Δz * sdip
@@ -64,22 +66,23 @@ function fill_stiffness_matrix!(K)
 end
 
 @time fill_stiffness_matrix!(K)
-K = convert(Matrix, K)
+K = sdata(K)
 
 # don't have parallel ODE solver for now
 rmprocs(ncores)
 
-# save or load your stiffness matrix
+## save or load your stiffness matrix
 using JLD2, FileIO
-@save joinpath(@__DIR__, "stiff.jld2") K
+@save joinpath(@__DIR__, "bp1_stiff.jld2") K
 # load existing solution
-@load joinpath(@__DIR__, "stiff.jld2") K
+@load joinpath(@__DIR__, "bp1_stiff.jld2") K
 
 ## profile settings
 z = (collect(1: ngrid) - 0.5) * Δz
 az = fill!(zeros(z), a0)
 az[z .≥ (H + h)] = amax
 az[H .< z .< H + h] = a0 + (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
+# global constants are more efficient in case of frequent access
 const a = az
 
 # initial condition
@@ -91,6 +94,7 @@ vz = fill!(zeros(z), Vinit)
 
 ## build ODEs
 using DifferentialEquations
+using LinearAlgebra
 
 ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv = [zeros(Float64, ngrid) for _ in 1: 5]
 
@@ -99,6 +103,7 @@ function f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
     θ = @view u[:, 2]
     dv = @view du[:, 1]
     dθ = @view du[:, 2]
+    dδ = @view du[:, 3]
 
     # make sure θ don't go below 0.0
     clamp!(θ, 0.0, Inf)
@@ -109,26 +114,50 @@ function f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
     @. dμ_dv = a * ϕ2
     @. dμ_dθ = b0 / θ * v * ϕ2
     @. dθ = 1 - v * θ / Dc
-    A_mul_B!(dμ_dt, K, Vp - v)
+    mul!(dμ_dt, K, Vp - v)
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
+    @. dδ = v
 end
 
 # using closures to minimize allocations
 f! = (du, u, p, t) -> f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
 
-u0 = hcat(vz, θz)
+u0 = hcat(vz, θz, δz)
 tspan = (0., tf)
 prob = ODEProblem(f!, u0, tspan)
+
+# solution saving options, note that all solutions are stored at memory at runtime for now
+const Δt_seismic = 0.1 / 365 / 86400 # 0.1 s
+const Δt_aseismic = 0.1 # 0.1 year
+const seismic_slip_rate = 1e-3 * ms2mmyr # above which an event is deemed as seismic
+
+# Note that by this `affect!` function, seismic solutions are not rigorously intepolated at predefined Δt
+function affect!(integrator)
+    t_saved = integrator.sol.t[end]
+    t = integrator.t
+    if t - t_saved ≥ Δt_seismic
+        add_saveat!(integrator, t)
+    end
+end
+
+# identify seismic period
+function condition(u, t, integrator)
+    maxv = maximum(u[:, 1])
+    maxv >= seismic_slip_rate
+end
+
+cb = DiscreteCallback(condition, affect!, save_positions=(false, false))
+
 # this is the only kind of algorithms that works on this problem efficiently
-@time sol = solve(prob, OwrenZen5())
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, saveat=Δt_aseismic, callback=cb)
 
 ## save our solution for plotting
 using HDF5
 using RecursiveArrayTools
 
-# convert higher dimension array to matrix for writing HDF5
-ua = VectorOfArray(sol.u)
-u = convert(Array, ua)
+# convert higher dimension array to matrix
+uu = VectorOfArray(sol.u)
+u = convert(Array, uu)
 
 # regularized form
 function shear_stress(v, θ, a)
@@ -136,24 +165,22 @@ function shear_stress(v, θ, a)
 end
 
 # organize various outputs
-t = sol.t
-ntstep = length(t)
-dt = diff(t)
-v = u[:, 1, :]
-θ = u[:, 2, :]
+v = @view u[:, 1, :]
+θ = @view u[:, 2, :]
+s = @view u[:, 3, :]
 τ = shear_stress(v, θ, a)
-s = zeros(Float64, ngrid, ntstep-1)
-for i in 1: ngrid
-    avg_v = (v[i, 1:end-1] + v[i, 2:end]) / 2.
-    s[i, :] = cumsum(dt .* avg_v)
-end
+
+v /= ms2mmyr
+θ *= 365 * 86400
+s /= 1e3
+τ /= 10.
 
 # write results
-h5open(joinpath(@__DIR__, "bp1.h5"), "w") do f
+h5open(joinpath(@__DIR__, "bp1_solution.h5"), "w") do f
     g = g_create(f, "bp1")
-    g["t"] = t # yr
-    g["velocity"] = v / ms2mmyr # m/s
-    g["state"] = θ * 365 * 86400 # s
-    g["shear_stress"] = τ / 10. # MPa
-    g["slip"] = s / 1e3 # m
+    g["t"] = sol.t # yr
+    g["velocity"] = v # m/s
+    g["state"] = θ # s
+    g["shear_stress"] = τ # MPa
+    g["slip"] = s # m
 end
