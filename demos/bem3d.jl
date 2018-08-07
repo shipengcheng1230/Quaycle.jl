@@ -1,137 +1,139 @@
-##
 using Distributed
 addprocs(4)
 
-@everywhere using SharedArrays
+## parameters settings
+const ms2mmyr = 365 * 86400 * 1e3
+const ρ = 2670.0 # kg/m³
+const cs = 3464.0 # m/s
+const Vp = 140 # mm/yr
+const V0 = 1e-6 * ms2mmyr # mm/yr
+const f0 = 0.6
 
-## parameters setting
-# pre-defined
-const nl = 128 # cell # along strike
-const nd = 64 # cell # along dip
-const μ = 0.3 # Bar·km/mm
-const λ = μ # isotropic medium
-const lf = 60.0 # length of frictional law applied [km]
-const cs = 3000.0 # m/s
-const μ0 = 0.6 # reference frictional coefficient
-const nrept = 5 # repetition # of fault length
-
-# implicit
-const α = (λ + μ) / (λ + 2μ) # medium constant
+# parameters implicit by above
+const μ = cs^2 * ρ / 1e5 / 1e6 # Bar·km/mm
+const λ = μ # poisson material
+const α = (λ + μ) / (λ + 2μ)
 const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
-const Δl = lf / nl # cell size along strike
-const Δd = Δl # cell size along dip, here square cells are used
-const maxdep = Δd * nd # max depth of where frictional law is applied
 
-## calculate stiffness matrix
-dc3d_file = joinpath(dirname(@__DIR__), "src/dc3d.jl")
-@everywhere include($dc3d_file)
+## fault geometry
+const dip = 10.0
+const depth = 0.0
+const lf = 60.0
+const nl = 128
+const nd = 64
 
-# fault setting
-const dip = 10.0 # dip angle [degree]
-const disl = [0., 1., 0.]
-const c2d = cospi(2dip / 180)
-const s2d = sinpi(2dip / 180)
-const depth = 0.0 # depth of fault origin [km]
+Δl = lf / nl
+Δd = Δl
+x = collect(range(-lf/2., stop=lf/2., length=nl))
+ξ = collect(range(0., stop=-Δd*(nd-1), step=-Δd)) .- Δd/2
+z = ξ .* sinpi(dip/180)
+y = ξ .* cospi(dip/180)
+al = cat(x .- Δl/2, x .+ Δl/2, dims=2)
+aw = cat(ξ .- Δd/2, ξ .+ Δd/2, dims=2)
+disl = [0., 1., 0.]
 
-# grid coordinates
-# centroid of each cell
-const x = collect(linspace(0, lf, nl)) - lf / 2
-const ξ = collect(linspace(0 - Δd / 2.0, -maxdep, nd))
-const y = ξ * cospi(dip / 180)
-const z = ξ * sinpi(dip / 180)
-const al = hcat([x - Δl / 2.0 x + Δl / 2.0])
-const aw = hcat([ξ + Δd / 2.0 ξ - Δd / 2.0])
+## stiffness tensor
+include(joinpath(dirname(@__DIR__), "src/dc3d.jl"))
+const nrept = 5
 
-## distributed
-# define the kernel
-@everywhere function periodic_stiffness(_x, _y, _z, α, depth, dip, _al, _aw, disl, nrept, lenrept, μ)
-
-    # translational symmetry on fault plane, reflective symmetry in y-z plane
-    @views function net_plane_shear_stress(u)
-        σzz = μ * (3u[12] + u[4] + u[8])
-        σyy = μ * (3u[8] + u[4] + u[12])
-        τyz = μ * (u[9] + u[11])
-        tn = (σzz - σyy) * sinpi(2dip / 180) / 2 + τyz * cospi(2dip / 180)
+function cal_stiff(x, y, z, α, depth, dip, al, aw, disl)
+    u = zeros(Float64, 12)
+    for i = -nrept: nrept
+        u += dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
     end
+    σzz = μ * (3u[12] + u[4] + u[8])
+    σyy = μ * (3u[8] + u[4] + u[12])
+    τyz = μ * (u[11] + u[9])
+    -((σzz - σyy)/2 * sinpi(2dip/180) + τyz * cospi(2dip/180)) / disl[2]
+end
 
-    k = zero(Float64)
-    for r = -nrept: nrept
-        u = dc3d_okada(_x, _y, _z, α, depth, dip, _al + r * lenrept, _aw, disl)
-        tn = net_plane_shear_stress(u)
-        k += -tn / disl[2]
+function stiff_serial()
+    K = zeros(Float64, nl, nd, nd)
+    for l = 1: nd, j = 1: nd, i = 1: nl
+        K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
     end
-    k
+    return K
 end
 
-@everywhere function fill_K_chunk!(K, lrange, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
-    @show lrange
+@time K = stiff_serial()
 
-    for l in lrange, j in 1: size(K, 2), i in 1: size(K, 1)
-        K[i, j, l] = periodic_stiffness(x[1], y[j], z[j], α, depth, dip, al[i, :], aw[l, :], disl, nrept, lenrept, μ)
-    end
-end
+## frictional properties
+a = 0.015 .* ones(nl, nd)
+b = 0.0115 .* ones(nl, nd)
+σ = 200.0 .* ones(nl, nd)
+L = 5.0
 
-@everywhere function local_range(K)
-    idx = indexpids(K)
-    nchunks = length(procs(K))
-    splits = [round(Int, s) for s in linspace(0, size(K, 3), nchunks + 1)]
-    splits[idx] + 1: splits[idx+1]
-end
+left_patch = @. -22.5 ≤ x < -2.5
+right_patch = @. 2.5 < x ≤ 22.5
+vert_patch = @. -20.0 ≤ ξ < -10.0
+b[left_patch, vert_patch] .= 0.0185
+b[right_patch, vert_patch] .= 0.0185
+σ[left_patch, :] .= 20.
 
-@everywhere function fill_K_shared_chunks!(K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
-    fill_K_chunk!(K, local_range(K), x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
-end
+const a_ = a
+const b_ = b
+const σ_ = σ
+const L_ = L
 
-function fill_K_shared!(K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
-    @sync begin
-        for p in procs(K)
-            @async remotecall_wait(fill_K_shared_chunks!, p, K, x, y, z, α, depth, dip, al, aw, disl, nrept, lenrept, μ)
+## check profile
+using PyPlot
+plt[:imshow](σ)
+plt[:imshow](a-b)
+
+## set ODEs
+using DifferentialEquations
+using ToeplitzMatrices
+
+ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv = [zeros(Float64, nl, nd) for _ in 1: 5]
+
+function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, stiff)
+    v = selectdim(u, 3, 1)
+    θ = selectdim(u, 3, 2)
+    dv = selectdim(du, 3, 1)
+    dθ = selectdim(du, 3, 2)
+
+    # make sure θ don't go below 0.0
+    clamp!(θ, 0.0, Inf)
+
+    # using regularized form
+    @. ϕ1 = exp((f0 + b_ * log(V0 * θ / L_)) / a_) / 2V0
+    @. ϕ2 = σ_ * ϕ1 / sqrt(1 + (v * ϕ1)^2)
+    @. dμ_dv = a_ * ϕ2
+    @. dμ_dθ = b_ / θ * v * ϕ2
+    @. dθ = 1 - v * θ / L_
+
+    fill!(dμ_dt, 0.0)
+    for t = 1: nd, s = 1: nl, j = 1: nd
+        @simd for i = 1: nl
+            @fastmath @inbounds dμ_dt[i,j] += stiff[abs(i-s)+1,j,t] * (Vp - v[s,t])
         end
     end
-    K
+    @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
 end
 
-K1 = SharedArray{Float64}(nl, nd, nd)
-@time fill_K_shared!(K1, x, y, z, α, depth, dip, al, aw, disl, nrept, lf, μ)
-K = sdata(K1)
+f! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, K)
 
-K2 = zeros(nl, nd, nl, nd)
-for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
-    K2[i, j, s, t] = periodic_stiffness(x[i], y[j], z[j], α, depth, dip, al[s, :], aw[t, :], disl, nrept, lf, μ)
+v0 = Vp .* ones(nl, nd)
+θ0 = L ./ v0 ./ 1.1
+u0 = cat(v0, θ0, dims=3)
+tspan = (0.0, 10.0)
+prob = ODEProblem(f!, u0, tspan)
+@time sol = solve(prob, OwrenZen5(), reltol=1e-8, abstol=1e-8, progress=true)
+
+## save the results
+using FileIO, HDF5
+uu = VectorOfArray(sol.u)
+u = convert(Array, uu)
+
+v = selectdim(u, 3, 1)
+θ = selectdim(u, 3, 2)
+
+_v = v / ms2mmyr
+_θ = θ * 365 * 86400
+
+h5open(joinpath(@__DIR__, "bem3d_solution.h5"), "w") do f
+    g = g_create(f, "bem3d")
+    g["t"] = sol.t # yr
+    g["velocity"] = _v # m/s
+    g["state"] = _θ # s
 end
-
-K1_ = zeros(K2)
-for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
-    K1_[i, j, s, t] = K1[abs(i - s) + 1, j, t]
-end
-
-all(@. isapprox(K1_, K2, rtol=1e-7))
-
-@everywhere using ToeplitzMatrices
-@everywhere using TensorOperations
-
-v0 = ones(nl, nd)
-v1 = zeros(nl, nd)
-v2 = zeros(nl, nd)
-
-@tensor begin
-    v2[i, j] = K2[i, j, k, l] * v0[k, l]
-end
-
-for l = 1: nd, j = 1: nd
-        tm = SymmetricToeplitz(@view K1[:, j, l])
-        v1[:, j] += tm * v0[:, l]
-end
-
-all(@. isapprox(v1, v2, rtol=1e-9))
-
-using DifferentialEquations
-
-## profile
-using Plots, Images
-
-b = 0.0010 * ones(nl, nd)
-a = 0.0045 * ones(nl, nd)
-
-
-heatmap(a)

@@ -131,13 +131,13 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
 
 	u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
 
-	xi = x - al
+	xi = x .- al
 	d = dep + z
 	sc1 = shared_constants_1(α, dip)
     sd, cd = sc1[6], sc1[7]
 	p = y * cd + d * sd
 	q = y * sd - d * cd
-	et = p - aw
+	et = p .- aw
 
 	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
 		return zeros(T, 12)
@@ -174,7 +174,7 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl:
 	d = dep - z
 	p = y * cd + d * sd
 	q = y * sd - d * cd
-	et = p - aw
+	et = p .- aw
 
 	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
 		return zeros(T, 12)
@@ -488,7 +488,7 @@ function shared_constants_2(xi::T, et::T, q::T, sd::T, cd::T, kxi::T, ket::T) wh
     else
         rxi = r + xi
         alx = log(rxi)
-        x11 = 1./(r*rxi)
+        x11 = 1 ./ (r*rxi)
         x32 = (r+rxi)*x11*x11/r
     end
 
