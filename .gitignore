@@ -9,3 +9,4 @@ deps/deps.jl
 demos/*.jld2
 demos/*.h5
 demos/.ipynb_checkpoints
+demos/*.mp4
