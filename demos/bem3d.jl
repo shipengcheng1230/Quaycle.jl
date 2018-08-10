@@ -5,8 +5,8 @@
 const ms2mmyr = 365 * 86400 * 1e3
 const ρ = 2670.0 # kg/m³
 const cs = 3044.0 # m/s
-const Vp = 140 # mm/yr
-const V0 = 1e-6 * ms2mmyr # mm/yr
+const Vp = 100.0 # mm/yr
+const V0 = 3.2e4 # mm/yr
 const f0 = 0.6
 
 # parameters implicit by above
@@ -79,15 +79,15 @@ KF = full_tensor(K)
 ## frictional properties
 a = 0.015 .* ones(nl, nd)
 b = 0.0115 .* ones(nl, nd)
-σ = 180.0 .* ones(nl, nd)
+σ = 150.0 .* ones(nl, nd)
 L = 5.0
 
-left_patch = @. -22.5 ≤ x < -2.5
-right_patch = @. 2.5 < x ≤ 22.5
-vert_patch = @. -20.0 ≤ ξ < -10.0
+left_patch = @. -22.5 ≤ x ≤ -2.5
+right_patch = @. 2.5 ≤ x ≤ 22.5
+vert_patch = @. -20.0 ≤ ξ ≤ -10.0
 b[left_patch, vert_patch] .= 0.0185
 b[right_patch, vert_patch] .= 0.0185
-σ[left_patch, :] .= 18.
+σ[left_patch, :] .= 15.
 
 const a_ = a
 const b_ = b
@@ -105,7 +105,7 @@ using TensorOperations
 
 ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv = [zeros(Float64, nl, nd) for _ in 1: 6]
 
-function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, ST)
+function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
     v = selectdim(u, 3, 1)
     θ = selectdim(u, 3, 2)
     dv = selectdim(du, 3, 1)
@@ -120,22 +120,40 @@ function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, ST)
     @. dμ_dv = a_ * ϕ2
     @. dμ_dθ = b_ / θ * v * ϕ2
     @. dθ = 1 - v * θ / L_
-
-    relv = Vp .- v
+    @. relv = Vp - v
     @tensor begin
         dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
     end
-
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
 end
 
-f! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, KF)
+function f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
+    v = selectdim(u, 3, 1)
+    θ = selectdim(u, 3, 2)
+    dv = selectdim(du, 3, 1)
+    dθ = selectdim(du, 3, 2)
+
+    # make sure θ don't go below 0.0
+    clamp!(θ, 0.0, Inf)
+
+    @. dθ = 1 - v * θ / L_
+    @. relv = Vp - v
+    @tensor begin
+        dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
+    end
+    @. dμ_dθ = σ_ * b_ / θ
+    @. dμ_dv = σ_ * a_ / v
+    @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
+end
+
+f1! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
+f2! = (du, u, p, t) -> f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
 
 v0 = Vp .* ones(nl, nd)
 θ0 = L ./ v0 ./ 1.1
 u0 = cat(v0, θ0, dims=3)
 tspan = (0.0, 10.0)
-prob = ODEProblem(f!, u0, tspan)
+prob = ODEProblem(f2!, u0, tspan)
 @time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, progress=true)
 
 ## save the results
@@ -149,7 +167,7 @@ v = selectdim(u, 3, 1)
 _v = v / ms2mmyr
 _θ = θ * 365 * 86400
 
-h5open(joinpath(@__DIR__, "bem3d_solution_2.h5"), "w") do f
+h5open(joinpath(@__DIR__, "bem3d_solution_3.h5"), "w") do f
     g = g_create(f, "bem3d")
     g["t"] = sol.t # yr
     g["velocity"] = _v # m/s
