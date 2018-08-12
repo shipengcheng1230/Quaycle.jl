@@ -1,16 +1,16 @@
-using Distributed
-addprocs(4)
+# using Distributed
+# addprocs(4)
 
 ## parameters settings
 const ms2mmyr = 365 * 86400 * 1e3
 const ρ = 2670.0 # kg/m³
-const cs = 3464.0 # m/s
-const Vp = 140 # mm/yr
-const V0 = 1e-6 * ms2mmyr # mm/yr
+const cs = 3044.0 # m/s
+const Vpl = 100.0 # mm/yr
+const V0 = 3.2e4 # mm/yr
 const f0 = 0.6
 
 # parameters implicit by above
-const μ = cs^2 * ρ / 1e5 / 1e6 # Bar·km/mm
+const μ = 0.3 # Bar·km/mm
 const λ = μ # poisson material
 const α = (λ + μ) / (λ + 2μ)
 const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
@@ -19,13 +19,13 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const dip = 10.0
 const depth = 0.0
 const lf = 60.0
-const nl = 128
-const nd = 64
+const nl = 256
+const nd = 128
 
 Δl = lf / nl
 Δd = Δl
-x = collect(range(-lf/2., stop=lf/2., length=nl))
-ξ = collect(range(0., stop=-Δd*(nd-1), step=-Δd)) .- Δd/2
+x = collect(range(-lf/2.0+Δl/2, stop=lf/2.0-Δl/2, length=nl))
+ξ = collect(range(0., stop=-Δd*(nd-1), step=-Δd)) .- Δd/2.0
 z = ξ .* sinpi(dip/180)
 y = ξ .* cospi(dip/180)
 al = cat(x .- Δl/2, x .+ Δl/2, dims=2)
@@ -34,12 +34,12 @@ disl = [0., 1., 0.]
 
 ## stiffness tensor
 include(joinpath(dirname(@__DIR__), "src/dc3d.jl"))
-const nrept = 5
+const nrept = 2
 
 function cal_stiff(x, y, z, α, depth, dip, al, aw, disl)
     u = zeros(Float64, 12)
     for i = -nrept: nrept
-        u += dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
+        u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
     end
     σzz = μ * (3u[12] + u[4] + u[8])
     σyy = μ * (3u[8] + u[4] + u[12])
@@ -49,26 +49,47 @@ end
 
 function stiff_serial()
     K = zeros(Float64, nl, nd, nd)
-    for l = 1: nd, j = 1: nd, i = 1: nl
-        K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
+    Threads.@threads for l = 1: nd
+        for j = 1: nd, i = 1: nl
+            K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
+        end
     end
     return K
 end
 
 @time K = stiff_serial()
 
+## toeplitz matrix for convolution
+# using ToeplitzMatrices
+#
+# KT = Array{SymmetricToeplitz}(undef, nd, nd)
+# for l = 1: nd, j = 1: nd
+#     KT[j,l] = SymmetricToeplitz(K[:,j,l])
+# end
+
+## construct a full 2nd order tensor
+function full_tensor(K)
+    kf = zeros(Float64, nl, nd, nl, nd)
+    for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
+        kf[i,j,s,t] = K[abs(i-s)+1,j,t]
+    end
+    kf
+end
+
+KF = full_tensor(K)
+
 ## frictional properties
 a = 0.015 .* ones(nl, nd)
 b = 0.0115 .* ones(nl, nd)
-σ = 200.0 .* ones(nl, nd)
+σ = 150.0 .* ones(nl, nd)
 L = 5.0
 
-left_patch = @. -22.5 ≤ x < -2.5
-right_patch = @. 2.5 < x ≤ 22.5
-vert_patch = @. -20.0 ≤ ξ < -10.0
+left_patch = @. -22.5 ≤ x ≤ -2.5
+right_patch = @. 2.5 ≤ x ≤ 22.5
+vert_patch = @. -20.0 ≤ ξ ≤ -10.0
 b[left_patch, vert_patch] .= 0.0185
 b[right_patch, vert_patch] .= 0.0185
-σ[left_patch, :] .= 20.
+σ[left_patch, :] .= 15.
 
 const a_ = a
 const b_ = b
@@ -76,17 +97,17 @@ const σ_ = σ
 const L_ = L
 
 ## check profile
-using PyPlot
-plt[:imshow](σ)
-plt[:imshow](a-b)
+# using PyPlot
+# plt[:imshow](σ)
+# plt[:imshow](a-b)
 
 ## set ODEs
 using DifferentialEquations
-using ToeplitzMatrices
+using TensorOperations
 
-ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv = [zeros(Float64, nl, nd) for _ in 1: 5]
+ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv = [zeros(Float64, nl, nd) for _ in 1: 6]
 
-function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, stiff)
+function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
     v = selectdim(u, 3, 1)
     θ = selectdim(u, 3, 2)
     dv = selectdim(du, 3, 1)
@@ -101,24 +122,39 @@ function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, stiff)
     @. dμ_dv = a_ * ϕ2
     @. dμ_dθ = b_ / θ * v * ϕ2
     @. dθ = 1 - v * θ / L_
-
-    fill!(dμ_dt, 0.0)
-    for t = 1: nd, s = 1: nl, j = 1: nd
-        @simd for i = 1: nl
-            @fastmath @inbounds dμ_dt[i,j] += stiff[abs(i-s)+1,j,t] * (Vp - v[s,t])
-        end
+    @. relv = Vpl - v
+    @tensor begin
+        dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
     end
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
 end
 
-f! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, K)
+function f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
+    v = selectdim(u, 3, 1)
+    θ = selectdim(u, 3, 2)
+    dv = selectdim(du, 3, 1)
+    dθ = selectdim(du, 3, 2)
 
-v0 = Vp .* ones(nl, nd)
+    # make sure θ don't go below 0.0
+    clamp!(θ, 0.0, Inf)
+
+    @. dθ = 1 - v * θ / L_
+    @. relv = Vpl - v
+    @tensor dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
+    @. dμ_dθ = σ_ * b_ / θ
+    @. dμ_dv = σ_ * a_ / v
+    @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
+end
+
+f1! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
+f2! = (du, u, p, t) -> f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
+
+v0 = Vpl .* ones(nl, nd)
 θ0 = L ./ v0 ./ 1.1
 u0 = cat(v0, θ0, dims=3)
 tspan = (0.0, 10.0)
-prob = ODEProblem(f!, u0, tspan)
-@time sol = solve(prob, OwrenZen5(), reltol=1e-8, abstol=1e-8, progress=true)
+prob = ODEProblem(f2!, u0, tspan)
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, progress=true)
 
 ## save the results
 using FileIO, HDF5
