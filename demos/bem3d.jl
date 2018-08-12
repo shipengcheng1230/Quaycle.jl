@@ -5,7 +5,7 @@
 const ms2mmyr = 365 * 86400 * 1e3
 const ρ = 2670.0 # kg/m³
 const cs = 3044.0 # m/s
-const Vp = 100.0 # mm/yr
+const Vpl = 100.0 # mm/yr
 const V0 = 3.2e4 # mm/yr
 const f0 = 0.6
 
@@ -19,13 +19,13 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const dip = 10.0
 const depth = 0.0
 const lf = 60.0
-const nl = 128
-const nd = 64
+const nl = 256
+const nd = 128
 
 Δl = lf / nl
 Δd = Δl
-x = collect(range(-lf/2., stop=lf/2., length=nl))
-ξ = collect(range(0., stop=-Δd*(nd-1), step=-Δd)) .- Δd/2
+x = collect(range(-lf/2.0+Δl/2, stop=lf/2.0-Δl/2, length=nl))
+ξ = collect(range(0., stop=-Δd*(nd-1), step=-Δd)) .- Δd/2.0
 z = ξ .* sinpi(dip/180)
 y = ξ .* cospi(dip/180)
 al = cat(x .- Δl/2, x .+ Δl/2, dims=2)
@@ -39,7 +39,7 @@ const nrept = 2
 function cal_stiff(x, y, z, α, depth, dip, al, aw, disl)
     u = zeros(Float64, 12)
     for i = -nrept: nrept
-        u += dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
+        u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
     end
     σzz = μ * (3u[12] + u[4] + u[8])
     σyy = μ * (3u[8] + u[4] + u[12])
@@ -49,8 +49,10 @@ end
 
 function stiff_serial()
     K = zeros(Float64, nl, nd, nd)
-    for l = 1: nd, j = 1: nd, i = 1: nl
-        K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
+    Threads.@threads for l = 1: nd
+        for j = 1: nd, i = 1: nl
+            K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
+        end
     end
     return K
 end
@@ -58,12 +60,12 @@ end
 @time K = stiff_serial()
 
 ## toeplitz matrix for convolution
-using ToeplitzMatrices
-
-KT = Array{SymmetricToeplitz}(undef, nd, nd)
-for l = 1: nd, j = 1: nd
-    KT[j,l] = SymmetricToeplitz(K[:,j,l])
-end
+# using ToeplitzMatrices
+#
+# KT = Array{SymmetricToeplitz}(undef, nd, nd)
+# for l = 1: nd, j = 1: nd
+#     KT[j,l] = SymmetricToeplitz(K[:,j,l])
+# end
 
 ## construct a full 2nd order tensor
 function full_tensor(K)
@@ -120,7 +122,7 @@ function f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST
     @. dμ_dv = a_ * ϕ2
     @. dμ_dθ = b_ / θ * v * ϕ2
     @. dθ = 1 - v * θ / L_
-    @. relv = Vp - v
+    @. relv = Vpl - v
     @tensor begin
         dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
     end
@@ -137,10 +139,8 @@ function f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
     clamp!(θ, 0.0, Inf)
 
     @. dθ = 1 - v * θ / L_
-    @. relv = Vp - v
-    @tensor begin
-        dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
-    end
+    @. relv = Vpl - v
+    @tensor dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
     @. dμ_dθ = σ_ * b_ / θ
     @. dμ_dv = σ_ * a_ / v
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
@@ -149,7 +149,7 @@ end
 f1! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
 f2! = (du, u, p, t) -> f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
 
-v0 = Vp .* ones(nl, nd)
+v0 = Vpl .* ones(nl, nd)
 θ0 = L ./ v0 ./ 1.1
 u0 = cat(v0, θ0, dims=3)
 tspan = (0.0, 10.0)
@@ -167,7 +167,7 @@ v = selectdim(u, 3, 1)
 _v = v / ms2mmyr
 _θ = θ * 365 * 86400
 
-h5open(joinpath(@__DIR__, "bem3d_solution_3.h5"), "w") do f
+h5open(joinpath(@__DIR__, "bem3d_solution.h5"), "w") do f
     g = g_create(f, "bem3d")
     g["t"] = sol.t # yr
     g["velocity"] = _v # m/s
