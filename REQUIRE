@@ -5,3 +5,5 @@ RecursiveArrayTools
 JLD2
 HDF5
 ToeplitzMatrices
+SimpleTraits
+TensorOperations
