@@ -45,7 +45,16 @@ end
 abstract type AbstractGridType end
 abstract type FiniteDifferenceGrid end
 
-struct UniformFiniteDifferenceGrid{E,T} <: FiniteDifferenceGrid where {E<:Number,T<:Union{AbstractArray{E},Missing}}
+struct UniformFiniteDifferenceGrid{E,T} <: FiniteDifferenceGrid where {E<:Number,T<:AbstractArray{E}}
+    x::T
+    y::T
+    z::T
+    Δx::E
+    Δy::E
+    Δz::E
+end
+
+struct OnFaultUniformFDGrid{E,T} <: FiniteDifferenceGrid where {E<:Number,T<:Union{AbstractArray{E},Missing}}
     x::T
     ξ::T
     Δx::E
@@ -56,6 +65,10 @@ end
 By default, the downdip will extend from 0 to negative depth [while the center of along-strike will be at 0].
 """
 function discretize(fd::PlaneFaultDomain, nelm::NTuple{N,T}) where {N,T<:Integer}
+    discretize(Val(:onfault), fd, nelm)
+end
+
+function discretize(::Val{:onfault}, fd::PlaneFaultDomain, nelm::NTuple{N,T}) where {N,T<:Integer}
     dims = length(fd.domain)
     dims == N || error("Grid numbers mismatch with fault domain.")
     any(@. nelm ≤ zero(T)) && error("Grid numbers must be larger than 0.")
@@ -64,13 +77,17 @@ function discretize(fd::PlaneFaultDomain, nelm::NTuple{N,T}) where {N,T<:Integer
     Δξ = lξ / nξ
     ξ = collect(range(zero(lξ), stop=-lξ+Δξ, length=nξ)) .- Δξ/2
     if N == 1
-        UniformFiniteDifferenceGrid(missing, ξ, missing, Δξ)
+        OnFaultUniformFDGrid(missing, ξ, missing, Δξ)
     elseif N == 2
         lx, nx = fd.domain[2], nelm[2]
         Δx = lx / nx
         x = collect(range(-lx/2+Δx/2, stop=lx/2-Δx/2, length=nx))
-        UniformFiniteDifferenceGrid(x, ξ, Δx, Δξ)
+        OnFaultUniformFDGrid(x, ξ, Δx, Δξ)
     end
+end
+
+function discretize(::Val{:offfault}, fd::PlaneFaultDomain, offfault::NTuple{2,T}, nelm::NTuple{N,T}) where {N,T<:Integer}
+    @info "Discretize off fault region."
 end
 
 end
