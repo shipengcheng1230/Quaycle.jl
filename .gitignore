@@ -1,11 +1,16 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
+
 deps/deps.jl
+
 .ftpconfig
 .DS_Store
 .vscode
 .idea/*
+
 demos/*.jld2
 demos/*.h5
 demos/.ipynb_checkpoints
+demos/*.mp4
+demos/*.png
