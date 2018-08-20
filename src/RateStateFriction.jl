@@ -51,10 +51,10 @@ end
 
 function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T,
     ) where {T<:Number, SE<:StateEvolutionLaw}
-    ψ1 = exp((f0 + b * log(v0 * θ / L)) / a) / 2v0
+    ψ1 = exp((f0 + b * log(v0 * clamp(θ, zero(T), Inf) / L)) / a) / 2v0
     ψ2 = σ * ψ1 / sqrt(1 + (v * ψ1)^2)
-    dμ_dv = a * ψ2
-    dμ_dθ = b / θ * v * ψ2
+    dμdv = a * ψ2
+    dμdθ = b / θ * v * ψ2
     dθdt = dθ_dt(se, v, θ, L)
     dμdt = dμ_dt(k, v, vpl)
     return dv_dt(dμdt, dμdv, dμdθ, dθdt, η), dθdt
@@ -92,6 +92,7 @@ function derivations!(du, u, p::PhysicalProperties{0}, t, se::StateEvolutionLaw,
 end
 
 function EarthquakeCycleProblem(p::PhysicalProperties{0}, u0, tspan; se=DieterichStateLaw(), fform=CForm())
+    (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires `η` to avoid `Inf` in dv/dt."
     f! = (du, u, p, t) -> derivations!(du, u, p, t, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end
