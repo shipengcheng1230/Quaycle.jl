@@ -13,3 +13,15 @@ end
     @test fd1 == fd2
     @test fd2 == fd3
 end
+
+@testset "Get index" begin
+    @testset "one dim" begin
+        fd = fault(NormalFault, 1, 1)
+        @test fd.span[1] == fd[:ξ]
+    end
+    @testset "two dim" begin
+        fd = fault(NormalFault, 1, (1, 2))
+        @test fd.span[1] == fd[:x]
+        @test fd.span[2] == fd[:ξ]
+    end
+end
