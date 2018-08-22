@@ -60,9 +60,9 @@ function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, 
     return dv_dt(dμdt, dμdv, dμdθ, dθdt, η), dθdt
 end
 
-abstract type AbstractPhysicalProperties{DIMS} end
+abstract type AbstractMaterialProperties{DIMS} end
 
-@with_kw mutable struct PhysicalProperties{DIM} <: AbstractPhysicalProperties{DIM}
+@with_kw mutable struct MaterialProperties{DIM} <: AbstractMaterialProperties{DIM}
     a # contrib from velocity
     b # contrib from state
     L # critical distance
@@ -73,25 +73,29 @@ abstract type AbstractPhysicalProperties{DIMS} end
     f0 # ref. frictional coeff
     v0 # ref. velocity
 
-    function PhysicalProperties(a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T) where {
-        T<:Union{<:Number, AbstractArray{<:Number}}}
+    function MaterialProperties(a, b, L, k, σ, η, vpl, f0, v0)
         dims = maximum([ndims(x) for x in (a, b, L, σ, η, vpl, f0, v0)])
         new{dims}(a, b, L, k, σ, η, vpl, f0, v0)
     end
 end
 
-function dv_dθ_dt(p::PhysicalProperties{0}, v, θ, se, fform)
+function dv_dθ_dt(p::MaterialProperties{0}, v, θ, se, fform)
     dv_dθ_dt(fform, se, v, θ, p.a, p.b, p.L, p.k, p.σ, p.η, p.vpl, p.f0, p.v0)
 end
 
-friction(p::PhysicalProperties{0}, v, θ; fform=CForm()) = friction(fform, v, θ, p.L, p.a, p.b, p.f0, p.v0)
-friction(p::PhysicalProperties{0}, vθ::AbstractArray{T,1}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
+friction(p::MaterialProperties{0}, v, θ; fform=CForm()) = friction(fform, v, θ, p.L, p.a, p.b, p.f0, p.v0)
 
-function derivations!(du, u, p::PhysicalProperties{0}, t, se::StateEvolutionLaw, fform::FrictionLawForm)
+"Adapt for solution output."
+friction(p::MaterialProperties{0}, vθ::AbstractVecOrMat{T}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
+
+"Broadcast for singular object."
+friction(p::MaterialProperties{0}, vθ::AbstractArray{T}) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ)
+
+function derivations!(du, u, p::MaterialProperties{0}, t, se::StateEvolutionLaw, fform::FrictionLawForm)
     du[1], du[2] = dv_dθ_dt(p, u[1], u[2], se, fform)
 end
 
-function EarthquakeCycleProblem(p::PhysicalProperties{0}, u0, tspan; se=DieterichStateLaw(), fform=CForm())
+function EarthquakeCycleProblem(p::MaterialProperties{0}, u0, tspan; se=DieterichStateLaw(), fform=CForm())
     (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires `η` to avoid `Inf` in dv/dt."
     f! = (du, u, p, t) -> derivations!(du, u, p, t, se, fform)
     ODEProblem(f!, u0, tspan, p)

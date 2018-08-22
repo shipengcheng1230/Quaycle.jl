@@ -2,10 +2,10 @@ using Test
 using DifferentialEquations
 
 @testset "without damping" begin
-    mp = PhysicalProperties(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
+    mp = MaterialProperties(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     prob = EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 100.,); se=DieterichStateLaw(), fform=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=5.0)
-    μ = friction.(Ref(mp), sol.u)
+    μ = friction(mp, sol.u)
     μ_truth = [
         0.60000000, 0.60170649, 0.60171045, 0.60096431, 0.60023676,
         0.59967431, 0.59929548, 0.59907074, 0.59895143, 0.59889360,
@@ -17,10 +17,10 @@ using DifferentialEquations
 end
 
 @testset "with damping" begin
-    mp = PhysicalProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
+    mp = MaterialProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), fform=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
-    μ = friction.(Ref(mp), sol.u)
+    μ = friction(mp, sol.u)
     μ_truth = [
         0.60000000, 0.59650552, 0.59894203, 0.60106049, 0.59777486,
         0.60015600, 0.59659840, 0.59903374, 0.60109141, 0.59786773,
@@ -37,10 +37,10 @@ end
     cb = ContinuousCallback(condition, affect!, nothing, save_positions=(false, false))
 
     @testset "Ruina" begin
-        mp = PhysicalProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        mp = MaterialProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
         prob = EarthquakeCycleProblem(mp, [1.0, mp.L/1.0], (0., 40.,); se=RuinaStateLaw(), fform=CForm())
         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
-        μ = friction.(mp, sol.u)
+        μ = friction(mp, sol.u)
         μ_truth = [
             0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
             0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
@@ -56,10 +56,10 @@ end
     end
 
     @testset "PRZ" begin
-        mp = PhysicalProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        mp = MaterialProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
         prob = EarthquakeCycleProblem(mp, [1.0, mp.L/1.0], (0., 40.,); se=PrzStateLaw(), fform=CForm())
         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
-        μ = friction.(mp, sol.u)
+        μ = friction(mp, sol.u)
         μ_truth = [
             0.60000000, 0.60001736, 0.60006450, 0.60013523, 0.60022460,
             0.60032861, 0.60044398, 0.60056796, 0.60069827, 0.60083298,
@@ -76,10 +76,10 @@ end
 end
 
 @testset "variational form" begin
-    mp = PhysicalProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
+    mp = MaterialProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), fform=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
-    μ = friction.(Ref(mp), sol.u)
+    μ = friction(mp, sol.u)
     μ_truth = [
         0.60000000, 0.59650552, 0.59894203, 0.60106049, 0.59777486,
         0.60015600, 0.59659840, 0.59903374, 0.60109141, 0.59786773,
@@ -91,6 +91,6 @@ end
 end
 
 @testset "info display" begin
-    mp = PhysicalProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
+    mp = MaterialProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     @test_logs (:warn, "Regularized form requires `η` to avoid `Inf` in dv/dt.") EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), fform=RForm())
 end
