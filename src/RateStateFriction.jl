@@ -7,7 +7,7 @@ export StateEvolutionLaw, DieterichStateLaw, RuinaStateLaw, PrzStateLaw
 export FrictionLawForm, CForm, RForm
 export dθ_dt, dμ_dt, dv_dθ_dt
 export friction
-export AbstractMaterialProfile, ZeroDimMaterialProfile, EarthquakeCycleProblem
+export MaterialProperties, EarthquakeCycleProblem
 
 abstract type StateEvolutionLaw end
 struct DieterichStateLaw <: StateEvolutionLaw end
@@ -74,7 +74,7 @@ abstract type AbstractMaterialProperties{DIMS} end
     v0 # ref. velocity
 
     function MaterialProperties(a, b, L, k, σ, η, vpl, f0, v0)
-        dims = maximum([ndims(x) for x in (a, b, L, σ, η, vpl, f0, v0)])
+        dims = maximum([ndims(x) for x in (a, b, L, σ, η, vpl)])
         new{dims}(a, b, L, k, σ, η, vpl, f0, v0)
     end
 end
@@ -96,7 +96,7 @@ function derivations!(du, u, p::MaterialProperties{0}, t, se::StateEvolutionLaw,
 end
 
 function EarthquakeCycleProblem(p::MaterialProperties{0}, u0, tspan; se=DieterichStateLaw(), fform=CForm())
-    (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires `η` to avoid `Inf` in dv/dt."
+    (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     f! = (du, u, p, t) -> derivations!(du, u, p, t, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end

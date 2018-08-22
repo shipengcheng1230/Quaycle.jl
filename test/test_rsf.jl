@@ -92,5 +92,5 @@ end
 
 @testset "info display" begin
     mp = MaterialProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
-    @test_logs (:warn, "Regularized form requires `η` to avoid `Inf` in dv/dt.") EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), fform=RForm())
+    @test_logs (:warn, "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt.") EarthquakeCycleProblem(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), fform=RForm())
 end
