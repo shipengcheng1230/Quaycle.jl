@@ -1,4 +1,4 @@
-julia 0.7
+julia 1.0
 Reexport
 DifferentialEquations
 RecursiveArrayTools
@@ -7,3 +7,4 @@ HDF5
 ToeplitzMatrices
 SimpleTraits
 TensorOperations
+FFTW
