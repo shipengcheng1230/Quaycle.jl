@@ -62,20 +62,19 @@ end
 
 abstract type AbstractMaterialProperties{DIMS} end
 
-@with_kw mutable struct MaterialProperties{DIM} <: AbstractMaterialProperties{DIM}
-    a # contrib from velocity
-    b # contrib from state
-    L # critical distance
-    k # stiffness tensor
-    σ # effective normal stress
-    η # radiation damping
-    vpl # plate rate
-    f0 # ref. frictional coeff
-    v0 # ref. velocity
+@with_kw mutable struct MaterialProperties{dim, T<:Number} <: AbstractMaterialProperties{0}
+    a::T # contrib from velocity
+    b::T # contrib from state
+    L::T # critical distance
+    k::T # stiffness tensor
+    σ::T # effective normal stress
+    η::T # radiation damping
+    vpl::T # plate rate
+    f0::T = 0.6 # ref. frictional coeff
+    v0::T = 1e-6 # ref. velocity
 
-    function MaterialProperties(a, b, L, k, σ, η, vpl, f0, v0)
-        dims = maximum([ndims(x) for x in (a, b, L, σ, η, vpl)])
-        new{dims}(a, b, L, k, σ, η, vpl, f0, v0)
+    function MaterialProperties(a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T) where {T<:Number}
+        new{0, T}(a, b, L, k, σ, η, vpl, f0, v0)
     end
 end
 
