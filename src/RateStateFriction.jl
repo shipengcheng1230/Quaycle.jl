@@ -7,7 +7,7 @@ export StateEvolutionLaw, DieterichStateLaw, RuinaStateLaw, PrzStateLaw
 export FrictionLawForm, CForm, RForm
 export dθ_dt, dμ_dt, dv_dθ_dt
 export friction
-export MaterialProperties, EarthquakeCycleProblem
+export AbstractMaterialProperties, MaterialProperties, EarthquakeCycleProblem
 
 abstract type StateEvolutionLaw end
 struct DieterichStateLaw <: StateEvolutionLaw end
@@ -25,8 +25,8 @@ end
 dθ_dt(::PrzStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - (v * θ / 2L) ^ 2
 
 abstract type FrictionLawForm end
-struct CForm <: FrictionLawForm end
-struct RForm <: FrictionLawForm end
+struct CForm <: FrictionLawForm end # conventinal form
+struct RForm <: FrictionLawForm end # regularized form
 
 function friction(::CForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
     f0 + a * log(v / v0) + b * log(v0 * θ / L)
