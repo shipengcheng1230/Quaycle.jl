@@ -1,5 +1,7 @@
 module BEM
 
+using Distributed
+
 include(joinpath(@__DIR__, "Fault.jl"))
 include(joinpath(@__DIR__, "RateStateFriction.jl"))
 include(joinpath(@__DIR__, "dc3d.jl"))
@@ -39,34 +41,36 @@ Symmetric properties based on `BEMGrid` on 2D fault plane.
 @traitimpl IsReflectiveASymmetrical{StrikeSlipFault}
 
 abstract type AbstractDifferenceGrids{dim, isuniform} end
+abstract type BoundaryElementGrid{dim, isuniform} <: AbstractDifferenceGrids{dim, isuniform} end
+
+struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{1, true}
+    ξ::U1 # along-downdip
+    Δξ::T
+    nξ::I
+    aξ::U2 # cell boundary along-downdip (width)
+end
 
 "Along-strike will be places on x-axis while along-downdip on yz-plane, w.r.t Okada's dc3d coordinates."
-struct BEMGrid{N, U<:AbstractVecOrMat, T<:Number, I<:Integer} <: AbstractDifferenceGrids{N, true}
-    x::U # along-strike
-    ξ::U # along-downdip
+struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{2, true}
+    x::U1 # along-strike
+    ξ::U1 # along-downdip
     Δx::T
     Δξ::T
     nx::I
     nξ::I
-    ax::U # cell boundary along-strike (length)
-    aξ::U # cell boundary along-downdip (width)
-
-    function BEMGrid(x::U, ξ::U, Δx, Δξ, nx, nξ, ax, aξ) where {U<:AbstractVector}
-        N = isempty(x) ? 1 : 2
-        N == 2 ? new{N, U, T, I}(x, ξ, Δx, Δξ, nx, nξ, ax, aξ) : new{N, U, T, I}(x, ξ, nothing, Δξ, nothing, nξ, ax, aξ)
-    end
+    ax::U2 # cell boundary along-strike (length)
+    aξ::U2 # cell boundary along-downdip (width)
 end
 
-function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ; ax_ratio=50) where {ftype}
+function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ) where {ftype}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
-    ax = ax_ratio * fa[:ξ] .* [-1, 1]
-    BEMGrid(nothing, ξ, nothing, Δξ, nothing, nξ, ax, aξ)
+    BEMGrid_1D(ξ, Δξ, nξ, aξ)
 end
 
 function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ) where {ftype}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
     x, nx, ax = _divide_segment(Val(:symmatzero), fa[:x], Δx)
-    BEMGrid(x, ξ, Δx, Δξ, nx, nξ, ax, aξ)
+    BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ)
 end
 
 function _divide_segment(::Val{:halfspace}, x::T, Δx::T) where {T<:Number}
@@ -87,12 +91,11 @@ abstract type AbstractElasticProperties end
 Okada's [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) only applies on isotropic materials,
     therefore, elastic modulus are constrained to be scalars except for `ρ` and `cs`.
 """
-@with_kw struct IsotropicElasticProperties{T} <: AbstractElasticProperties
+@with_kw struct HomogeneousElasticProperties{T<:Number} <: AbstractElasticProperties
     λ::T # Lamé's first parameter
     μ::T # shear modulus
+    cs::T # shear wave velocity
     α::T = (λ + μ) / (λ + 2μ) # material constants which equals (λ + μ) / (λ + 2μ)
-    ρ = μ ./ cs^2 # density
-    cs = sqrt(μ ./ ρ) # shear wave velocity
 end
 
 @with_kw struct StaticPlaneMaterialProperties{dim, U<:AbstractVecOrMat, P<:AbstractArray, T<:Number} <: AbstractMaterialProperties{dim}
@@ -118,7 +121,7 @@ end
 Calculate the shear traction on the fault plane w.r.t. fault types.
 
 # Arguments
-- `u12::AbstractArray{<:Number, 1}`: the output from dc3d_okada
+- `u::AbstractArray{<:Number, 1}`: the output from dc3d_okada
 - `λ::Number`: Lamé's first parameter
 - `μ::Number`: shear modulus
 - `dip::Number`: plane dip angle
@@ -129,15 +132,15 @@ Calculate the shear traction on the fault plane w.r.t. fault types.
 """
 shear_traction(ftype::Type{<:AbstractFault}) = NaN
 
-@traitfn @inline function shear_traction(::Type{FT}, u12, λ, μ, dip) where {FT<:PlaneFault; IsReflectiveSymmetrical{FT}}
+@inline function shear_traction(::Type{FT}, u, λ, μ, dip) where {FT<:PlaneFault}
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
     -((σzz - σyy)/2 * sinpi(2dip/180) + τyz * cospi(2dip/180))
 end
 
-@traitfn @inline function shear_traction(::Type{FT}, u12, λ, μ, dip) where {FT<:PlaneFault; IsReflectiveASymmetrical{FT}}
-    # Special case for `dip = 0.` against above, however, at x-y plane instead.
+@inline function shear_traction(::Type{StrikeSlipFault}, u, λ, μ, dip)
+    # Special case for `dip = 90.` against above, however, at x-y plane instead.
     μ * (u[5] + u[7])
 end
 
@@ -156,23 +159,42 @@ function stiffness_periodic_boundary_condition(x::T, y::T, z::T, α::T, depth::T
 end
 
 """
-    stiffness_tensor(fa::PlaneFaultDomain, gd::BEMGrid, mp::BEM)
+    stiffness_tensor(fa::PlaneFaultDomain, gd::BEMGrid, mp::BEM, ::Vararg)
+
+# Arguments
+- lengthexpensionratio: ratio of along-strike length against along downdip for mimicing infinitely extending 1D fault
 
 Calculate the reduced stiffness tensor based on the symmetric properties for 2D case.
 Results for 1D fault will be 2D matrix and 3D Array for 2D faults.
 """
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BEMGrid{1}, ep::IsotropicElasticProperties, lengthexpensionratio=100) where {ftype, T}
-    y, z = gd.ξ .* cospi(fa.dip / 180), gd.ξ .* sinpi(fa.dip / 180)
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties, ax_ratio=50; ncpus=1) where {ftype, T}
+    x, y, z, dep = zero(T), gd.ξ .* cospi(fa.dip / 180), gd.ξ .* sinpi(fa.dip / 180), zero(T)
     disl = applied_unit_dislocation(ftype)
-    al = fa[:ξ]
+    ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
+    u12 = zeros(T, 12)
 
-    k = zeros(T, gd.nξ, gd.nξ)
-    @threads for i = 1: gd.nξ
-        el = dc3d_okada(zero(T), y[i], z[i], ep.α, zero(T), fa.dip, al, aw, disl)
+    if ncpus == 1
+        k = zeros(T, gd.nξ, gd.nξ)
+        @inbounds @threads for j = 1: gd.nξ
+            for i = 1: gd.nξ
+                u12 .= dc3d_okada(x, y[i], z[i], ep.α, dep, fa.dip, ax, gd.aξ[j,:], disl)
+                k[i,j] = shear_traction(ftype, u12, ep.λ, ep.μ, fa.dip)
+            end
+        end
+    else
+        k = SharedArray{T}(gd.nξ, gd.nξ)
+        @sync @distributed for j = 1: gd.nξ
+            for i = 1: gd.nξ
+                u12 .= dc3d_okada(x, y[i], z[i], ep.α, dep, fa.dip, ax, gd.aξ[j,:], disl)
+                k[i,j] = shear_traction(ftype, u12, ep.λ, ep.μ, fa.dip)
+            end
+        end
+        k = sdata(k)
     end
+    return k
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BEMGrid{2}, ep::IsotropicElasticProperties) where {ftype, T}
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties) where {ftype, T}
 
 end
 

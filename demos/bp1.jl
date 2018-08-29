@@ -50,10 +50,10 @@ const sdip = sinpi(dip / 180)
 
 # row: obs along depth; col: fault patches
 function fill_stiffness_matrix!(K)
-    for i = 1: ngrid
+    @sync @distributed for i = 1: ngrid
         aw = [-Δz * i, -Δz * (i - 1)]
         # if no reduction op, @parallel will not wait for finish without @sync
-        @sync @distributed for j = 1: ngrid
+        for j = 1: ngrid
             x = 0.
             y = -(j - 0.5) * Δz * cdip
             z = -(j - 0.5) * Δz * sdip

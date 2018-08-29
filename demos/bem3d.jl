@@ -19,8 +19,8 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const dip = 10.0
 const depth = 0.0
 const lf = 60.0
-const nl = 256
-const nd = 128
+const nl = 128
+const nd = 64
 
 Δl = lf / nl
 Δd = Δl

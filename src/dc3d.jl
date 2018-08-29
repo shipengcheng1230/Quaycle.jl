@@ -125,7 +125,7 @@ TARGET = dc3d.so
 	\$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
 ```
 """
-function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl::A) where {T <: Number, A <: AbstractArray{T}}
+function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractArray{T}}
 
     z > 0. && return zeros(T, 12)
 
@@ -236,7 +236,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp1 * xy * cd + alp2 * xi * fz + y / 2. * x11
         du[11] = alp2 * ez
         du[12] = -alp1 * (sd / r - qy * cd) - alp2 * q * fz
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -252,7 +252,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp2 * ez
         du[11] = alp1 * y * x11 + xy / 2. * cd + alp2 * et * gz
         du[12] = -alp1 * d * x11 - alp2 * q * gz
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -268,7 +268,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp1 * (sd / r - qy * cd) - alp2 * q * fz
         du[11] = alp1 * d * x11 - alp2 * q * gz
         du[12] = alp1 * (y * x11 + xy * cd) + alp2 * q * hz
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
 end
@@ -331,7 +331,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = -xi * fz - y * x11 + alp3 * ak1 * sd
         du[11] = -ez + alp3 * y * d11 * sd
         du[12] = q * fz + alp3 * ak2 * sd
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -347,7 +347,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = -ez - alp3 * ak3 * sdcd
         du[11] = -et * gz - xy * cd - alp3 * xi * d11 * sdcd
         du[12] = q * gz - alp3 * ak4 * sdcd
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -363,7 +363,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = q * fz + alp3 * ak3 * sdsd
         du[11] = q * gz + alp3 * xi * d11 * sdsd
         du[12] = -q * hz + alp3 * ak4 * sdsd
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
  end
@@ -410,7 +410,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = alp4 * xi * ppz * cd - alp5 * xi * qqz
         du[11] = alp4 * 2. * (y / r3 - y0 * cd) * sd + d / r3 * cd - alp5 * (cdr * cd + c * d * qr)
         du[12] = yy0 * cd - alp5 * (cdr * sd - c * y * qr - y0 * sdsd + q * z0 * cd)
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -426,7 +426,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = -q / r3 + y0 * sdcd - alp5 * (cdr * cd + c * d * qr)
         du[11] = alp4 * y * d * x32 - alp5 * c * ((y - 2. * q * sd) * x32 + d * et * q * x53)
         du[12] = -xi * ppz * sd + x11 - d * d * x32 - alp5 * c * ((d - 2. * q * cd) * x32 - d * q2 * x53)
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -442,7 +442,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = -et / r3 + y0 * cdcd - alp5 * (z / r3 * sd - c * y * qr - y0 * sdsd + q * z0 * cd)
         du[11] = alp4 * 2. * xi * ppz * sd - x11 + d * d * x32 - alp5 * c * ((d - 2. * q * cd) * x32 - d * q2 * x53)
         du[12] = alp4 * (xi * ppz * cd + y * d * x32) + alp5 * (c * ((y - 2. * q * sd) * x32 + d * et * q * x53) + xi * qqz)
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
 end
