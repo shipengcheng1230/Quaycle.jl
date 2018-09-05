@@ -1,5 +1,7 @@
-# using Distributed
-# addprocs(4)
+using Distributed
+addprocs(4)
+
+@everywhere using SharedArrays
 
 ## parameters settings
 const ms2mmyr = 365 * 86400 * 1e3
@@ -19,8 +21,8 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const dip = 10.0
 const depth = 0.0
 const lf = 60.0
-const nl = 128
-const nd = 64
+const nl = 512
+const nd = 256
 
 Δl = lf / nl
 Δd = Δl
@@ -33,10 +35,10 @@ aw = cat(ξ .- Δd/2, ξ .+ Δd/2, dims=2)
 disl = [0., 1., 0.]
 
 ## stiffness tensor
-include(joinpath(dirname(@__DIR__), "src/dc3d.jl"))
+@everywhere include(joinpath(dirname(@__DIR__), "src/dc3d.jl"))
 const nrept = 2
 
-function cal_stiff(x, y, z, α, depth, dip, al, aw, disl)
+@everywhere function cal_stiff(x, y, z, α, depth, dip, al, aw, disl, nrept, lf, μ)
     u = zeros(Float64, 12)
     for i = -nrept: nrept
         u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i*lf, aw, disl)
@@ -51,21 +53,23 @@ function stiff_serial()
     K = zeros(Float64, nl, nd, nd)
     Threads.@threads for l = 1: nd
         for j = 1: nd, i = 1: nl
-            K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl)
+            K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl, nrept, lf, μ)
         end
     end
     return K
 end
 
-@time K = stiff_serial()
+function stiff_parfor(nl, nd, x, y, z, α, depth, dip, al, aw, disl, nrept, lf, μ)
+    K = SharedArray{Float64}(nl, nd, nd)
+    @sync @distributed for l = 1: nd
+        for j = 1: nd, i = 1: nl
+            K[i,j,l] = cal_stiff(x[i], y[j], z[j], α, depth, dip, al[1,:], aw[l,:], disl, nrept, lf, μ)
+        end
+    end
+end
 
-## toeplitz matrix for convolution
-# using ToeplitzMatrices
-#
-# KT = Array{SymmetricToeplitz}(undef, nd, nd)
-# for l = 1: nd, j = 1: nd
-#     KT[j,l] = SymmetricToeplitz(K[:,j,l])
-# end
+# @time K = stiff_serial()
+@time K = stiff_parfor(nl, nd, x, y, z, α, depth, dip, al, aw, disl, nrept, lf)
 
 ## construct a full 2nd order tensor
 function full_tensor(K)
@@ -77,6 +81,22 @@ function full_tensor(K)
 end
 
 KF = full_tensor(K)
+
+##
+using FFTW
+FFTW.set_num_threads(8)
+tmp = zeros(Float64, nl)
+plan = plan_rfft(tmp, flags=FFTW.MEASURE)
+
+function fft_tensor(K)
+    kd = Array{ComplexF64}(undef, Int(nl/2)+1, nd, nd)
+    for t = 1: nd, j = 1: nd
+        kd[:,j,t] = plan * K[:,j,t]
+    end
+    return kd
+end
+
+KD = fft_tensor(K)
 
 ## frictional properties
 a = 0.015 .* ones(nl, nd)
@@ -140,19 +160,31 @@ function f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, ST)
 
     @. dθ = 1 - v * θ / L_
     @. relv = Vpl - v
-    @tensor dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
+    # @tensor dμ_dt[a,b] = ST[a,b,c,d] * relv[c,d]
+    __dμdt__!(dμ_dt, ST, relv)
+
     @. dμ_dθ = σ_ * b_ / θ
     @. dμ_dv = σ_ * a_ / v
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
 end
 
+function __dμdt__!(out, k, v)
+    # @tensor out[a,b] = k[a,b,c,d] * v[c,d]
+    fill!(out, 0.)
+    @inbounds for l = 1: nd
+        for j = 1: nd
+            out[:,j] .+= plan \ ((k[:,j,l]) .* (plan * v[:,l]))
+        end
+    end
+end
+
 f1! = (du, u, p, t) -> f_regularized!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
-f2! = (du, u, p, t) -> f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KF)
+f2! = (du, u, p, t) -> f_general!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv, relv, KD)
 
 v0 = Vpl .* ones(nl, nd)
 θ0 = L ./ v0 ./ 1.1
 u0 = cat(v0, θ0, dims=3)
-tspan = (0.0, 10.0)
+tspan = (0.0, 5.0)
 prob = ODEProblem(f2!, u0, tspan)
 @time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, progress=true)
 
