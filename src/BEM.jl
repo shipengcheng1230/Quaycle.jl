@@ -8,10 +8,12 @@ using FFTW: Plan
 using Distributed
 using Base.Threads
 using LinearAlgebra
+using SharedArrays
 
-export AbstractDifferenceGrids, BoundaryElementGrid
+export AbstractDifferenceGrids, BoundaryElementGrid, BEMGrid_1D, BEMGrid_2D
 export HomogeneousElasticProperties, PlaneMaterialProperties
-export shear_traction, stiffness_tensor
+export discretize
+export shear_traction, stiffness_tensor, dc3d_okada, applied_unit_dislocation
 export derivations!, EarthquakeCycleProblem
 
 @traitdef IsOnYZPlane{faulttype}
@@ -43,6 +45,7 @@ struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     aξ::U2 # cell boundary along-downdip (width)
 end
 
+"Generate the grid for given fault domain."
 function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ) where {ftype}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
     BEMGrid_1D(ξ, Δξ, nξ, aξ)
@@ -131,6 +134,9 @@ Periodic boundary condition for 2D faults.
 - `ax::T`: along-strike fault length
 - `nrept::Integer`: number of repetition
 - `buffer::T`: length of buffer size for introducing *zero-dislocation* area at along-strike edges of defined fault domain.
+
+# Note
+- The buffer block, whose length is denoted by `buffer`, is evenly distributed on the two along-strike edges, each of which contains half of that.
 """
 function stiffness_periodic_boundary_condition(x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
     ax::T, nrept::Integer, buffer::T=ax) where {T<:Number}
@@ -157,22 +163,45 @@ Results for 1D fault will be 2D matrix and 3d matrix for 2D fault.
 function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
     ax_ratio=50) where {ftype<:PlaneFault, T<:Number}
 
+    y, z = gd.ξ .* cospi(fa.dip / 180), gd.ξ .* sinpi(fa.dip / 180)
+    ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
+    disl = applied_unit_dislocation(ftype)
+
     if nprocs() == 1
-        y, z = gd.ξ .* cospi(fa.dip / 180), gd.ξ .* sinpi(fa.dip / 180)
-        disl = applied_unit_dislocation(ftype)
-        ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
         u12 = zeros(T, 12)
         ST = zeros(T, gd.nξ, gd.nξ)
         @threads for j = 1: gd.nξ
-            @inbounds @fastmath @simd for i = 1: gd.nξ
+            @inbounds @simd for i = 1: gd.nξ
                 u12 .= dc3d_okada(0., y[i], z[i], ep.α, 0., fa.dip, ax, gd.aξ[j,:], disl)
                 ST[i,j] = shear_traction(ftype, u12, ep.λ, ep.μ, fa.dip)
             end
         end
         return ST
     else
-        ST = SharedArray{T}(gd.nξ, gd.nξ)
+        return stiffness_tensor_parfor(fa, gd, ep, ax_ratio, y, z, ax, disl)
     end
+end
+
+function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
+    ax_ratio, args::Vararg) where {ftype<:PlaneFault, T<:Number}
+
+    y, z, ax, disl = args
+    ST = SharedArray{T}(gd.nξ, gd.nξ)
+    @sync begin
+        for p in procs(ST)
+            @async remotecall_wait(()->(fa, gd, ep, y, z, ax, disl), p)
+        end
+    end
+
+    @sync @distributed for j = 1: gd.nξ
+        @inbounds @simd for i = 1: gd.nξ
+            u = dc3d_okada(0., y[i], z[i], ep.α, 0., fa.dip, ax, gd.aξ[j,:], disl)
+            ST[i,j] = shear_traction(ftype, u, ep.λ, ep.μ, fa.dip)
+        end
+    end
+
+    clear!([:fa, :gd, :ep, :y, :z, :ax, :disl], procs(ST))
+    return sdata(ST)
 end
 
 """
@@ -203,7 +232,7 @@ function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
     if dim == 1
         tvar = TmpVariable([Vector{T}(undef, gd.nξ) for _ in 1: 6]..., fill(nothing, 4)...)
     elseif dim == 2
-        FFTW.set_num_threads(Sys.CPU_THREADS)
+        FFTW.set_num_threads(nthreads())
         x1 = Vector{T}(undef, gd.nx)
         x2 = Matrix{T}(undef, gd.nx, gd.nξ)
         p1 = plan_rfft(x1, flags=FFTW.MEASURE)
@@ -214,7 +243,7 @@ function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
             [Matrix{T}(undef, rfft_size, gd.nξ) for _ in 1: 2]...,
             p1, p2)
     else
-        @warn "Unexpected dim: $dim received."
+        @warn "Dim: $dim received. Valid `dim` is `1` or `2`."
         return nothing
     end
     return tvar
@@ -257,7 +286,7 @@ end
     @. dv = dv_dt(tvar.dμ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
-function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::MaterialProperties{dim}, u0, tspan; se=DieterichStateLaw(), fform=CForm()) where {dim}
+function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties{dim}, u0, tspan; se=DieterichStateLaw(), fform=CForm()) where {dim}
     (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     tvar = create_tmp_var(gd)
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
