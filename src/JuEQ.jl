@@ -1,7 +1,7 @@
 module JuEQ
 
-include("RateStateFriction.jl")
-include("Fault.jl")
-include("BEM.jl")
+include("rsf.jl")
+include("fault.jl")
+include("bem.jl")
 
 end
