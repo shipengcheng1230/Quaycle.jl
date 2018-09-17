@@ -1,5 +1,3 @@
-module Fault
-
 import Base.getindex
 
 export AbstractFault, PlaneFault, CurvedFault
@@ -43,5 +41,3 @@ getindex(fd::PlaneFaultDomain{ftype, 1}, name::Symbol) where {ftype} = name == :
     "One dim fault domain only contains index of `ξ`.")
 getindex(fd::PlaneFaultDomain{ftype, 2}, name::Symbol) where {ftype} = name == :ξ ? fd.span[2] : name == :x ? fd.span[1] : error(
     "Two dim fault domain only contains index of `x` and `ξ`.")
-
-end # module

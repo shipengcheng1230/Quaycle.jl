@@ -1,5 +1,3 @@
-module RateStateFriction
-
 using DifferentialEquations: ODEProblem
 using Parameters
 
@@ -99,5 +97,3 @@ function EarthquakeCycleProblem(p::MaterialProperties{0}, u0, tspan; se=Dieteric
     f! = (du, u, p, t) -> derivations!(du, u, p, t, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end
-
-end # module
