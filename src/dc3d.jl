@@ -1,4 +1,8 @@
 """
+Calculate displacement and gradient of displacement due to a dislocation in a elastic isotropic halfspace.
+See [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
+
+
 *test/test_okada.dat* is obtained using [DC3dfortran](http://www.bosai.go.jp/study/application/dc3d/download/DC3Dfortran.txt)
 
 
