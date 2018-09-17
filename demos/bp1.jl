@@ -78,7 +78,7 @@ using JLD2, FileIO
 @load joinpath(@__DIR__, "bp1_stiff.jld2") K
 
 ## profile settings
-z = (collect(1: ngrid) - 0.5) * Δz
+z = (collect(1: ngrid) .- 0.5) * Δz
 az = fill!(zeros(z), a0)
 az[z .≥ (H + h)] = amax
 az[H .< z .< H + h] = a0 + (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
@@ -170,6 +170,7 @@ v = @view u[:, 1, :]
 s = @view u[:, 3, :]
 τ = shear_stress(v, θ, a)
 
+# work around that `JLD2` doesn't support write `SubArray` for now
 v /= ms2mmyr
 θ *= 365 * 86400
 s /= 1e3
