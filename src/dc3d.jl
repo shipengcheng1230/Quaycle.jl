@@ -1,5 +1,5 @@
 """
-Calculate displacement and gradient of displacement due to a dislocation in a elastic isotropic halfspace.
+Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace.
 See [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
 
 
