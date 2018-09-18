@@ -73,7 +73,7 @@ abstract type AbstractElasticProperties end
 
 """
 Okada's [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) only applies on isotropic materials,
-    therefore, elastic modulus are constrained to be scalars except for `ρ` and `cs`.
+    therefore, elastic modulus are constrained to be scalars.
 """
 @with_kw struct HomogeneousElasticProperties{T<:Number} <: AbstractElasticProperties
     λ::T # Lamé's first parameter
@@ -185,22 +185,22 @@ end
 function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
     ax_ratio, args::Vararg) where {ftype<:PlaneFault, T<:Number}
 
-    y, z, ax, disl = args
+    _y, _z, _ax, _disl = args
     ST = SharedArray{T}(gd.nξ, gd.nξ)
     @sync begin
         for p in procs(ST)
-            @async remotecall_wait(()->(fa, gd, ep, y, z, ax, disl), p)
+            @async remotecall_wait(()->(fa, gd, ep, _y, _z, _ax, _disl), p)
         end
     end
 
     @sync @distributed for j = 1: gd.nξ
         @inbounds @simd for i = 1: gd.nξ
-            u = dc3d_okada(0., y[i], z[i], ep.α, 0., fa.dip, ax, gd.aξ[j,:], disl)
-            ST[i,j] = shear_traction(ftype, u, ep.λ, ep.μ, fa.dip)
+            _u = dc3d_okada(0., _y[i], _z[i], ep.α, 0., fa.dip, _ax, gd.aξ[j,:], _disl)
+            ST[i,j] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
         end
     end
 
-    clear!([:fa, :gd, :ep, :y, :z, :ax, :disl], procs(ST))
+    clear!([:fa, :gd, :ep, :_y, :_z, :_ax, :_disl, :_u], procs(ST))
     return sdata(ST)
 end
 
@@ -249,12 +249,13 @@ function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
     return tvar
 end
 
-function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable, se, fform) where {dim}
+function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
     _ndim = dim + 1
     v = selectdim(u, _ndim, 1)
     θ = selectdim(u, _ndim, 2)
     dv = selectdim(du, _ndim, 1)
     dθ = selectdim(du, _ndim, 2)
+    clamp!(θ, 0.0, Inf)
 
     @. tvar.relv = mp.vpl - v
     dθ_dt!(dθ, se, v, θ, mp.L)
@@ -267,18 +268,25 @@ end
 end
 
 @inline function dμ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpVariable)
-
+    fill!(tvar.dμ_dt_dft, 0.)
+    nd = size(tvar.dμ_dt, 2)
+    @inbounds for j = 1: nd
+        @simd for l = 1: nd
+            tvar.dμ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]
+        end
+    end
+    ldiv!(tvar.dμ_dt, tvar.plan_2d, tvar.dμ_dt_dft)
 end
 
-@inline dθ_dt!(dθ, se, v, θ, L) =  @. dθ = dθ_dt(se, v, θ, L)
+dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecOrMat, U<:AbstractVecOrMat} = dθ .= dθ_dt.(Ref(se), v, θ, L)
 
-@inline function dv_dθ_dt!(::CForm, dv, dθ, v, θ, mp::PlaneMaterialProperties, tvar::TmpVariable)
+@inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
     @. tvar.dμ_dθ = mp.σ * mp.b / θ
     @. tvar.dμ_dv = mp.σ * mp.a / v
     @. dv = dv_dt(tvar.dμ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
-@inline function dv_dθ_dt!(::RForm, dv, dθ, v, θ, mp::PlaneMaterialProperties, tvar::TmpVariable, se, fform)
+@inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
     @. tvar.ψ1 = exp((mp.f0 + mp.b * log(mp.v0 * θ / mp.L)) / mp.a) / 2mp.v0
     @. tvar.ψ2 = mp.σ * tvar.ψ1 / sqrt(1 + (v * tvar.ψ1)^2)
     @. tvar.dμ_dv = mp.a * tvar.ψ2
@@ -287,7 +295,7 @@ end
 end
 
 function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties{dim}, u0, tspan; se=DieterichStateLaw(), fform=CForm()) where {dim}
-    (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
+    (fform == RForm() && minimum(p.η) ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     tvar = create_tmp_var(gd)
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
     ODEProblem(f!, u0, tspan, p)
