@@ -144,7 +144,7 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArr
     et = p .- aw
 
     if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-    return zeros(T, 12)
+        return zeros(T, 12)
     end
 
     kxi, ket = [zeros(T, 2) for _ in 1: 2]
@@ -158,21 +158,21 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArr
     (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
     for k = 1: 2, j = 1: 2
-    sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-    dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-    for i = 1: 3: 10
-    du[i] = -dua[i]
-    du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
-    du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
-    i < 10 && continue
-    du[i] = -du[i]
+        sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+        dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+        for i = 1: 3: 10
+            du[i] = -dua[i]
+            du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
+            du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
+            i < 10 && continue
+            du[i] = -du[i]
             du[i+1] = -du[i+1]
             du[i+2] = -du[i+2]
-    end
-    for i = 1: 12
-    if j + k ≠ 3  u[i] += du[i] end
-    if j + k == 3  u[i] -= du[i] end
-    end
+        end
+        for i = 1: 12
+            if j + k ≠ 3  u[i] += du[i] end
+            if j + k == 3  u[i] -= du[i] end
+        end
     end
 
     d = dep - z
@@ -181,7 +181,7 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArr
     et = p .- aw
 
     if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-    return zeros(T, 12)
+        return zeros(T, 12)
     end
 
     kxi, ket = [zeros(T, 2) for _ in 1: 2]
@@ -195,23 +195,23 @@ function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArr
     (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
     for k = 1: 2, j = 1: 2
-    sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-    dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-    dub = ub(sc1, sc2, xi[j], et[k], q, disl)
-    duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
-    for i = 1: 3: 10
-    du[i] = dua[i] + dub[i] + z * duc[i]
-    du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
-    du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
-    i < 10 && continue
-    du[10] += duc[1]
-    du[11] += duc[2] * cd - duc[3] * sd
-    du[12] -= duc[2] * sd + duc[3] * cd
-    end
-    for i = 1: 12
-    j + k ≠ 3 && (u[i] += du[i])
-    j + k == 3 && (u[i] -= du[i])
-    end
+        sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+        dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+        dub = ub(sc1, sc2, xi[j], et[k], q, disl)
+        duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
+        for i = 1: 3: 10
+            du[i] = dua[i] + dub[i] + z * duc[i]
+            du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
+            du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
+            i < 10 && continue
+            du[10] += duc[1]
+            du[11] += duc[2] * cd - duc[3] * sd
+            du[12] -= duc[2] * sd + duc[3] * cd
+        end
+        for i = 1: 12
+            j + k ≠ 3 && (u[i] += du[i])
+            j + k == 3 && (u[i] -= du[i])
+        end
     end
     return u
 end
@@ -293,8 +293,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
             ai4 = 0.
         else
             x = sqrt(xi2 + q2)
-            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. *
-                atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
+            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. * atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
         end
         ai3 = (y * cd / rd - ale + sd * log(rd)) / cdcd
         ak1 = xi * (d11 - y11 * sd) / cd
