@@ -12,7 +12,7 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
 
     # initial return values
-	# `RefValue{T}` may be also viable other than `Array{T, 1}`
+    # `RefValue{T}` may be also viable other than `Array{T, 1}`
     ux = Array{Float64}(1)
     uy = Array{Float64}(1)
     uz = Array{Float64}(1)
@@ -126,102 +126,102 @@ OBJS = \$(SRCS:.c=.o)
 TARGET = dc3d.so
 
 \$(TARGET): \$(OBJS)
-	\$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
+    \$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
 ```
 """
 function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractVecOrMat{T}}
 
     z > 0. && return zeros(T, 12)
 
-	u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
+    u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
 
-	xi = x .- al
-	d = dep + z
-	sc1 = shared_constants_1(α, dip)
+    xi = x .- al
+    d = dep + z
+    sc1 = shared_constants_1(α, dip)
     sd, cd = sc1[6], sc1[7]
-	p = y * cd + d * sd
-	q = y * sd - d * cd
-	et = p .- aw
+    p = y * cd + d * sd
+    q = y * sd - d * cd
+    et = p .- aw
 
-	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-		return zeros(T, 12)
-	end
+    if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
+    return zeros(T, 12)
+    end
 
-	kxi, ket = [zeros(T, 2) for _ in 1: 2]
-    r12 = hypot(xi[1], et[2], q)
-    r21 = hypot(xi[2], et[1], q)
-    r22 = hypot(xi[2], et[2], q)
-
-	(xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
-	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
-	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
-	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
-
-	for k = 1: 2, j = 1: 2
-		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-		dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-		for i = 1: 3: 10
-			du[i] = -dua[i]
-			du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
-			du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
-			i < 10 && continue
-			du[i] = -du[i]
-            du[i+1] = -du[i+1]
-            du[i+2] = -du[i+2]
-		end
-		for i = 1: 12
-			if j + k ≠ 3  u[i] += du[i] end
-			if j + k == 3  u[i] -= du[i] end
-		end
-	end
-
-	d = dep - z
-	p = y * cd + d * sd
-	q = y * sd - d * cd
-	et = p .- aw
-
-	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-		return zeros(T, 12)
-	end
-
-	kxi, ket = [zeros(T, 2) for _ in 1: 2]
+    kxi, ket = [zeros(T, 2) for _ in 1: 2]
     r12 = hypot(xi[1], et[2], q)
     r21 = hypot(xi[2], et[1], q)
     r22 = hypot(xi[2], et[2], q)
 
     (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
-	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
-	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
-	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
+    (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+    (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+    (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
-	for k = 1: 2, j = 1: 2
-		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-		dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-		dub = ub(sc1, sc2, xi[j], et[k], q, disl)
-		duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
-		for i = 1: 3: 10
-			du[i] = dua[i] + dub[i] + z * duc[i]
-			du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
-			du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
-			i < 10 && continue
-			du[10] += duc[1]
-			du[11] += duc[2] * cd - duc[3] * sd
-			du[12] -= duc[2] * sd + duc[3] * cd
-		end
-		for i = 1: 12
-			j + k ≠ 3 && (u[i] += du[i])
-			j + k == 3 && (u[i] -= du[i])
-		end
-	end
-	return u
+    for k = 1: 2, j = 1: 2
+    sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+    dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+    for i = 1: 3: 10
+    du[i] = -dua[i]
+    du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
+    du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
+    i < 10 && continue
+    du[i] = -du[i]
+            du[i+1] = -du[i+1]
+            du[i+2] = -du[i+2]
+    end
+    for i = 1: 12
+    if j + k ≠ 3  u[i] += du[i] end
+    if j + k == 3  u[i] -= du[i] end
+    end
+    end
+
+    d = dep - z
+    p = y * cd + d * sd
+    q = y * sd - d * cd
+    et = p .- aw
+
+    if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
+    return zeros(T, 12)
+    end
+
+    kxi, ket = [zeros(T, 2) for _ in 1: 2]
+    r12 = hypot(xi[1], et[2], q)
+    r21 = hypot(xi[2], et[1], q)
+    r22 = hypot(xi[2], et[2], q)
+
+    (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
+    (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+    (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+    (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
+
+    for k = 1: 2, j = 1: 2
+    sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+    dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+    dub = ub(sc1, sc2, xi[j], et[k], q, disl)
+    duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
+    for i = 1: 3: 10
+    du[i] = dua[i] + dub[i] + z * duc[i]
+    du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
+    du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
+    i < 10 && continue
+    du[10] += duc[1]
+    du[11] += duc[2] * cd - duc[3] * sd
+    du[12] -= duc[2] * sd + duc[3] * cd
+    end
+    for i = 1: 12
+    j + k ≠ 3 && (u[i] += du[i])
+    j + k == 3 && (u[i] -= du[i])
+    end
+    end
+    return u
 end
 
 function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
     ) where {T <: Number, A <: AbstractArray{T}, B1 <: NTuple{12, T}, B2 <: NTuple{24, T}}
-	alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
-	xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
+    alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
+    xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
 
-	u, du = zeros(T, 12), zeros(T, 12)
+    u, du = zeros(T, 12), zeros(T, 12)
 
     xy = xi * y11
     qx = q * x11
