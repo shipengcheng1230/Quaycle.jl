@@ -48,15 +48,17 @@ struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     ax::U2 # cell boundary along-strike (length)
     aξ::U2 # cell boundary along-downdip (width)
     y::U1 # y-component of `ξ`
-    z::U2 # z-component of `ξ`
+    z::U1 # z-component of `ξ`
     buffer::T # buffer on the edge of along-strike
 end
 
 """
-Generate the grid for given fault domain.
+    discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=50*one(T)::T)
 
+Generate the grid for given 1D fault domain.
 
 # Arguments
+- `Δξ`: grid space along-downdip
 - `ax_ratio::Number`: ration of along-strike length agsinst along-downdip length for mimicing an extended
     2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=50` is more than enough for producing consistent results.
 """
@@ -67,7 +69,12 @@ function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=50*one(T):
 end
 
 """
-# Arguments
+    discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
+
+Generate the grid for given 2D fault domain.
+
+## Arguments
+- `Δx, Δξ`: grid space along-strike and along-downdip respectively
 - `buffer::Union{T, Symbol}`: length of buffer size for introducing *zero-dislocation* area at along-strike edges of defined fault domain.
 """
 function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
@@ -83,6 +90,9 @@ function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) whe
     end
     BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), buffersize)
 end
+
+discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, ax_ratio=50) = discretize(fa, fa[:ξ]/nξ; ax_ratio=promote(ax_ratio, typeof(fa[:ξ]))[1])
+discretize(fa::PlaneFaultDomain{ftype, 2}; nx=64, nξ=32, buffer=:auto) = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; buffer=buffer)
 
 function _divide_segment(::Val{:halfspace}, x::T, Δx::T) where {T<:Number}
     xi = collect(range(zero(T), stop=-x+Δx, step=-Δx)) .- Δx/2
@@ -126,18 +136,17 @@ end
 end
 
 """
-    shear_traction(::Type{<:PlaneFault}, u12, λ, μ, dip)
+    shear_traction(::Type{<:PlaneFault}, u, λ, μ, dip)
 
 Calculate the shear traction on the fault plane w.r.t. fault types.
 
-
-# Arguments
+## Arguments
 - `u::AbstractArray{<:Number, 1}`: the output from dc3d_okada
 - `λ::Number`: Lamé's first parameter
 - `μ::Number`: shear modulus
 - `dip::Number`: plane dip angle
 
-# Reference
+## Reference
 - A good reference is at [Displacement & Strain & Stress](https://nnakata.oucreate.com/page/Teaching_files/GEOPHYS130/GEOPHYS130_notes_all.pdf).
 """
 shear_traction(ftype::Type{<:AbstractFault}) = NaN
@@ -155,17 +164,13 @@ end
 end
 
 """
-    stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties)
+    stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)
 
+Calculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array
+    due to the *translational* & *reflective* & *perodic* symmetry, such that the tensor contraction will be equivalent to convolution,
+    hence we could use FFT for better performace.
 
-Calculate the reduced stiffness tensor based on the symmetric properties for 2D case.
-Results for 1D fault will be 2D matrix and 3d matrix for 2D fault.
-
-
-# Arguments
-- ax_ratio: ratio of along-strike length against along downdip for mimicing infinitely extending 1D fault
-
-# Note
+## Note
 - Faults are originated from surface and extends downwards, thus `dep = 0`
 """
 function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
@@ -231,22 +236,21 @@ function stiffness_chunk!(ST::AbstractArray, fa::PlaneFaultDomain{ftype, 2, T}, 
     end
 end
 
-function stiffness_distributed_chunk!(ST::AbstractArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+function stiffness_distributed_chunk!(ST::DArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
     _udisl, nrept) where {ftype, T}
-    stiffness_chunk!(ST, fa, gd, ep, _udisl, nrept, localindices(ST)...)
+    stiffness_chunk!(ST, fa, gd, ep, _udisl, nrept, DistributedArrays.localindices(ST)...)
 end
 
 """
 Periodic boundary condition for 2D faults.
 
-
-# Arguments
+## Arguments
 - same as `dc3d_okada`, see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
 - `ax::T`: along-strike fault length
 - `nrept::Integer`: (half) number of repetition, as denoted by `-npret: nrept`
 - `lrept::T`: length of repetition interval, see *Note* below
 
-# Note
+## Note
 - The buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.
 """
 function stiffness_periodic_boundary_condition(x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},

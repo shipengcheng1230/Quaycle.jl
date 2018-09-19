@@ -16,3 +16,4 @@ demos/*.h5
 demos/.ipynb_checkpoints
 demos/*.mp4
 demos/*.png
+demos/*.ipynb

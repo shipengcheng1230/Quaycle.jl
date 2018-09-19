@@ -21,6 +21,7 @@ struct PlaneFaultDomain{ftype, dim, T} <: AbstractFaultDomain{ftype, dim}
 
     function PlaneFaultDomain(ftype::Type{FT}, dip::T, span::U) where
         {FT<:PlaneFault, T<:Number, U<:NTuple{N, T}} where {N}
+
         zero(T) ≤ dip ≤ 90 * one(T) || error("Fautl dip angle: $dip ∉ [0, π/2].")
         any(@. span ≤ zero(T)) && error("Fault domain: $span must be larger than zero.")
         (N == 1 || N == 2) || error("Fault domain dim: $N should be `1` (along-downdip) or `2` (plus along-strike).")
@@ -29,6 +30,16 @@ struct PlaneFaultDomain{ftype, dim, T} <: AbstractFaultDomain{ftype, dim}
     end
 end
 
+"""
+    fault(ftype::Type{<:PlaneFault}, dip, span)
+
+Generate a fault given the fault type, dip angle and its spatial span.
+
+## Arguments
+- `ftype::Type{<:PlaneFault}`: type of plane fault
+- `dip`: dip angle in degree
+- `span`: spatial span of fault size
+"""
 fault(ftype::Type{<:PlaneFault}, dip, span::NTuple) = PlaneFaultDomain(ftype, dip, span)
 fault(ftype::Type{<:PlaneFault}, dip, span::Number) = fault(ftype, dip, tuple(span))
 fault(ftype::Type{<:PlaneFault}, dip, span::AbstractVector{<:Number}) = fault(ftype, dip, tuple(span...))
