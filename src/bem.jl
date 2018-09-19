@@ -6,7 +6,6 @@ using FFTW
 using FFTW: Plan
 
 using Distributed
-using DistributedArrays
 using Base.Threads
 using LinearAlgebra
 using SharedArrays
@@ -91,8 +90,8 @@ function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) whe
     BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), buffersize)
 end
 
-discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, ax_ratio=50) = discretize(fa, fa[:ξ]/nξ; ax_ratio=promote(ax_ratio, typeof(fa[:ξ]))[1])
-discretize(fa::PlaneFaultDomain{ftype, 2}; nx=64, nξ=32, buffer=:auto) = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; buffer=buffer)
+discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, ax_ratio=50) where {ftype} = discretize(fa, fa[:ξ]/nξ; ax_ratio=promote(ax_ratio, typeof(fa[:ξ]))[1])
+discretize(fa::PlaneFaultDomain{ftype, 2}; nx=64, nξ=32, buffer=:auto) where  {ftype} = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; buffer=buffer)
 
 function _divide_segment(::Val{:halfspace}, x::T, Δx::T) where {T<:Number}
     xi = collect(range(zero(T), stop=-x+Δx, step=-Δx)) .- Δx/2
@@ -217,28 +216,32 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElement
     ;nrept=3) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
-    ST = dzeros((gd.nx, gd.nξ, gd.nξ))
+    ST = SharedArray{T}(gd.nx, gd.nξ, gd.nξ)
 
     @sync begin
         for p in procs(ST)
             @async remotecall_wait(stiffness_distributed_chunk!, p, ST, fa, gd, ep, udisl, nrept)
         end
     end
-    _ST = convert(Array, ST)
-    close(ST)
-    return _ST
+    return sdata(ST)
 end
 
-function stiffness_chunk!(ST::AbstractArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
-    _udisl, nrept, irange, jrange, lrange) where {ftype, T}
-    for l in lrange, j in jrange, i in irange
-        ST[i,j,l] = stiffness_periodic_boundary_condition(gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], _udisl)
+function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+    _udisl, nrept, subs) where {ftype, T}
+    _u = zeros(T, 12)
+    for sub in subs
+        i, j, l = sub[1], sub[2], sub[3]
+        _u .= stiffness_periodic_boundary_condition(gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], _udisl, nrept, fa[:x]+gd.buffer)
+        ST[i,j,l] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
     end
 end
 
-function stiffness_distributed_chunk!(ST::DArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+function stiffness_distributed_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
     _udisl, nrept) where {ftype, T}
-    stiffness_chunk!(ST, fa, gd, ep, _udisl, nrept, DistributedArrays.localindices(ST)...)
+    i2s = CartesianIndices(ST)
+    inds = localindices(ST)
+    subs = i2s[inds]
+    stiffness_chunk!(ST, fa, gd, ep, _udisl, nrept, subs)
 end
 
 """
