@@ -125,13 +125,39 @@ end
     σ::U # effective normal stress
     η::U # radiation damping
     vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
-    f0::T = 0.6 # ref. frictional coeff
+    f0::T # ref. frictional coeff
     v0::T # ref. velocity
 
     function PlaneMaterialProperties(a::U, b::U, L::U, k::P, σ::U, η::U, vpl::T, f0::T, v0::T) where {U, P, T}
         dims = maximum([ndims(x) for x in (a, b, L, σ, η)])
         new{dims, U, P, T}(a, b, L, k, σ, η, vpl, f0, v0)
     end
+end
+
+function properties(gd::BoundaryElementGrid{ftype, dim}; kwargs...) where {ftype, dim}
+
+    gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
+    required = [:a, :b, :L, :σ, :η, :vpl, :f0, :v0, :μ, :λ]
+
+end
+
+macro reassign(sym::Symbol, f::Function, args...)
+    :($(esc(sym)) = f($sym, $(args...)))
+end
+
+function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand=true)
+    x = get(kwargs, sym, nothing)
+    x == nothing && error("`$sym` is not provided.")
+    if expand
+        if typeof(x) <: Number
+            x = x .* ones(gsize...)
+        elseif typeof(x) <: AbstractArray
+            size(x) == gsize || error("Dim `$sym` does not match with given grid, $(size(x)) received, $gsize required.")
+        else
+            error("Illegal input of `$sym`, get $x, required `Number` or `AbstractArray`.")
+        end
+    end
+    return x
 end
 
 """
@@ -212,18 +238,27 @@ function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::Boundary
     return sdata(ST)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
-    ;nrept=3) where {ftype<:PlaneFault, T<:Number}
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties;
+    nrept=2) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
     ST = SharedArray{T}(gd.nx, gd.nξ, gd.nξ)
 
     @sync begin
         for p in procs(ST)
-            @async remotecall_wait(stiffness_distributed_chunk!, p, ST, fa, gd, ep, udisl, nrept)
+            @async remotecall_wait(stiffness_shared_chunk!, p, ST, fa, gd, ep, udisl, nrept)
         end
     end
-    return sdata(ST)
+
+    ST = sdata(ST)
+    FFTW.set_num_threads(nthreads())
+    x1 = zeros(T, gd.nx)
+    p1 = plan_rfft(x1, flags=FFTW.MEASURE)
+    ST_DFT = Array{Complex{T}}(undef, floor(Int, gd.nx/2)+1, gd.nξ, gd.nξ)
+    @inbounds for l = 1: gd.nξ, j = 1: gd.nξ
+        ST_DFT[:,j,l] .= p1 * ST[:,j,l]
+    end
+    return ST_DFT
 end
 
 function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
@@ -236,7 +271,7 @@ function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd
     end
 end
 
-function stiffness_distributed_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+function stiffness_shared_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
     _udisl, nrept) where {ftype, T}
     i2s = CartesianIndices(ST)
     inds = localindices(ST)
@@ -276,15 +311,15 @@ applied_unit_dislocation(::Type{ThrustFault}) = [0., 1., 0.]
 applied_unit_dislocation(::Type{StrikeSlipFault}) = [1., 0., 0.]
 
 "Temporal variable in solving ODEs aimed to avoid allocation overheads."
-@with_kw struct TmpVariable{T<:AbstractVecOrMat}
+@with_kw struct TmpVariable{T<:AbstractVecOrMat{<:Real}, U<:AbstractVecOrMat{<:Complex}}
     dμ_dt::T
     dμ_dθ::T
     dμ_dv::T
     ψ1::T
     ψ2::T
     relv::T
-    relv_dft::Union{T, Nothing}
-    dμ_dt_dft::Union{T, Nothing}
+    relv_dft::Union{U, Nothing}
+    dμ_dt_dft::Union{U, Nothing}
     plan_1d::Union{Plan, Nothing}
     plan_2d::Union{Plan, Nothing}
 end
@@ -301,7 +336,7 @@ function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
         rfft_size = floor(Int, gd.nx/2) + 1
         tvar = TmpVariable(
             [Matrix{T}(undef, gd.nx, gd.nξ) for _ in 1: 6]...,
-            [Matrix{T}(undef, rfft_size, gd.nξ) for _ in 1: 2]...,
+            [Matrix{Complex{T}}(undef, rfft_size, gd.nξ) for _ in 1: 2]...,
             p1, p2)
     else
         @error "Dim: $dim received. Valid `dim` is `1` or `2`."
@@ -319,6 +354,7 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable
     clamp!(θ, 0.0, Inf)
 
     @. tvar.relv = mp.vpl - v
+    tvar.relv_dft .= tvar.plan_2d * tvar.relv
     dθ_dt!(dθ, se, v, θ, mp.L)
     dμ_dt!(mp, tvar)
     dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
