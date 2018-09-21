@@ -22,7 +22,7 @@ struct PlaneFaultDomain{ftype, dim, T} <: AbstractFaultDomain{ftype, dim}
     function PlaneFaultDomain(ftype::Type{FT}, dip::T, span::U) where
         {FT<:PlaneFault, T<:Number, U<:NTuple{N, T}} where {N}
 
-        zero(T) ≤ dip ≤ 90 * one(T) || error("Fautl dip angle: $dip received, must ∈ [0, π/2].")
+        @assert(zero(T) ≤ dip ≤ 90 * one(T), "Fautl dip angle: $dip received, must ∈ [0, π/2].")
         any(@. span ≤ zero(T)) && error("Fault domain: $span received, must > 0.")
         (N == 1 || N == 2) || error("Fault domain dim: $N received, must be `1` (along-downdip) or `2` (plus along-strike).")
         (FT == StrikeSlipFault && dip ≉ 90 * one(T)) && error("Dip angle: $dip received, for strike-slip faults must be `90`.")
