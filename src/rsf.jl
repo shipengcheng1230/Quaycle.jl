@@ -7,10 +7,15 @@ export friction
 export MaterialProperties, EarthquakeCycleProblem
 
 abstract type StateEvolutionLaw end
-struct DieterichStateLaw <: StateEvolutionLaw end
-struct RuinaStateLaw <: StateEvolutionLaw end
-struct PrzStateLaw <: StateEvolutionLaw end
 
+"`\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"
+struct DieterichStateLaw <: StateEvolutionLaw end
+
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = -\\frac{v θ}{L} * \\log{\\frac{v θ}{L}}``"
+struct RuinaStateLaw <: StateEvolutionLaw end
+
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - (\\frac{v θ}{2L})^2``"
+struct PrzStateLaw <: StateEvolutionLaw end
 
 dθ_dt(::DieterichStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - v * θ / L
 
@@ -25,6 +30,11 @@ abstract type FrictionLawForm end
 struct CForm <: FrictionLawForm end # conventinal form
 struct RForm <: FrictionLawForm end # regularized form
 
+"""
+    friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
+
+Calculate friction given by the form of fomula as well as other necessary parameters.
+"""
 function friction(::CForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
     f0 + a * log(v / v0) + b * log(v0 * θ / L)
 end
@@ -81,10 +91,8 @@ end
 
 friction(p::MaterialProperties{0}, v, θ; fform=CForm()) = friction(fform, v, θ, p.L, p.a, p.b, p.f0, p.v0)
 
-"Adapt for solution output."
 friction(p::MaterialProperties{0}, vθ::AbstractVecOrMat{T}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
 
-"Broadcast for singular object."
 friction(p::MaterialProperties{0}, vθ::AbstractArray{T}) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ)
 
 function derivations!(du, u, p::MaterialProperties{0}, t, se::StateEvolutionLaw, fform::FrictionLawForm)

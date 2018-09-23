@@ -2,18 +2,28 @@
 [![BuildStatus](https://travis-ci.com/shipengcheng1230/JuEQ.jl.svg?token=zsZu59CsqQTTp7wzi7zP&branch=master)](https://travis-ci.com/shipengcheng1230/JuEQ.jl)
 [![codecov.io](https://codecov.io/gh/shipengcheng1230/JuEQ.jl/coverage.svg?token=ag6kv61zOW&branch=master)](https://codecov.io/gh/shipengcheng1230/JuEQ.jl?branch=master)
 [![License:MIT](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://shipengcheng1230.github.io/JuEQ.jl/stable)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://shipengcheng1230.github.io/JuEQ.jl/latest)
 
 
-This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics. Features of this package, at our best hope, are listed as below:
+This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.
+
+Features of this package are listed as below:
+
+- [x] Rate-State Friction Law
+- [x] Okada's Dislocation Method
+- [x] Boundary Element Method (Quasi-dynamic)
 
 
-- [x] Rate-State Friction Law (Quasi-dynamic)
-- [ ] Fully Elastodynamic
+Features to be implemented:
 - [ ] Viscoelastic Relaxation
-
+- [ ] Fully Elastodynamic Effect
+- [ ] Off-Fault Materials effect
 
 ## Developing
-At the current stage, I am implementing script-like code-snippets under [Demos](https://github.com/shipengcheng1230/JuEQ.jl/tree/master/demos) for various specific simulation problems. This will be served as guidance for the package development, especially for type systems in this package. The demos, not fully tested, are mainly focued on usability, however, at a moderate consideration on performance.
+[Demos](https://github.com/shipengcheng1230/JuEQ.jl/tree/master/demos) contains the most primitive implementation of simulation algorithms.
+
+`JuEQ` is still in alpha-stage. Breaking changes are imminent.
 
 
 ## Supporting
@@ -23,4 +33,9 @@ This software in this ecosystem is developed as part of academic research in
 
 
 ## References
-Liu, Yajing, Jeffrey J. McGuire, and Mark D. Behn. 2012. “Frictional Behavior of Oceanic Transform Faults and Its Influence on Earthquake Characteristics.” Journal of Geophysical Research: Solid Earth 117 (B4). https://doi.org/10.1029/2011JB009025.
+
+Please consider to cite the following papers if you find this package useful.
+
+* Rice, J. (1993). Spatio-temporal complexity of slip on a fault. Journal of Geophysical Research: Solid Earth, 98(B6), 9885–9907. https://doi.org/10.1029/93JB00191
+
+* Liu, Y., & Rice, J. R. (2005). Aseismic slip transients emerge spontaneously in three-dimensional rate and state modeling of subduction earthquake sequences. Journal of Geophysical Research: Solid Earth, 110(B8). https://doi.org/10.1029/2004JB003424

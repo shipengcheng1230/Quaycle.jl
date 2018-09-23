@@ -11,6 +11,18 @@ matrix:
         - julia: nightly
 notifications:
     email: false
-    
+
 after_success:
-    - julia -e 'using Pkg; cd(Pkg.dir("JuEQ")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
+  - julia --project=test/coverage test/coverage/coverage.jl
+
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.0
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate()'
+        - julia --project=docs/ -e 'using Pkg; Pkg.add(PackageSpec(path=pwd()))'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip

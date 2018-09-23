@@ -10,10 +10,11 @@ using SharedArrays
 using FileIO
 using JLD2
 
-export discretize, parameters
-export EarthquakeCycleProblem
-
 include(joinpath(@__DIR__, "dc3d.jl"))
+
+export discretize, properties, stiffness_tensor
+export EarthquakeCycleProblem
+export dc3d_okada
 
 @traitdef IsOnYZPlane{faulttype}
 @traitimpl IsOnYZPlane{faulttype} <- isonyz(faulttype)
@@ -35,7 +36,6 @@ struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     ax::U1 # (psudo) cell boundary along-strike (length)
 end
 
-"Along-strike will be places on x-axis while along-downdip on yz-plane, w.r.t Okada's dc3d coordinates."
 struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{2, true, T}
     x::U1 # along-strike
     ξ::U1 # along-downdip
@@ -55,7 +55,7 @@ end
 
 Generate the grid for given 1D fault domain.
 
-# Arguments
+## Arguments
 - `Δξ`: grid space along-downdip
 - `ax_ratio::Number`: ration of along-strike length agsinst along-downdip length for mimicing an extended
     2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=50` is more than enough for producing consistent results.
@@ -133,7 +133,29 @@ end
     end
 end
 
-function parameters(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
+"""
+    properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
+
+Establishing a material-properties-profile given by the fault domain and grids. User must provide the
+    necessary parameters in according to the grid size specified or just a scalar for broadcasting.
+
+## Arguments that are needed:
+- `a`: contrib from velocity.
+- `b`: contrib from state.
+- `L`: critical distance.
+- `σ`: effective normal stress.
+- `vpl`: plate rate.
+- `f0`: ref. frictional coeff.
+- `v0`: ref. velocity.
+
+## Arguments that are optional
+- `k`: stiffness tensor. If `:auto`, it will automatically calculate by seeking `λ` and `μ` otherwise should be a valid file path to a `*.jld2`.
+- `η`: radiation damping. If `:auto`, it will automatically seek `μ` and `vs` and use ``μ / 2vs``.
+- `vs`: shear wave velocity.
+- `λ`: Lamé's first parameter
+- `μ`: shear modulus
+"""
+function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
 
     gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
     kwargs = _kwargs.data
@@ -147,7 +169,7 @@ function parameters(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
     v0 = args_get_expand(:v0, kwargs, (), false)
 
     _k = get(kwargs, :k, nothing)
-    if typeof(_k) <: AbstractString && isfile(_k)
+    if typeof(_k) <: AbstractString && isfile(_k) && endswith(_k, ".jld2")
         @load _k k
     elseif _k == :auto || _k == nothing
         λ = args_get_expand(:λ, kwargs, (), false)
@@ -156,7 +178,7 @@ function parameters(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
         @info "Calculating stiffness tensor..."
         k = stiffness_tensor(fa, gd, ep)
     else
-        error("Invalid option: $k, should be a valid file path or `:auto`.")
+        error("Invalid option: $k, should be a valid file path to a `*.jld2` file or `:auto`.")
     end
 
     _η = get(kwargs, :η, nothing)
@@ -170,8 +192,7 @@ function parameters(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
 
     @info "Establishing material properties..."
     mp = PlaneMaterialProperties(a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
-    f = (u0, tspan) -> EarthquakeCycleProblem(gd, mp, u0, tspan)
-    return f
+    return mp
 end
 
 function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
@@ -227,6 +248,9 @@ Calculate the reduced stiffness tensor. For 2D fault, the final result will be d
 ## Note
 - Faults are originated from surface and extends downwards, thus `dep = 0`
 """
+function stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties; kwargs...)
+end
+
 function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
     ) where {ftype<:PlaneFault, T<:Number}
 
@@ -419,6 +443,19 @@ end
     @. dv = dv_dt(tvar.dμ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
+"""
+    EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())
+
+Return an `ODEProblem` that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer [DifferentialEquations.jl](http://docs.juliadiffeq.org/latest/)
+
+## Arguments
+- `gd::BoundaryElementGrid`: grid set by user given a fault domain.
+- `p::PlaneMaterialProperties`: material profile w.r.t. the fault grid.
+- `u0`: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.
+- `tspan`: time interval to be simulated.
+- `se::StateEvolutionLaw`: state evolution law to be applied.
+- `fform::FrictionLawForm`: forms of frictional law to be applied.
+"""
 function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties{dim}, u0, tspan; se=DieterichStateLaw(), fform=CForm()) where {dim}
     (fform == RForm() && minimum(p.η) ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     tvar = create_tmp_var(gd)

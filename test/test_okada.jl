@@ -2,7 +2,7 @@ using DelimitedFiles
 
 @testset "Test Okada's displacement" begin
     @testset "Normal computations" begin
-        u_truth = readdlm(joinpath(@__DIR__, "test_okada.dat"), ',', Float64)
+        u_truth = readdlm(joinpath(@__DIR__, "data/test_okada.dat"), ',', Float64)
         count = 1
         for x = 10.: 15., y = 20.: 30., z = -40.: -30.
             u = dc3d_okada(x, y, z, 2. /3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])

@@ -1,5 +1,3 @@
-using Test
-
 @testset "Fault creation" begin
     @test_throws AssertionError("Fault dip angle: -1 received, must ∈ [0, 90].") fault(NormalFault, -1, (1, 2))
     @test_throws AssertionError("Fault domain: (-1, 2) received, must > 0.") fault(ThrustFault, 2, (-1, 2))
@@ -19,6 +17,12 @@ end
     @testset "Vertical strike-slip fault" begin
         fd1 = fault(StrikeSlipFault, 1.)
         fd2 = fault(StrikeSlipFault, 90., 1.)
+        @test fd1 == fd2
+    end
+
+    @testset "Heterogeneous input type" begin
+        fd1 = fault(NormalFault, 1, (1.,))
+        fd2 = fault(NormalFault, 1., (1.,))
         @test fd1 == fd2
     end
 end
