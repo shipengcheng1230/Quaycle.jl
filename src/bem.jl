@@ -216,7 +216,7 @@ end
 Calculate the shear traction on the fault plane w.r.t. fault types.
 
 ## Arguments
-- `u::AbstractArray{<:Number, 1}`: the output from dc3d_okada
+- `u::AbstractArray{<:Number, 1}`: the output from [`dc3d_okada`](@ref)
 - `λ::Number`: Lamé's first parameter
 - `μ::Number`: shear modulus
 - `dip::Number`: plane dip angle

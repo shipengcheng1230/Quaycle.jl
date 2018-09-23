@@ -23,7 +23,7 @@ Features to be implemented:
 ## Developing
 [Demos](https://github.com/shipengcheng1230/JuEQ.jl/tree/master/demos) contains the most primitive implementation of simulation algorithms.
 
-*JuEQ* is still in alpha-stage. Breaking changes are imminent.
+**JuEQ** is still in alpha-stage. Breaking changes are imminent.
 
 
 ## Supporting

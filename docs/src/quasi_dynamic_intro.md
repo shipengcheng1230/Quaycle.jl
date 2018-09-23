@@ -18,7 +18,7 @@ where ``K`` is the so-called stiffness tensor, depicting relationship between di
 Back to ``f``, we use rate-and-state frictional law to calculate its value, specifically as below:
 
 ```math
-f(v, θ) = f_0 + a \ln{\frac{V}{V_0}} + b \ln{\frac{V_0 θ}{L}}
+f(v, θ) = f_0 + a \ln{\frac{V}{V_0}} + b \ln{(\frac{V_0 θ}{L})}
 ```
 
 where ``f_0`` and ``v_0`` are reference friction coefficient and velocity, ``v`` and ``θ`` are velocity and state variable based on which frictional force is. ``a`` and ``b`` are two frictional parameters denoting contributions each of which comes from velocity and state variable respectively.
