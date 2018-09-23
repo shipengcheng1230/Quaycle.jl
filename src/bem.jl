@@ -1,5 +1,3 @@
-include(joinpath(@__DIR__, "dc3d.jl"))
-
 using SimpleTraits
 using Parameters
 using FFTW
@@ -9,12 +7,16 @@ using Distributed
 using Base.Threads
 using LinearAlgebra
 using SharedArrays
+using FileIO
+using JLD2
 
 export AbstractDifferenceGrids, BoundaryElementGrid, BEMGrid_1D, BEMGrid_2D
 export HomogeneousElasticProperties, PlaneMaterialProperties
 export discretize
 export shear_traction, stiffness_tensor, dc3d_okada
 export derivations!, EarthquakeCycleProblem
+
+include(joinpath(@__DIR__, "dc3d.jl"))
 
 @traitdef IsOnYZPlane{faulttype}
 @traitimpl IsOnYZPlane{faulttype} <- isonyz(faulttype)
@@ -33,7 +35,7 @@ struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     aξ::U2 # cell boundary along-downdip (width)
     y::U1 # y-component of `ξ`
     z::U1 # z-component of `ξ`
-    ax::U1 # cell boundary along-strike (length)
+    ax::U1 # (psudo) cell boundary along-strike (length)
 end
 
 "Along-strike will be places on x-axis while along-downdip on yz-plane, w.r.t Okada's dc3d coordinates."
@@ -134,18 +136,48 @@ end
     end
 end
 
-function properties(gd::BoundaryElementGrid{ftype, dim}; kwargs...) where {ftype, dim}
+function parameters(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
 
     gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
-    required = [:a, :b, :L, :σ, :η, :vpl, :f0, :v0, :μ, :λ]
+    kwargs = _kwargs.data
+    a = args_get_expand(:a, kwargs, gsize)
+    b = args_get_expand(:b, kwargs, gsize)
+    L = args_get_expand(:L, kwargs, gsize)
+    σ = args_get_expand(:σ, kwargs, gsize)
 
+    vpl = args_get_expand(:vpl, kwargs, (), false)
+    f0 = args_get_expand(:f0, kwargs, (), false)
+    v0 = args_get_expand(:v0, kwargs, (), false)
+
+    _k = get(kwargs, :k, nothing)
+    if typeof(_k) <: AbstractString && isfile(_k)
+        @load _k k
+    elseif _k == :auto || _k == nothing
+        λ = args_get_expand(:λ, kwargs, (), false)
+        μ = args_get_expand(:μ, kwargs, (), false)
+        ep = HomogeneousElasticProperties(λ=μ, μ=μ)
+        @info "Calculating stiffness tensor..."
+        k = stiffness_tensor(fa, gd, ep)
+    else
+        error("Invalid option: $k, should be a valid file path or `:auto`.")
+    end
+
+    _η = get(kwargs, :η, nothing)
+    if _η == :auto || _η == nothing
+        μ = args_get_expand(:μ, kwargs, (), false)
+        vs = args_get_expand(:vs, kwargs, gsize)
+        η = μ ./ 2vs
+    else
+        η = args_get_expand(:η, kwargs, gsize)
+    end
+
+    @info "Establishing material properties..."
+    mp = PlaneMaterialProperties(a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
+    f = (u0, tspan) -> EarthquakeCycleProblem(gd, mp, u0, tspan)
+    return f
 end
 
-macro reassign(sym::Symbol, f::Function, args...)
-    :($(esc(sym)) = f($sym, $(args...)))
-end
-
-function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand=true)
+function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
     x = get(kwargs, sym, nothing)
     x == nothing && error("`$sym` is not provided.")
     if expand
@@ -154,7 +186,7 @@ function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand=
         elseif typeof(x) <: AbstractArray
             size(x) == gsize || error("Dim `$sym` does not match with given grid, $(size(x)) received, $gsize required.")
         else
-            error("Illegal input of `$sym`, get $x, required `Number` or `AbstractArray`.")
+            error("Illegal input type of `$sym`, get $x, required `Number` or `AbstractArray`.")
         end
     end
     return x
@@ -239,7 +271,7 @@ function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::Boundary
 end
 
 function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties;
-    nrept=2) where {ftype<:PlaneFault, T<:Number}
+    nrept::Integer=2) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
     ST = SharedArray{T}(gd.nx, gd.nξ, gd.nξ)
@@ -339,8 +371,7 @@ function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
             [Matrix{Complex{T}}(undef, rfft_size, gd.nξ) for _ in 1: 2]...,
             p1, p2)
     else
-        @error "Dim: $dim received. Valid `dim` is `1` or `2`."
-        return nothing
+        error("Dim: $dim received. Valid `dim` is `1` or `2`.")
     end
     return tvar
 end
