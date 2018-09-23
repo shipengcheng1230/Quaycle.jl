@@ -14,6 +14,7 @@ makedocs(
         "Manual" => [
             "Quasi-dynamic" => [
                 "Introduction" => "quasi_dynamic_intro.md"
+                "Examples" => "quasi_dynamic_example.md"
             ]
         ],
         "Libray" => [
