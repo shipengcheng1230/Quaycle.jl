@@ -10,11 +10,8 @@ using SharedArrays
 using FileIO
 using JLD2
 
-export AbstractDifferenceGrids, BoundaryElementGrid, BEMGrid_1D, BEMGrid_2D
-export HomogeneousElasticProperties, PlaneMaterialProperties
-export discretize
-export shear_traction, stiffness_tensor, dc3d_okada
-export derivations!, EarthquakeCycleProblem
+export discretize, parameters
+export EarthquakeCycleProblem
 
 include(joinpath(@__DIR__, "dc3d.jl"))
 

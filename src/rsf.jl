@@ -2,10 +2,9 @@ using DifferentialEquations: ODEProblem
 using Parameters
 
 export StateEvolutionLaw, DieterichStateLaw, RuinaStateLaw, PrzStateLaw
-export FrictionLawForm, CForm, RForm
-export dθ_dt, dμ_dt, dv_dθ_dt
+export CForm, RForm
 export friction
-export AbstractMaterialProperties, MaterialProperties, EarthquakeCycleProblem
+export MaterialProperties, EarthquakeCycleProblem
 
 abstract type StateEvolutionLaw end
 struct DieterichStateLaw <: StateEvolutionLaw end

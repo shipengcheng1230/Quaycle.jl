@@ -1,8 +1,7 @@
 import Base.getindex
 
-export AbstractFault, PlaneFault, CurvedFault
 export NormalFault, ThrustFault, StrikeSlipFault
-export AbstractFaultDomain, PlaneFaultDomain
+export PlaneFaultDomain
 export fault
 
 abstract type AbstractFault end
@@ -22,9 +21,9 @@ struct PlaneFaultDomain{ftype, dim, T} <: AbstractFaultDomain{ftype, dim}
     function PlaneFaultDomain(ftype::Type{FT}, dip::T, span::U) where
         {FT<:PlaneFault, T<:Number, U<:NTuple{N, T}} where {N}
 
-        @assert(zero(T) ≤ dip ≤ 90 * one(T), "Fautl dip angle: $dip received, must ∈ [0, π/2].")
-        any(@. span ≤ zero(T)) && error("Fault domain: $span received, must > 0.")
-        (N == 1 || N == 2) || error("Fault domain dim: $N received, must be `1` (along-downdip) or `2` (plus along-strike).")
+        @assert(zero(T) ≤ dip ≤ 90 * one(T), "Fault dip angle: $dip received, must ∈ [0, 90].")
+        @assert(all(@. span ≥ zero(T)), "Fault domain: $span received, must > 0.")
+        @assert((N == 1 || N == 2), "Fault domain dim: $N received, must be `1` (along-downdip) or `2` (plus along-strike).")
         (FT == StrikeSlipFault && dip ≉ 90 * one(T)) && error("Dip angle: $dip received, for strike-slip faults must be `90`.")
         new{FT, N, T}(dip, span)
     end
