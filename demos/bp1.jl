@@ -1,7 +1,6 @@
 # This is a demo for SEAS BP1, inspired by Yajing Liu's code
 # 2D vertical anti-shear-plain
 
-## let's do parallel
 using Distributed
 ncores = 4
 addprocs(ncores)
@@ -145,7 +144,6 @@ end
 
 cb = DiscreteCallback(condition, affect!, save_positions=(false, false))
 
-# this is the only kind of algorithms that works on this problem efficiently
 @time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6, saveat=Δt_aseismic, callback=cb)
 
 ## save our solution for plotting

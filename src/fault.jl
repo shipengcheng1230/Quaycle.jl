@@ -31,9 +31,7 @@ end
 
 """
     fault(ftype::Type{<:PlaneFault}, dip, span)
-
 Generate a fault given the fault type, dip angle and its spatial span.
-
 ## Arguments
 - `ftype::Type{<:PlaneFault}`: type of plane fault
 - `dip`: dip angle in degree

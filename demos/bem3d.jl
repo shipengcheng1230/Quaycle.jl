@@ -1,5 +1,5 @@
-using Distributed
-addprocs(4)
+# using Distributed
+# addprocs(4)
 
 @everywhere using SharedArrays
 
@@ -21,8 +21,8 @@ const η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
 const dip = 10.0
 const depth = 0.0
 const lf = 60.0
-const nl = 128
-const nd = 64
+const nl = 256
+const nd = 128
 
 Δl = lf / nl
 Δd = Δl
@@ -112,6 +112,25 @@ KD = fft_tensor(ks)
 
 using FileIO, JLD2
 @save joinpath(@__DIR__, "stiff12864.jld2") KD
+
+## toeplitz matrix for convolution
+# using ToeplitzMatrices
+#
+# KT = Array{SymmetricToeplitz}(undef, nd, nd)
+# for l = 1: nd, j = 1: nd
+#     KT[j,l] = SymmetricToeplitz(K[:,j,l])
+# end
+
+## construct a full 2nd order tensor
+function full_tensor(K)
+    kf = zeros(Float64, nl, nd, nl, nd)
+    for t = 1: nd, s = 1: nl, j = 1: nd, i = 1: nl
+        kf[i,j,s,t] = K[abs(i-s)+1,j,t]
+    end
+    kf
+end
+
+KF = full_tensor(K)
 
 ## frictional properties
 a = 0.015 .* ones(nl, nd)
