@@ -1,4 +1,8 @@
 """
+Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace.
+See [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
+
+
 *test/test_okada.dat* is obtained using [DC3dfortran](http://www.bosai.go.jp/study/application/dc3d/download/DC3Dfortran.txt)
 
 
@@ -8,7 +12,7 @@ function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, a
     disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
 
     # initial return values
-	# `RefValue{T}` may be also viable other than `Array{T, 1}`
+    # `RefValue{T}` may be also viable other than `Array{T, 1}`
     ux = Array{Float64}(1)
     uy = Array{Float64}(1)
     uz = Array{Float64}(1)
@@ -122,102 +126,102 @@ OBJS = \$(SRCS:.c=.o)
 TARGET = dc3d.so
 
 \$(TARGET): \$(OBJS)
-	\$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
+    \$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
 ```
 """
-function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::A, aw::A, disl::A) where {T <: Number, A <: AbstractArray{T}}
+function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractVecOrMat{T}}
 
     z > 0. && return zeros(T, 12)
 
-	u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
+    u, du, dua, dub, duc = [zeros(T, 12) for _ in 1: 5]
 
-	xi = x .- al
-	d = dep + z
-	sc1 = shared_constants_1(α, dip)
+    xi = x .- al
+    d = dep + z
+    sc1 = shared_constants_1(α, dip)
     sd, cd = sc1[6], sc1[7]
-	p = y * cd + d * sd
-	q = y * sd - d * cd
-	et = p .- aw
+    p = y * cd + d * sd
+    q = y * sd - d * cd
+    et = p .- aw
 
-	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-		return zeros(T, 12)
-	end
+    if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
+        return zeros(T, 12)
+    end
 
-	kxi, ket = [zeros(T, 2) for _ in 1: 2]
-    r12 = hypot(xi[1], et[2], q)
-    r21 = hypot(xi[2], et[1], q)
-    r22 = hypot(xi[2], et[2], q)
-
-	(xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
-	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
-	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
-	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
-
-	for k = 1: 2, j = 1: 2
-		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-		dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-		for i = 1: 3: 10
-			du[i] = -dua[i]
-			du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
-			du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
-			i < 10 && continue
-			du[i] = -du[i]
-            du[i+1] = -du[i+1]
-            du[i+2] = -du[i+2]
-		end
-		for i = 1: 12
-			if j + k ≠ 3  u[i] += du[i] end
-			if j + k == 3  u[i] -= du[i] end
-		end
-	end
-
-	d = dep - z
-	p = y * cd + d * sd
-	q = y * sd - d * cd
-	et = p .- aw
-
-	if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
-		return zeros(T, 12)
-	end
-
-	kxi, ket = [zeros(T, 2) for _ in 1: 2]
+    kxi, ket = [zeros(T, 2) for _ in 1: 2]
     r12 = hypot(xi[1], et[2], q)
     r21 = hypot(xi[2], et[1], q)
     r22 = hypot(xi[2], et[2], q)
 
     (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
-	(xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
-	(et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
-	(et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
+    (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+    (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+    (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
 
-	for k = 1: 2, j = 1: 2
-		sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
-		dua = ua(sc1, sc2, xi[j], et[k], q, disl)
-		dub = ub(sc1, sc2, xi[j], et[k], q, disl)
-		duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
-		for i = 1: 3: 10
-			du[i] = dua[i] + dub[i] + z * duc[i]
-			du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
-			du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
-			i < 10 && continue
-			du[10] += duc[1]
-			du[11] += duc[2] * cd - duc[3] * sd
-			du[12] -= duc[2] * sd + duc[3] * cd
-		end
-		for i = 1: 12
-			j + k ≠ 3 && (u[i] += du[i])
-			j + k == 3 && (u[i] -= du[i])
-		end
-	end
-	return u
+    for k = 1: 2, j = 1: 2
+        sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+        dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+        for i = 1: 3: 10
+            du[i] = -dua[i]
+            du[i+1] = -dua[i+1] * cd + dua[i+2] * sd
+            du[i+2] = -dua[i+1] * sd - dua[i+2] * cd
+            i < 10 && continue
+            du[i] = -du[i]
+            du[i+1] = -du[i+1]
+            du[i+2] = -du[i+2]
+        end
+        for i = 1: 12
+            if j + k ≠ 3  u[i] += du[i] end
+            if j + k == 3  u[i] -= du[i] end
+        end
+    end
+
+    d = dep - z
+    p = y * cd + d * sd
+    q = y * sd - d * cd
+    et = p .- aw
+
+    if q ≈ 0. && ((xi[1] * xi[2] ≤ 0. && et[1] * et[2] ≈ 0.) ||	(et[1] * et[2] ≤ 0. && xi[1] * xi[2] ≈ 0.))
+        return zeros(T, 12)
+    end
+
+    kxi, ket = [zeros(T, 2) for _ in 1: 2]
+    r12 = hypot(xi[1], et[2], q)
+    r21 = hypot(xi[2], et[1], q)
+    r22 = hypot(xi[2], et[2], q)
+
+    (xi[1] ≤ 0. && (r21 + xi[2]) ≈ 0.) && (kxi[1] = 1.)
+    (xi[1] ≤ 0. && (r22 + xi[2]) ≈ 0.) && (kxi[2] = 1.)
+    (et[1] ≤ 0. && (r12 + et[2]) ≈ 0.) && (ket[1] = 1.)
+    (et[1] ≤ 0. && (r22 + et[2]) ≈ 0.) && (ket[2] = 1.)
+
+    for k = 1: 2, j = 1: 2
+        sc2 = shared_constants_2(xi[j], et[k], q, sd, cd, kxi[k], ket[j])
+        dua = ua(sc1, sc2, xi[j], et[k], q, disl)
+        dub = ub(sc1, sc2, xi[j], et[k], q, disl)
+        duc = uc(sc1, sc2, xi[j], et[k], q, z,  disl)
+        for i = 1: 3: 10
+            du[i] = dua[i] + dub[i] + z * duc[i]
+            du[i+1] = (dua[i+1] + dub[i+1] + z * duc[i+1]) * cd - (dua[i+2] + dub[i+2] + z * duc[i+2]) * sd
+            du[i+2] = (dua[i+1] + dub[i+1] - z * duc[i+1]) * sd + (dua[i+2] + dub[i+2] - z * duc[i+2]) * cd
+            i < 10 && continue
+            du[10] += duc[1]
+            du[11] += duc[2] * cd - duc[3] * sd
+            du[12] -= duc[2] * sd + duc[3] * cd
+        end
+        for i = 1: 12
+            j + k ≠ 3 && (u[i] += du[i])
+            j + k == 3 && (u[i] -= du[i])
+        end
+    end
+    return u
 end
 
 function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
     ) where {T <: Number, A <: AbstractArray{T}, B1 <: NTuple{12, T}, B2 <: NTuple{24, T}}
-	alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
-	xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
+    alp1, alp2, alp3, alp4, alp5, sd, cd, sdsd, cdcd, sdcd, s2d, sc2d = sc1
+    xi2, et2, q2, r, r2, r3, r5, y, d, tt, alx, ale, x11, y11, x32, y32, ey, ez, fy, fz, gy, gz, hy, hz = sc2
 
-	u, du = zeros(T, 12), zeros(T, 12)
+    u, du = zeros(T, 12), zeros(T, 12)
 
     xy = xi * y11
     qx = q * x11
@@ -236,7 +240,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp1 * xy * cd + alp2 * xi * fz + y / 2. * x11
         du[11] = alp2 * ez
         du[12] = -alp1 * (sd / r - qy * cd) - alp2 * q * fz
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -252,7 +256,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp2 * ez
         du[11] = alp1 * y * x11 + xy / 2. * cd + alp2 * et * gz
         du[12] = -alp1 * d * x11 - alp2 * q * gz
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -268,7 +272,7 @@ function ua(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = alp1 * (sd / r - qy * cd) - alp2 * q * fz
         du[11] = alp1 * d * x11 - alp2 * q * gz
         du[12] = alp1 * (y * x11 + xy * cd) + alp2 * q * hz
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
 end
@@ -289,8 +293,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
             ai4 = 0.
         else
             x = sqrt(xi2 + q2)
-            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. *
-                atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
+            ai4 = 1. / cdcd * (xi / rd * sdcd + 2. * atan((et * (x + q * cd) + x * (r + x) * sd) / (xi * (r + x) * cd)))
         end
         ai3 = (y * cd / rd - ale + sd * log(rd)) / cdcd
         ak1 = xi * (d11 - y11 * sd) / cd
@@ -331,7 +334,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = -xi * fz - y * x11 + alp3 * ak1 * sd
         du[11] = -ez + alp3 * y * d11 * sd
         du[12] = q * fz + alp3 * ak2 * sd
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -347,7 +350,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = -ez - alp3 * ak3 * sdcd
         du[11] = -et * gz - xy * cd - alp3 * xi * d11 * sdcd
         du[12] = q * gz - alp3 * ak4 * sdcd
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -363,7 +366,7 @@ function ub(sc1::B1, sc2::B2, xi::T, et::T, q::T, disl::A
         du[10] = q * fz + alp3 * ak3 * sdsd
         du[11] = q * gz + alp3 * xi * d11 * sdsd
         du[12] = -q * hz + alp3 * ak4 * sdsd
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
  end
@@ -410,7 +413,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = alp4 * xi * ppz * cd - alp5 * xi * qqz
         du[11] = alp4 * 2. * (y / r3 - y0 * cd) * sd + d / r3 * cd - alp5 * (cdr * cd + c * d * qr)
         du[12] = yy0 * cd - alp5 * (cdr * sd - c * y * qr - y0 * sdsd + q * z0 * cd)
-        u += disl[1] / 2π * du
+        u .+= disl[1] / 2π * du
     end
 
     if disl[2] ≉ 0.
@@ -426,7 +429,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = -q / r3 + y0 * sdcd - alp5 * (cdr * cd + c * d * qr)
         du[11] = alp4 * y * d * x32 - alp5 * c * ((y - 2. * q * sd) * x32 + d * et * q * x53)
         du[12] = -xi * ppz * sd + x11 - d * d * x32 - alp5 * c * ((d - 2. * q * cd) * x32 - d * q2 * x53)
-        u += disl[2] / 2π * du
+        u .+= disl[2] / 2π * du
     end
 
     if disl[3] ≉ 0.
@@ -442,7 +445,7 @@ function uc(sc1::B1, sc2::B2, xi::T, et::T, q::T, z::T, disl::A
         du[10] = -et / r3 + y0 * cdcd - alp5 * (z / r3 * sd - c * y * qr - y0 * sdsd + q * z0 * cd)
         du[11] = alp4 * 2. * xi * ppz * sd - x11 + d * d * x32 - alp5 * c * ((d - 2. * q * cd) * x32 - d * q2 * x53)
         du[12] = alp4 * (xi * ppz * cd + y * d * x32) + alp5 * (c * ((y - 2. * q * sd) * x32 + d * et * q * x53) + xi * qqz)
-        u += disl[3] / 2π * du
+        u .+= disl[3] / 2π * du
     end
     return u
 end

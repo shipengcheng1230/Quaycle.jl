@@ -1,7 +1,0 @@
-julia 0.7
-Reexport
-DifferentialEquations
-RecursiveArrayTools
-JLD2
-HDF5
-ToeplitzMatrices

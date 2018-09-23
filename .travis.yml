@@ -4,15 +4,13 @@ os:
     - linux
     - osx
 julia:
-    - 0.7
+    - 1.0
     - nightly
 matrix:
     allow_failures:
         - julia: nightly
 notifications:
     email: false
-script:
-    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'Pkg.clone(pwd()); Pkg.test("JuEQ"; coverage=true)'
+    
 after_success:
-    - julia -e 'cd(Pkg.dir("JuEQ")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+    - julia -e 'using Pkg; cd(Pkg.dir("JuEQ")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

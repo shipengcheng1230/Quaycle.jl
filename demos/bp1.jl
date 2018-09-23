@@ -49,10 +49,10 @@ const sdip = sinpi(dip / 180)
 
 # row: obs along depth; col: fault patches
 function fill_stiffness_matrix!(K)
-    for i = 1: ngrid
+    @sync @distributed for i = 1: ngrid
         aw = [-Δz * i, -Δz * (i - 1)]
         # if no reduction op, @parallel will not wait for finish without @sync
-        @sync @distributed for j = 1: ngrid
+        for j = 1: ngrid
             x = 0.
             y = -(j - 0.5) * Δz * cdip
             z = -(j - 0.5) * Δz * sdip
@@ -77,32 +77,30 @@ using JLD2, FileIO
 @load joinpath(@__DIR__, "bp1_stiff.jld2") K
 
 ## profile settings
-z = (collect(1: ngrid) - 0.5) * Δz
-az = fill!(zeros(z), a0)
-az[z .≥ (H + h)] = amax
-az[H .< z .< H + h] = a0 + (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
+z = (collect(1: ngrid) .- 0.5) * Δz
+az = fill(a0, size(z))
+az[z .≥ (H + h)] .= amax
+az[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
 # global constants are more efficient in case of frequent access
 const a = az
 
 # initial condition
-δz = zeros(z)
 τ0 = σ * amax * asinh(Vinit / 2V0 * exp((f0 + b0 * log(V0 / Vinit)) / amax)) + η * Vinit
-τz = fill!(zeros(z), τ0)
+τz = fill(τ0, size(z))
 θz = @. Dc / V0 * exp(az / b0 * log(2V0 / Vinit * sinh((τz - η * Vinit) / az / σ)) - f0 / b0)
-vz = fill!(zeros(z), Vinit)
+vz = fill(Vinit, size(z))
 
 ## build ODEs
 using DifferentialEquations
 using LinearAlgebra
 
-ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv = [zeros(Float64, ngrid) for _ in 1: 5]
+_ϕ1, _ϕ2, _dμ_dt, _dμ_dθ, _dμ_dv = [zeros(Float64, ngrid) for _ in 1: 5]
 
 function f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
     v = @view u[:, 1]
     θ = @view u[:, 2]
     dv = @view du[:, 1]
     dθ = @view du[:, 2]
-    dδ = @view du[:, 3]
 
     # make sure θ don't go below 0.0
     clamp!(θ, 0.0, Inf)
@@ -115,14 +113,13 @@ function f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
     @. dθ = 1 - v * θ / Dc
     mul!(dμ_dt, K, Vp .- v)
     @. dv = (dμ_dt - dμ_dθ * dθ) / (dμ_dv + η)
-    @. dδ = v
 end
 
 # using closures to minimize allocations
-f! = (du, u, p, t) -> f_full!(du, u, p, t, ϕ1, ϕ2, dμ_dt, dμ_dθ, dμ_dv)
+f! = (du, u, p, t) -> f_full!(du, u, p, t, _ϕ1, _ϕ2, _dμ_dt, _dμ_dθ, _dμ_dv)
 
-u0 = hcat(vz, θz, δz)
-tspan = (0., tf)
+u0 = hcat(vz, θz)
+tspan = (0., 200.)
 prob = ODEProblem(f!, u0, tspan)
 
 # solution saving options, note that all solutions are stored at memory at runtime for now
@@ -168,6 +165,7 @@ v = @view u[:, 1, :]
 s = @view u[:, 3, :]
 τ = shear_stress(v, θ, a)
 
+# work around that `JLD2` doesn't support write `SubArray` for now
 v /= ms2mmyr
 θ *= 365 * 86400
 s /= 1e3

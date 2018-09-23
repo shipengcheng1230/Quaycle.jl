@@ -1,11 +1,7 @@
 module JuEQ
 
-using Reexport
-
-include("RateStateFriction.jl")
-include("Displacement.jl")
-
-@reexport using .RateStateFriction
-@reexport using .Displacement
+include("rsf.jl")
+include("fault.jl")
+include("bem.jl")
 
 end
