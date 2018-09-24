@@ -46,7 +46,7 @@ To simulate how fault evolves with time, we then take the derivative of the gove
 
 Thus we arrive at:
 ```math
-\frac{\mathrm{d} V}{\mathrm{d} t} = \frac{\frac{\mathrm{d} τ}{\mathrm{d} t} - \frac{\mathrm{d} τ}{\mathrm{d} θ} \frac{\mathrm{d} θ}{\mathrm{d} t}}{\frac{\mathrm{d} τ}{\mathrm{d} V} + η}
+\frac{\mathrm{d} V}{\mathrm{d} t} = \frac{\frac{\mathrm{d} τ}{\mathrm{d} t} - \frac{\mathrm{d} f}{\mathrm{d} θ} \frac{\mathrm{d} θ}{\mathrm{d} t}}{\frac{\mathrm{d} f}{\mathrm{d} V} + η}
 ```
 
 where ``\frac{\mathrm{d} τ}{\mathrm{d} t} = K ⊗ (\mathrm{V_{pl}} - V)`` where ``\mathrm{V_{pl}}`` is the plate rate.

@@ -365,14 +365,14 @@ applied_unit_dislocation(::Type{StrikeSlipFault}) = [1., 0., 0.]
 
 "Temporal variable in solving ODEs aimed to avoid allocation overheads."
 @with_kw struct TmpVariable{T<:AbstractVecOrMat{<:Real}, U<:AbstractVecOrMat{<:Complex}}
-    dμ_dt::T
+    dτ_dt::T
     dμ_dθ::T
     dμ_dv::T
     ψ1::T
     ψ2::T
     relv::T
     relv_dft::Union{U, Nothing}
-    dμ_dt_dft::Union{U, Nothing}
+    dτ_dt_dft::Union{U, Nothing}
     plan_1d::Union{Plan, Nothing}
     plan_2d::Union{Plan, Nothing}
 end
@@ -408,23 +408,23 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable
     @. tvar.relv = mp.vpl - v
     tvar.relv_dft .= tvar.plan_2d * tvar.relv
     dθ_dt!(dθ, se, v, θ, mp.L)
-    dμ_dt!(mp, tvar)
+    dτ_dt!(mp, tvar)
     dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
 end
 
-@inline function dμ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpVariable)
-    mul!(tvar.dμ_dt, mp.k, tvar.relv)
+@inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpVariable)
+    mul!(tvar.dτ_dt, mp.k, tvar.relv)
 end
 
-@inline function dμ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpVariable)
-    fill!(tvar.dμ_dt_dft, 0.)
-    nd = size(tvar.dμ_dt, 2)
+@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpVariable)
+    fill!(tvar.dτ_dt_dft, 0.)
+    nd = size(tvar.dτ_dt, 2)
     @inbounds for j = 1: nd
         @simd for l = 1: nd
-            tvar.dμ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]
+            tvar.dτ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]
         end
     end
-    ldiv!(tvar.dμ_dt, tvar.plan_2d, tvar.dμ_dt_dft)
+    ldiv!(tvar.dτ_dt, tvar.plan_2d, tvar.dτ_dt_dft)
 end
 
 dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecOrMat, U<:AbstractVecOrMat} = dθ .= dθ_dt.(Ref(se), v, θ, L)
@@ -432,7 +432,7 @@ dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecO
 @inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
     @. tvar.dμ_dθ = mp.σ * mp.b / θ
     @. tvar.dμ_dv = mp.σ * mp.a / v
-    @. dv = dv_dt(tvar.dμ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
+    @. dv = dv_dt(tvar.dτ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
 @inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
@@ -440,7 +440,7 @@ end
     @. tvar.ψ2 = mp.σ * tvar.ψ1 / hypot(1, v * tvar.ψ1)
     @. tvar.dμ_dv = mp.a * tvar.ψ2
     @. tvar.dμ_dθ = mp.b / θ * v * tvar.ψ2
-    @. dv = dv_dt(tvar.dμ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
+    @. dv = dv_dt(tvar.dτ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
 """

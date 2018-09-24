@@ -43,17 +43,17 @@ function friction(::RForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T
     a * asinh(v / 2v0 * exp((f0 + b * log(v0 * θ / L)) / a))
 end
 
-dμ_dt(K::T, v::T, vpl::T) where {T<:Number} = K * (vpl - v)
+dτ_dt(K::T, v::T, vpl::T) where {T<:Number} = K * (vpl - v)
 
-dv_dt(dμdt::T, dμdv::T, dμdθ::T, dθdt::T, η::T) where {T<:Number} = (dμdt - dμdθ * dθdt) / (dμdv + η)
+dv_dt(dτdt::T, dμdv::T, dμdθ::T, dθdt::T, η::T) where {T<:Number} = (dτdt - dμdθ * dθdt) / (dμdv + η)
 
 function dv_dθ_dt(::CForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, ::Vararg{T},
     ) where {T<:Number, SE<:StateEvolutionLaw}
     dμdθ = σ * b / θ
     dμdv = σ * a / v
     dθdt = dθ_dt(se, v, θ, L)
-    dμdt = dμ_dt(k, v, vpl)
-    return dv_dt(dμdt, dμdv, dμdθ, dθdt, η), dθdt
+    dτdt = dτ_dt(k, v, vpl)
+    return dv_dt(dτdt, dμdv, dμdθ, dθdt, η), dθdt
 end
 
 function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T,
@@ -63,8 +63,8 @@ function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, 
     dμdv = a * ψ2
     dμdθ = b / θ * v * ψ2
     dθdt = dθ_dt(se, v, θ, L)
-    dμdt = dμ_dt(k, v, vpl)
-    return dv_dt(dμdt, dμdv, dμdθ, dθdt, η), dθdt
+    dτdt = dτ_dt(k, v, vpl)
+    return dv_dt(dτdt, dμdv, dμdθ, dθdt, η), dθdt
 end
 
 abstract type AbstractMaterialProperties{DIMS} end
