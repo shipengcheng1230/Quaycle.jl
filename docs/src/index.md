@@ -11,9 +11,9 @@ Features of this package are listed as below:
 
 
 Features to be implemented:
-- Viscoelastic Relaxation (priority)
+- **Viscoelastic Relaxation** (priority)
 - Fully Elastodynamic Effect
-- Off-Fault Materials effect
+- Off-Fault Materials Effect
 
 
 ## Installation
