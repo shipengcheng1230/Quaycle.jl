@@ -48,7 +48,7 @@ fa = fault(StrikeSlipFault, Wf);
 # !!! note
 #     This package use `ξ` for denoting downdip coordinate and `x` for along-strike one.
 
-gd = discretize(fa; nξ=ngrid, ax_ratio=12.5);
+gd = discretize(fa; nξ=ngrid);
 
 # Next, we construct the required frictional parameter profile:
 
