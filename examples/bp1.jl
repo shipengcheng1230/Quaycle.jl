@@ -6,7 +6,6 @@
 # First, we load the package
 using JuEQ
 using Plots
-using DifferentialEquations
 
 # Instead of using SI unit, we refactor ours into the follow:
 

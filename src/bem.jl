@@ -1,17 +1,3 @@
-using SimpleTraits
-using Parameters
-using FFTW
-using FFTW: Plan
-
-using Distributed
-using Base.Threads
-using LinearAlgebra
-using SharedArrays
-using FileIO
-using JLD2
-
-include(joinpath(@__DIR__, "dc3d.jl"))
-
 @traitdef IsOnYZPlane{faulttype}
 @traitimpl IsOnYZPlane{faulttype} <- isonyz(faulttype)
 

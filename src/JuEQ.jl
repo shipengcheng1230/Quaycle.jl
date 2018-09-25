@@ -1,9 +1,26 @@
 module JuEQ
 
+using Reexport
+
+@reexport using DifferentialEquations
+
+using SimpleTraits
+using Parameters
+using FFTW
+using FFTW: Plan
+
+using Distributed
+using Base.Threads
+using LinearAlgebra
+using SharedArrays
+using FileIO
+using JLD2
+
 include("rsf.jl")
 include("fault.jl")
 include("bem.jl")
 include("utils.jl")
+include(joinpath(@__DIR__, "dc3d.jl"))
 
 export NormalFault, ThrustFault, StrikeSlipFault
 export PlaneFaultDomain

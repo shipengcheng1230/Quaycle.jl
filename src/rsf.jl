@@ -1,6 +1,3 @@
-using DifferentialEquations: ODEProblem
-using Parameters
-
 abstract type StateEvolutionLaw end
 
 "`\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"
