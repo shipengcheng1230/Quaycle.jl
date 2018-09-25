@@ -12,10 +12,6 @@ using JLD2
 
 include(joinpath(@__DIR__, "dc3d.jl"))
 
-export discretize, properties, stiffness_tensor
-export EarthquakeCycleProblem
-export dc3d_okada
-
 @traitdef IsOnYZPlane{faulttype}
 @traitimpl IsOnYZPlane{faulttype} <- isonyz(faulttype)
 
@@ -51,7 +47,7 @@ struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
 end
 
 """
-    discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=50*one(T)::T)
+    discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5)
 
 Generate the grid for given 1D fault domain.
 
@@ -59,7 +55,6 @@ Generate the grid for given 1D fault domain.
 - `Δξ`: grid space along-downdip
 - `ax_ratio::Number`: ration of along-strike length agsinst along-downdip length for mimicing an extended
     2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=12.5` is more than enough for producing consistent results.
-    Exceedingly large `ax_ratio` could potentially cause inconsistency.
 """
 function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5) where {ftype, T}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
@@ -175,6 +170,12 @@ function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
                 (2) An `AbstractArray`
                 (3) Symbol `:auto`.
             """)
+        end
+
+        path = get(kwargs, :savek, nothing)
+        if typeof(path) <: AbstractString && ispath(path)
+            @info "Saving stiffness: $path ..."
+            @save path k
         end
         return k
     end
@@ -350,7 +351,7 @@ end
 Periodic boundary condition for 2D faults.
 
 ## Arguments
-- same as `dc3d_okada`, see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
+- same as [`dc3d_okada`](@ref), see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
 - `ax::AbstractVector`: along-strike fault length
 - `nrept::Integer`: (half) number of repetition, as denoted by `-npret: nrept`
 - `lrept::Number`: length of repetition interval, see *Note* below

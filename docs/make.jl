@@ -4,6 +4,14 @@ if Base.HOME_PROJECT[] !== nothing
 end
 
 using Documenter, JuEQ
+using Documenter
+using Literate
+using Plots # to not capture precompilation output
+
+bem_ex1 = joinpath(@__DIR__, "..", "examples", "bp1.jl")
+bem_ex1_output = joinpath(@__DIR__, "src/generated")
+
+Literate.markdown(bem_ex1, bem_ex1_output)
 
 makedocs(
     modules = [JuEQ],
@@ -14,7 +22,7 @@ makedocs(
         "Manual" => [
             "Quasi-dynamic" => [
                 "Introduction" => "quasi_dynamic_intro.md"
-                "Examples" => "quasi_dynamic_example.md"
+                "Example 1: 1D fault" => "generated/bp1.md"
             ]
         ],
         "Libray" => [

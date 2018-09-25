@@ -1,11 +1,6 @@
 using DifferentialEquations: ODEProblem
 using Parameters
 
-export StateEvolutionLaw, DieterichStateLaw, RuinaStateLaw, PrzStateLaw
-export CForm, RForm
-export friction
-export MaterialProperties, EarthquakeCycleProblem
-
 abstract type StateEvolutionLaw end
 
 "`\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"

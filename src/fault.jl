@@ -1,9 +1,5 @@
 import Base.getindex
 
-export NormalFault, ThrustFault, StrikeSlipFault
-export PlaneFaultDomain
-export fault
-
 abstract type AbstractFault end
 abstract type PlaneFault <: AbstractFault end
 abstract type CurvedFault <: AbstractFault end

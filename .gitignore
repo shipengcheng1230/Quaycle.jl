@@ -20,3 +20,4 @@ demos/*.ipynb
 
 docs/build/
 docs/site/
+docs/src/generated

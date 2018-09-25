@@ -52,7 +52,7 @@ Thus we arrive at:
 where ``\frac{\mathrm{d} τ}{\mathrm{d} t} = K ⊗ (\mathrm{V_{pl}} - V)`` where ``\mathrm{V_{pl}}`` is the plate rate.
 
 !!! note
-    The direction of relative velocity, namely ``\mathrm{V_{pl} - V}`` must be in accordance to the direction of ``K``. Here, we use the same
+    The direction of relative velocity, namely ``\mathrm{V_{pl} - V}``, must be in accordance to the direction of ``K`` which, here, we use the same
     meaning as Rice, J. (1993).
 
 Hence, with both derivatives of velocity ``V`` and state variable ``θ``, we are able to discover how fault evolves with various parameters settings.
