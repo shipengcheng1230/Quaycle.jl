@@ -58,9 +58,10 @@ Generate the grid for given 1D fault domain.
 ## Arguments
 - `Δξ`: grid space along-downdip
 - `ax_ratio::Number`: ration of along-strike length agsinst along-downdip length for mimicing an extended
-    2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=50` is more than enough for producing consistent results.
+    2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=12.5` is more than enough for producing consistent results.
+    Exceedingly large `ax_ratio` could potentially cause inconsistency.
 """
-function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=50*one(T)::T) where {ftype, T}
+function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5) where {ftype, T}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
     ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
     BEMGrid_1D(ξ, Δξ, nξ, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), ax)
@@ -89,7 +90,7 @@ function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) whe
     BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), buffersize)
 end
 
-discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, ax_ratio=50) where {ftype} = discretize(fa, fa[:ξ]/nξ; ax_ratio=promote(ax_ratio, typeof(fa[:ξ]))[1])
+discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, kwargs...) where {ftype} = discretize(fa, fa[:ξ]/nξ; kwargs...)
 discretize(fa::PlaneFaultDomain{ftype, 2}; nx=64, nξ=32, buffer=:auto) where  {ftype} = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; buffer=buffer)
 
 function _divide_segment(::Val{:halfspace}, x::T, Δx::T) where {T<:Number}
@@ -116,7 +117,8 @@ Okada's [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) on
     α::T = (λ + μ) / (λ + 2μ) # material constants which equals (λ + μ) / (λ + 2μ)
 end
 
-@with_kw struct PlaneMaterialProperties{dim, U<:AbstractVecOrMat, P<:AbstractArray, T<:Number} <: AbstractMaterialProperties{dim}
+@with_kw struct PlaneMaterialProperties{N, U<:AbstractVecOrMat, P<:AbstractArray, T<:Number} <: AbstractMaterialProperties{N}
+    nsize::NTuple{N} # broadcasting size of array below
     a::U # contrib from velocity
     b::U # contrib from state
     L::U # critical distance
@@ -126,11 +128,6 @@ end
     vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
     f0::T # ref. frictional coeff
     v0::T # ref. velocity
-
-    function PlaneMaterialProperties(a::U, b::U, L::U, k::P, σ::U, η::U, vpl::T, f0::T, v0::T) where {U, P, T}
-        dims = maximum([ndims(x) for x in (a, b, L, σ, η)])
-        new{dims, U, P, T}(a, b, L, k, σ, η, vpl, f0, v0)
-    end
 end
 
 """
@@ -149,13 +146,49 @@ Establishing a material-properties-profile given by the fault domain and grids. 
 - `v0`: ref. velocity.
 
 ## Arguments that are optional
-- `k`: stiffness tensor. If `:auto`, it will automatically calculate by seeking `λ` and `μ` otherwise should be a valid file path to a `*.jld2`.
-- `η`: radiation damping. If `:auto`, it will automatically seek `μ` and `vs` and use ``μ / 2vs``.
+- `k`: stiffness tensor. If `:auto`, it will automatically calculate by seeking `λ` and `μ` otherwise should be a valid file path to a `*.jld2` or an `AbstractArray`.
+- `η`: radiation damping. If `:auto`, it will automatically seek `μ` and `vs` and use ``μ / 2\\mathrm{Vs}``.
 - `vs`: shear wave velocity.
 - `λ`: Lamé's first parameter
 - `μ`: shear modulus
 """
 function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
+
+    function get_k()
+        _k = get(kwargs, :k, nothing)
+        _tk = typeof(_k)
+        if _tk <: AbstractString && isfile(_k) && endswith(_k, ".jld2")
+            @info "Loading stiffness: $_k ..."
+            @load _k k
+        elseif _tk <: AbstractArray
+            k = _k
+        elseif _k == :auto || _k == nothing
+            λ = args_get_expand(:λ, kwargs, (), false)
+            μ = args_get_expand(:μ, kwargs, (), false)
+            ep = HomogeneousElasticProperties(λ=μ, μ=μ)
+            @info "Calculating stiffness tensor..."
+            k = stiffness_tensor(fa, gd, ep)
+        else
+            error("""
+                Invalid option: $_k, should be:
+                (1) A valid file path to a `*.jld2` file
+                (2) An `AbstractArray`
+                (3) Symbol `:auto`.
+            """)
+        end
+        return k
+    end
+
+    function get_η()
+        _η = get(kwargs, :η, nothing)
+        if _η == :auto || _η == nothing
+            μ = args_get_expand(:μ, kwargs, (), false)
+            vs = args_get_expand(:vs, kwargs, gsize)
+            η = μ ./ 2vs
+        else
+            η = args_get_expand(:η, kwargs, gsize)
+        end
+    end
 
     gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
     kwargs = _kwargs.data
@@ -168,30 +201,11 @@ function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
     f0 = args_get_expand(:f0, kwargs, (), false)
     v0 = args_get_expand(:v0, kwargs, (), false)
 
-    _k = get(kwargs, :k, nothing)
-    if typeof(_k) <: AbstractString && isfile(_k) && endswith(_k, ".jld2")
-        @load _k k
-    elseif _k == :auto || _k == nothing
-        λ = args_get_expand(:λ, kwargs, (), false)
-        μ = args_get_expand(:μ, kwargs, (), false)
-        ep = HomogeneousElasticProperties(λ=μ, μ=μ)
-        @info "Calculating stiffness tensor..."
-        k = stiffness_tensor(fa, gd, ep)
-    else
-        error("Invalid option: $k, should be a valid file path to a `*.jld2` file or `:auto`.")
-    end
-
-    _η = get(kwargs, :η, nothing)
-    if _η == :auto || _η == nothing
-        μ = args_get_expand(:μ, kwargs, (), false)
-        vs = args_get_expand(:vs, kwargs, gsize)
-        η = μ ./ 2vs
-    else
-        η = args_get_expand(:η, kwargs, gsize)
-    end
+    k = get_k()
+    η = get_η()
 
     @info "Establishing material properties..."
-    mp = PlaneMaterialProperties(a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
+    mp = PlaneMaterialProperties(nsize=gsize, a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
     return mp
 end
 
@@ -258,7 +272,7 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElement
     if nprocs() == 1
         u12 = zeros(T, 12)
         ST = zeros(T, gd.nξ, gd.nξ)
-        @threads for j = 1: gd.nξ
+        for j = 1: gd.nξ
             @inbounds @simd for i = 1: gd.nξ
                 u12 .= dc3d_okada(zero(T), gd.y[i], gd.z[i], ep.α, zero(T), fa.dip, gd.ax, gd.aξ[j,:], udisl)
                 ST[i,j] = shear_traction(ftype, u12, ep.λ, ep.μ, fa.dip)
@@ -337,9 +351,9 @@ Periodic boundary condition for 2D faults.
 
 ## Arguments
 - same as `dc3d_okada`, see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
-- `ax::T`: along-strike fault length
+- `ax::AbstractVector`: along-strike fault length
 - `nrept::Integer`: (half) number of repetition, as denoted by `-npret: nrept`
-- `lrept::T`: length of repetition interval, see *Note* below
+- `lrept::Number`: length of repetition interval, see *Note* below
 
 ## Note
 - The buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.
@@ -364,35 +378,35 @@ applied_unit_dislocation(::Type{ThrustFault}) = [0., 1., 0.]
 applied_unit_dislocation(::Type{StrikeSlipFault}) = [1., 0., 0.]
 
 "Temporal variable in solving ODEs aimed to avoid allocation overheads."
-@with_kw struct TmpVariable{T<:AbstractVecOrMat{<:Real}, U<:AbstractVecOrMat{<:Complex}}
+struct TmpVariable{T<:AbstractVecOrMat{<:Real}, U<:Union{AbstractVecOrMat{<:Complex}, Nothing}, P1<:Union{Plan, Nothing}, P2<:Union{Plan, Nothing}}
     dτ_dt::T
     dμ_dθ::T
     dμ_dv::T
     ψ1::T
     ψ2::T
     relv::T
-    relv_dft::Union{U, Nothing}
-    dτ_dt_dft::Union{U, Nothing}
-    plan_1d::Union{Plan, Nothing}
-    plan_2d::Union{Plan, Nothing}
+    relv_dft::U
+    dτ_dt_dft::U
+    plan_1d::P1
+    plan_2d::P2
 end
 
-function create_tmp_var(gd::BoundaryElementGrid{dim, true, T}) where {dim, T}
-    if dim == 1
-        tvar = TmpVariable([Vector{T}(undef, gd.nξ) for _ in 1: 6]..., fill(nothing, 4)...)
-    elseif dim == 2
+function create_tmp_var(nsize::NTuple{N}; T1=Float64) where {N}
+    if N == 1
+        tvar = TmpVariable([Vector{T1}(undef, nsize[1]) for _ in 1: 6]..., fill(nothing, 4)...)
+    elseif N == 2
         FFTW.set_num_threads(nthreads())
-        x1 = Vector{T}(undef, gd.nx)
-        x2 = Matrix{T}(undef, gd.nx, gd.nξ)
+        x1 = Vector{T1}(undef, nsize[1])
+        x2 = Matrix{T1}(undef, nsize...)
         p1 = plan_rfft(x1, flags=FFTW.MEASURE)
         p2 = plan_rfft(x2, 1, flags=FFTW.MEASURE)
-        rfft_size = floor(Int, gd.nx/2) + 1
+        rfft_size = floor(Int, nsize[1]/2) + 1
         tvar = TmpVariable(
-            [Matrix{T}(undef, gd.nx, gd.nξ) for _ in 1: 6]...,
-            [Matrix{Complex{T}}(undef, rfft_size, gd.nξ) for _ in 1: 2]...,
+            [Matrix{T1}(undef, nsize...) for _ in 1: 6]...,
+            [Matrix{Complex{T1}}(undef, rfft_size, nsize[2]) for _ in 1: 2]...,
             p1, p2)
     else
-        error("Dim: $dim received. Valid `dim` is `1` or `2`.")
+        error("Dim: $N received. Valid `N` is `1` or `2`.")
     end
     return tvar
 end
@@ -406,7 +420,6 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable
     clamp!(θ, 0.0, Inf)
 
     @. tvar.relv = mp.vpl - v
-    tvar.relv_dft .= tvar.plan_2d * tvar.relv
     dθ_dt!(dθ, se, v, θ, mp.L)
     dτ_dt!(mp, tvar)
     dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
@@ -417,6 +430,7 @@ end
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpVariable)
+    tvar.relv_dft .= tvar.plan_2d * tvar.relv
     fill!(tvar.dτ_dt_dft, 0.)
     nd = size(tvar.dτ_dt, 2)
     @inbounds for j = 1: nd
@@ -444,21 +458,20 @@ end
 end
 
 """
-    EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())
+    EarthquakeCycleProblem(p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())
 
 Return an `ODEProblem` that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer [DifferentialEquations.jl](http://docs.juliadiffeq.org/latest/)
 
 ## Arguments
-- `gd::BoundaryElementGrid`: grid set by user given a fault domain.
-- `p::PlaneMaterialProperties`: material profile w.r.t. the fault grid.
-- `u0`: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.
-- `tspan`: time interval to be simulated.
+- `p::PlaneMaterialProperties`: material profile.
+- `u0::AbstractArray`: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.
+- `tspan::NTuple`: time interval to be simulated.
 - `se::StateEvolutionLaw`: state evolution law to be applied.
 - `fform::FrictionLawForm`: forms of frictional law to be applied.
 """
-function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties{dim}, u0, tspan; se=DieterichStateLaw(), fform=CForm()) where {dim}
+function EarthquakeCycleProblem(p::PlaneMaterialProperties{dim}, u0::AbstractArray, tspan::NTuple; se=DieterichStateLaw(), fform=CForm()) where {dim}
     (fform == RForm() && minimum(p.η) ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
-    tvar = create_tmp_var(gd)
+    tvar = create_tmp_var(p.nsize)
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end
