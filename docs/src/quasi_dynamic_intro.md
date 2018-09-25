@@ -21,7 +21,7 @@ Back to ``f``, we use rate-and-state frictional law to calculate its value, spec
 f(V, θ) = f_0 + a \ln{\frac{V}{V_0}} + b \ln{\left(\frac{V_0 θ}{L}\right)}
 ```
 
-where ``f_0`` and ``V_0`` are reference friction coefficient and velocity, ``V`` and ``θ`` are velocity and state variable based on which frictional force is. ``a`` and ``b`` are two frictional parameters denoting contributions each of which comes from velocity and state variable respectively.
+where ``f_0`` and ``V_0`` are reference friction coefficient and velocity, ``V`` and ``θ`` are velocity and state variable based on which frictional force is. ``a`` and ``b`` are two frictional parameters denoting contributions each of which comes from velocity and state variable respectively. ``L`` is critical distance after which frictional force return to new steady state.
 
 Sometimes people use regularized form to avoid infinity when ``V ≈ 0``, namely:
 
@@ -35,7 +35,7 @@ There are many state evolution law that describes how state variable ``θ`` chan
 \frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
 ```
 
-Further, ``η`` is a damping coefficient whose value is often chosen as ``μ / 2\mathrm{Vs}`` where ``μ`` is shear modulus and ``\mathrm{Vs}`` shear wave velocity. ``σ`` is the effective normal stress.
+Further, ``η`` is a damping coefficient whose value is often chosen as ``μ / 2\mathrm{Vs}`` where ``μ`` is shear modulus and ``\mathrm{Vs}`` shear wave velocity and ``σ`` is the effective normal stress.
 
 To simulate how fault evolves with time, we then take the derivative of the governing equation:
 
@@ -50,5 +50,9 @@ Thus we arrive at:
 ```
 
 where ``\frac{\mathrm{d} τ}{\mathrm{d} t} = K ⊗ (\mathrm{V_{pl}} - V)`` where ``\mathrm{V_{pl}}`` is the plate rate.
+
+!!! note
+    The direction of relative velocity, namely ``\mathrm{V_{pl} - V}`` must be in accordance to the direction of ``K``. Here, we use the same
+    meaning as Rice, J. (1993).
 
 Hence, with both derivatives of velocity ``V`` and state variable ``θ``, we are able to discover how fault evolves with various parameters settings.
