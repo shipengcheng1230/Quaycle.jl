@@ -36,6 +36,7 @@ Generate a fault given the fault type, dip angle and its spatial span.
 fault(ftype::Type{<:PlaneFault}, dip::T, span::NTuple{N, T}) where {N, T} = PlaneFaultDomain(ftype, dip, span)
 fault(ftype::Type{<:PlaneFault}, dip, span::Number) = fault(ftype, dip, tuple(span))
 fault(ftype::Type{<:PlaneFault}, dip, span::AbstractVector{<:Number}) = fault(ftype, dip, tuple(span...))
+fault(ftype::Type{<:PlaneFault}, dip::T, span::NTuple{N, T}) where {N, T<:Integer} = fault(ftype, Float64(dip), span)
 
 function fault(ftype::Type{<:PlaneFault}, dip::T1, span::NTuple{N, T2}) where {N, T1, T2}
     pt = promote_type(T1, T2)

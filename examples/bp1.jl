@@ -1,7 +1,7 @@
 # !!! note
 #     This example is from [Benchmark Problem 1](https://www.scec.org/publication/8214) (hence referred as BP1).
 #
-# ### Paramters Settings
+# ### Define parameters
 
 # First, we load the package
 using JuEQ
@@ -17,9 +17,9 @@ a0 = 0.010 # frictional paramter `a` in vw zone
 amax = 0.025 # frictional paramter `a` in vs zone
 b0 = 0.015 # frictional paramter `b`
 L = 8.0 # critical distance [mm]
-Vpl = 1e-9 * ms2mmyr # plate rate [mm/yr]
-Vinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]
-V0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]
+vpl = 1e-9 * ms2mmyr # plate rate [mm/yr]
+vinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]
+v0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]
 f0 = 0.6 # reference frictional coefficient
 H = 15.0 # vw zone [km]
 h = 3.0 # vw-vs changing zone [km]
@@ -42,6 +42,8 @@ ngrid = round(Int, Wf / Δz); # number of grids
 # !!! tip
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`.
 
+# ### Construct Model
+
 fa = fault(StrikeSlipFault, Wf);
 
 # Next, we generate the grid regarding the `fault` we just created by giving number of grids:
@@ -59,10 +61,10 @@ az[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz));
 
 # Then, we provide the required initial condition satisfying uniform slip distribution over the depth:
 
-τ0 = σ * amax * asinh(Vinit / 2V0 * exp((f0 + b0 * log(V0 / Vinit)) / amax)) + η * Vinit
+τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
 τz = fill(τ0, size(z))
-θz = @. L / V0 * exp(az / b0 * log(2V0 / Vinit * sinh((τz - η * Vinit) / az / σ)) - f0 / b0)
-vz = fill(Vinit, size(z))
+θz = @. L / v0 * exp(az / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / az / σ)) - f0 / b0)
+vz = fill(vinit, size(z))
 u0 = hcat(vz, θz);
 
 # Let's simulate only the first 200 years:
@@ -72,7 +74,7 @@ tspan = (0., 200.);
 # Finally, we provide the material properties w.r.t. our 'fault', 'grid' as well as other necessary parameters predefined
 # using the same grid size & dimension:
 
-mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=Vpl, f0=f0, v0=V0, η=η, λ=λ, μ=μ, k=:auto);
+mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η, λ=λ, μ=μ, k=:auto);
 
 # Check our profile now:
 
@@ -83,15 +85,18 @@ plot([mp.a, mp.b], z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
 
 prob = EarthquakeCycleProblem(mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());
 
+# ### Solve Model
 # We then solve the ODEs:
+
+sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+
 # !!! tip
 #     For details of solving options, see [here](http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html).
 
 # !!! tip
 #     Raise the accuracy option if you get instability when solving these ODEs.
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
-
+# ### Results
 # The first event happens at around 196 year:
 
 maxv = max_velocity(sol)

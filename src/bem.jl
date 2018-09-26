@@ -43,7 +43,7 @@ Generate the grid for given 1D fault domain.
     2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=12.5` is more than enough for producing consistent results.
 """
 function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5) where {ftype, T}
-    ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
+    ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
     ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
     BEMGrid_1D(ξ, Δξ, nξ, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), ax)
 end
@@ -58,8 +58,8 @@ Generate the grid for given 2D fault domain.
 - `buffer::Union{T, Symbol}`: length of buffer size for introducing *zero-dislocation* area at along-strike edges of defined fault domain.
 """
 function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
-    ξ, nξ, aξ = _divide_segment(Val(:halfspace), fa[:ξ], Δξ)
-    x, nx, ax = _divide_segment(Val(:symmatzero), fa[:x], Δx)
+    ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
+    x, nx, ax = _divide_segment(Val(:symmatzero), promote(fa[:x], Δx)...)
     if buffer == :auto
         buffersize = ftype == StrikeSlipFault ? fa[:x] : zero(typeof(fa[:x]))
     elseif typeof(buffer) <: Number
@@ -252,7 +252,7 @@ Calculate the reduced stiffness tensor. For 2D fault, the final result will be d
 function stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties; kwargs...)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1}, gd::BoundaryElementGrid{1, true, T}, ep::HomogeneousElasticProperties,
     ) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
@@ -271,7 +271,7 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElement
     end
 end
 
-function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1, true}, ep::HomogeneousElasticProperties,
+function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1}, gd::BoundaryElementGrid{1, true, T}, ep::HomogeneousElasticProperties,
     _udisl::AbstractVector) where {ftype<:PlaneFault, T<:Number}
 
     ST = SharedArray{T}(gd.nξ, gd.nξ)
@@ -292,7 +292,7 @@ function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::Boundary
     return sdata(ST)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties;
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties;
     nrept::Integer=2) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
@@ -315,7 +315,7 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElement
     return ST_DFT
 end
 
-function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties,
     _udisl, nrept, subs) where {ftype, T}
     _u = zeros(T, 12)
     for sub in subs
@@ -325,7 +325,7 @@ function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd
     end
 end
 
-function stiffness_shared_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2, true}, ep::HomogeneousElasticProperties,
+function stiffness_shared_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties,
     _udisl, nrept) where {ftype, T}
     i2s = CartesianIndices(ST)
     inds = localindices(ST)
