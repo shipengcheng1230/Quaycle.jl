@@ -1,8 +1,8 @@
 @testset "Fault creation" begin
-    @test_throws AssertionError("Fault dip angle: -1 received, must ∈ [0, 90].") fault(NormalFault, -1, (1, 2))
-    @test_throws AssertionError("Fault domain: (-1, 2) received, must > 0.") fault(ThrustFault, 2, (-1, 2))
+    @test_throws AssertionError("Fault dip angle: -1.0 received, must ∈ [0, 90].") fault(NormalFault, -1, (1, 2))
+    @test_throws AssertionError("Fault domain: (-1.0, 2.0) received, must > 0.") fault(ThrustFault, 2, (-1, 2))
     @test_throws AssertionError("Fault domain dim: 3 received, must be `1` (along-downdip) or `2` (plus along-strike).") fault(StrikeSlipFault, 2, (1, 2, 3))
-    @test_throws ErrorException("Dip angle: 10 received, for strike-slip faults must be `90`.") fault(StrikeSlipFault, 10, 1)
+    @test_throws ErrorException("Dip angle: 10.0 received, for strike-slip faults must be `90`.") fault(StrikeSlipFault, 10, 1)
 end
 
 @testset "Equivalent initialization" begin
