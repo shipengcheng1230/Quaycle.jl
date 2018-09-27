@@ -40,7 +40,7 @@ ngrid = round(Int, Wf / Δz); # number of grids
 
 # Now, we start to construct our model using parameters above. First, we create a 'fault' by specifying fault type and depth:
 # !!! tip
-#     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`.
+#     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
 # ### Construct Model
 
@@ -48,7 +48,7 @@ fa = fault(StrikeSlipFault, Wf);
 
 # Next, we generate the grid regarding the `fault` we just created by giving number of grids:
 # !!! note
-#     This package use `ξ` for denoting downdip coordinate and `x` for along-strike one.
+#     This package use `ξ` for denoting downdip coordinate and `x` for along-strike one. See [`discretize`](@ref).
 
 gd = discretize(fa; nξ=ngrid);
 
@@ -76,6 +76,9 @@ tspan = (0., 200.);
 
 mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η, λ=λ, μ=μ, k=:auto);
 
+# !!! tip
+#     Check [`properties`](@ref) for extended options.
+
 # Check our profile now:
 
 plot([mp.a, mp.b], z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
@@ -83,7 +86,7 @@ plot([mp.a, mp.b], z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
 # We then contruct the `ODEProblem` as following by stating which state evolution law to use and frcitonal law form,
 # plus initial condition and simulation time:
 
-prob = EarthquakeCycleProblem(mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());
+prob = EarthquakeCycleProblem(gd, mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());
 
 # ### Solve Model
 # We then solve the ODEs:

@@ -119,21 +119,6 @@ end
     v0::T # ref. velocity
 end
 
-function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
-    x = get(kwargs, sym, nothing)
-    x == nothing && error("`$sym` is not provided.")
-    if expand
-        if typeof(x) <: Number
-            x = x .* ones(gsize...)
-        elseif typeof(x) <: AbstractArray
-            size(x) == gsize || error("Dim `$sym` does not match with given grid, $(size(x)) received, $gsize required.")
-        else
-            error("Illegal input type of `$sym`, get $x, required `Number` or `AbstractArray`.")
-        end
-    end
-    return x
-end
-
 """
     shear_traction(::Type{<:PlaneFault}, u, λ, μ, dip)
 
@@ -384,6 +369,7 @@ end
 Return an `ODEProblem` that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer [DifferentialEquations.jl](http://docs.juliadiffeq.org/latest/)
 
 ## Arguments
+- `gd::BoundaryElementGrid`: grids for fault domain.
 - `p::PlaneMaterialProperties`: material profile.
 - `u0::AbstractArray`: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.
 - `tspan::NTuple`: time interval to be simulated.

@@ -8,10 +8,13 @@ using Documenter
 using Literate
 using Plots # to not capture precompilation output
 
-bem_ex1 = joinpath(@__DIR__, "..", "examples", "bp1.jl")
-bem_ex1_output = joinpath(@__DIR__, "src/generated")
+function convert_examples_to_markdown(name::AbstractString; outdir=joinpath(@__DIR__, "src/generated"))
+    ex = joinpath(@__DIR__, "..", "examples", name)
+    Literate.markdown(ex, outdir)
+end
 
-Literate.markdown(bem_ex1, bem_ex1_output)
+examples = ["bp1.jl", "otfsync.jl"]
+map(convert_examples_to_markdown, examples)
 
 makedocs(
     modules = [JuEQ],
@@ -21,8 +24,9 @@ makedocs(
         "Home" => "index.md",
         "Manual" => [
             "Quasi-dynamic" => [
-                "Introduction" => "quasi_dynamic_intro.md"
-                "Example 1: 1D fault" => "generated/bp1.md"
+                "Introduction" => "quasi_dynamic_intro.md",
+                "Example 1: 1D fault" => "generated/bp1.md",
+                "Example 2: 2D fault" => "generated/otfsync.md",
             ]
         ],
         "Libray" => [

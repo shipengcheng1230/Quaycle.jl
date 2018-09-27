@@ -80,7 +80,21 @@ function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs.
     k = get_k()
     η = get_η()
 
-    @info "Establishing material properties..."
     mp = PlaneMaterialProperties(comsize=gsize ,a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
     return mp
+end
+
+function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
+    x = get(kwargs, sym, nothing)
+    x == nothing && error("`$sym` is not provided.")
+    if expand
+        if typeof(x) <: Number
+            x = x .* ones(gsize...)
+        elseif typeof(x) <: AbstractArray
+            size(x) == gsize || error("Dim `$sym` does not match with given grid, $(size(x)) received, $gsize required.")
+        else
+            error("Illegal input type of `$sym`, get $x, required `Number` or `AbstractArray`.")
+        end
+    end
+    return x
 end
