@@ -21,15 +21,17 @@ end
 struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{2, true, T}
     x::U1 # along-strike
     ξ::U1 # along-downdip
-    Δx::T
+    Δx::T # number of fault domain grids, excluding buffer zone
     Δξ::T
     nx::I
     nξ::I
-    ax::U2 # cell boundary along-strike (length)
-    aξ::U2 # cell boundary along-downdip (width)
+    ax::U2 # cell boundary along-strike (length), including buffer zone
+    aξ::U2 # cell boundary along-downdip (width), including buffer zone
     y::U1 # y-component of `ξ`
     z::U1 # z-component of `ξ`
-    buffer::T # buffer on the edge of along-strike
+    xind::Vector{Bool} # along-strike index of actual zone
+    bx::U1 # along-strike cell centroid, including buffer zone
+    nbx::I # number of total grids, including buffer zone
 end
 
 """
@@ -58,17 +60,23 @@ Generate the grid for given 2D fault domain.
 - `buffer::Union{T, Symbol}`: length of buffer size for introducing *zero-dislocation* area at along-strike edges of defined fault domain.
 """
 function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
-    ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
-    x, nx, ax = _divide_segment(Val(:symmatzero), promote(fa[:x], Δx)...)
     if buffer == :auto
         buffersize = ftype == StrikeSlipFault ? fa[:x] : zero(typeof(fa[:x]))
     elseif typeof(buffer) <: Number
-        buffersize = promote(buffer, fa[:x])[1]
+        buffersize = buffer
     else
         error("Received buffer: $buffer. Valid `buffer` should be `:auto` or a number.")
         return nothing
     end
-    BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), buffersize)
+
+    ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
+    x, nx, ax = _divide_segment(Val(:symmatzero), promote(fa[:x]+buffersize, Δx)...)
+
+    xind = fill(false, nx)
+    ind = argmin(abs.(-fa[:x]/2 .- ax[:,1]))
+    xind[ind: end-ind+1] .= true
+
+    BEMGrid_2D(x[xind], ξ, Δx, Δξ, sum(xind), nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), xind, x, nx)
 end
 
 discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, kwargs...) where {ftype} = discretize(fa, fa[:ξ]/nξ; kwargs...)
@@ -98,8 +106,8 @@ Okada's [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) on
     α::T = (λ + μ) / (λ + 2μ) # material constants which equals (λ + μ) / (λ + 2μ)
 end
 
-@with_kw struct PlaneMaterialProperties{N, U<:AbstractVecOrMat, P<:AbstractArray, T<:Number} <: AbstractMaterialProperties{N}
-    nsize::NTuple{N} # broadcasting size of array below
+@with_kw struct PlaneMaterialProperties{N, T<:Number, U<:AbstractArray, P<:AbstractArray} <: AbstractMaterialProperties{N}
+    comsize::Dims{N}
     a::U # contrib from velocity
     b::U # contrib from state
     L::U # critical distance
@@ -109,91 +117,6 @@ end
     vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
     f0::T # ref. frictional coeff
     v0::T # ref. velocity
-end
-
-"""
-    properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
-
-Establishing a material-properties-profile given by the fault domain and grids. User must provide the
-    necessary parameters in according to the grid size specified or just a scalar for broadcasting.
-
-## Arguments that are needed:
-- `a`: contrib from velocity.
-- `b`: contrib from state.
-- `L`: critical distance.
-- `σ`: effective normal stress.
-- `vpl`: plate rate.
-- `f0`: ref. frictional coeff.
-- `v0`: ref. velocity.
-
-## Arguments that are optional
-- `k`: stiffness tensor. If `:auto`, it will automatically calculate by seeking `λ` and `μ` otherwise should be a valid file path to a `*.jld2` or an `AbstractArray`.
-- `η`: radiation damping. If `:auto`, it will automatically seek `μ` and `vs` and use ``μ / 2\\mathrm{Vs}``.
-- `vs`: shear wave velocity.
-- `λ`: Lamé's first parameter
-- `μ`: shear modulus
-"""
-function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
-
-    function get_k()
-        _k = get(kwargs, :k, nothing)
-        _tk = typeof(_k)
-        if _tk <: AbstractString && isfile(_k) && endswith(_k, ".jld2")
-            @info "Loading stiffness: $_k ..."
-            @load _k k
-        elseif _tk <: AbstractArray
-            k = _k
-        elseif _k == :auto || _k == nothing
-            λ = args_get_expand(:λ, kwargs, (), false)
-            μ = args_get_expand(:μ, kwargs, (), false)
-            ep = HomogeneousElasticProperties(λ=μ, μ=μ)
-            @info "Calculating stiffness tensor..."
-            k = stiffness_tensor(fa, gd, ep)
-        else
-            error("""
-                Invalid option: $_k, should be:
-                (1) A valid file path to a `*.jld2` file
-                (2) An `AbstractArray`
-                (3) Symbol `:auto`.
-            """)
-        end
-
-        path = get(kwargs, :savek, nothing)
-        if typeof(path) <: AbstractString && ispath(path)
-            @info "Saving stiffness: $path ..."
-            @save path k
-        end
-        return k
-    end
-
-    function get_η()
-        _η = get(kwargs, :η, nothing)
-        if _η == :auto || _η == nothing
-            μ = args_get_expand(:μ, kwargs, (), false)
-            vs = args_get_expand(:vs, kwargs, gsize)
-            η = μ ./ 2vs
-        else
-            η = args_get_expand(:η, kwargs, gsize)
-        end
-    end
-
-    gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
-    kwargs = _kwargs.data
-    a = args_get_expand(:a, kwargs, gsize)
-    b = args_get_expand(:b, kwargs, gsize)
-    L = args_get_expand(:L, kwargs, gsize)
-    σ = args_get_expand(:σ, kwargs, gsize)
-
-    vpl = args_get_expand(:vpl, kwargs, (), false)
-    f0 = args_get_expand(:f0, kwargs, (), false)
-    v0 = args_get_expand(:v0, kwargs, (), false)
-
-    k = get_k()
-    η = get_η()
-
-    @info "Establishing material properties..."
-    mp = PlaneMaterialProperties(nsize=gsize, a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
-    return mp
 end
 
 function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
@@ -253,7 +176,7 @@ function stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::Hom
 end
 
 function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1}, gd::BoundaryElementGrid{1, true, T}, ep::HomogeneousElasticProperties,
-    ) where {ftype<:PlaneFault, T<:Number}
+    kwargs...) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
     if nprocs() == 1
@@ -296,7 +219,7 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGri
     nrept::Integer=2) where {ftype<:PlaneFault, T<:Number}
 
     udisl = applied_unit_dislocation(ftype)
-    ST = SharedArray{T}(gd.nx, gd.nξ, gd.nξ)
+    ST = SharedArray{T}(gd.nbx, gd.nξ, gd.nξ)
 
     @sync begin
         for p in procs(ST)
@@ -306,9 +229,9 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGri
 
     ST = sdata(ST)
     FFTW.set_num_threads(nthreads())
-    x1 = zeros(T, gd.nx)
+    x1 = zeros(T, gd.nbx)
     p1 = plan_rfft(x1, flags=FFTW.MEASURE)
-    ST_DFT = Array{Complex{T}}(undef, floor(Int, gd.nx/2)+1, gd.nξ, gd.nξ)
+    ST_DFT = Array{Complex{T}}(undef, floor(Int, gd.nbx/2)+1, gd.nξ, gd.nξ)
     @inbounds for l = 1: gd.nξ, j = 1: gd.nξ
         ST_DFT[:,j,l] .= p1 * ST[:,j,l]
     end
@@ -320,7 +243,7 @@ function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2}, gd::B
     _u = zeros(T, 12)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
-        _u .= stiffness_periodic_boundary_condition(gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], _udisl, nrept, fa[:x]+gd.buffer)
+        _u .= stiffness_periodic_boundary_condition(gd.bx[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], _udisl, nrept, gd.nbx * gd.Δx)
         ST[i,j,l] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
     end
 end
@@ -365,40 +288,49 @@ applied_unit_dislocation(::Type{ThrustFault}) = [0., 1., 0.]
 applied_unit_dislocation(::Type{StrikeSlipFault}) = [1., 0., 0.]
 
 "Temporal variable in solving ODEs aimed to avoid allocation overheads."
-struct TmpVariable{T<:AbstractVecOrMat{<:Real}, U<:Union{AbstractVecOrMat{<:Complex}, Nothing}, P1<:Union{Plan, Nothing}, P2<:Union{Plan, Nothing}}
+abstract type TmpRSFVariable{dim} end
+
+struct TmpRSF_1D{T<:AbstractVecOrMat{<:Real}} <: TmpRSFVariable{1}
     dτ_dt::T
     dμ_dθ::T
     dμ_dv::T
     ψ1::T
     ψ2::T
     relv::T
-    relv_dft::U
-    dτ_dt_dft::U
-    plan_1d::P1
-    plan_2d::P2
 end
 
-function create_tmp_var(nsize::NTuple{N}; T1=Float64) where {N}
-    if N == 1
-        tvar = TmpVariable([Vector{T1}(undef, nsize[1]) for _ in 1: 6]..., fill(nothing, 4)...)
-    elseif N == 2
-        FFTW.set_num_threads(nthreads())
-        x1 = Vector{T1}(undef, nsize[1])
-        x2 = Matrix{T1}(undef, nsize...)
-        p1 = plan_rfft(x1, flags=FFTW.MEASURE)
-        p2 = plan_rfft(x2, 1, flags=FFTW.MEASURE)
-        rfft_size = floor(Int, nsize[1]/2) + 1
-        tvar = TmpVariable(
-            [Matrix{T1}(undef, nsize...) for _ in 1: 6]...,
-            [Matrix{Complex{T1}}(undef, rfft_size, nsize[2]) for _ in 1: 2]...,
-            p1, p2)
-    else
-        error("Dim: $N received. Valid `N` is `1` or `2`.")
-    end
-    return tvar
+struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan, V<:AbstractVector{Bool}} <: TmpRSFVariable{2}
+    dτ_dt::T
+    dμ_dθ::T
+    dμ_dv::T
+    ψ1::T
+    ψ2::T
+    dτ_dt_bf::T
+    relv_bf::T
+    dτ_dt_bf_dft::U
+    relv_bf_dft::U
+    plan::P
+    xind::V
 end
 
-function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
+create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for _ in 1: 6]...)
+
+function create_tmp_var(nx::I, nξ::I, nbx::I, xind::Vector{Bool}; T1=Float64) where {I <: Integer}
+    FFTW.set_num_threads(nthreads())
+    x1 = Matrix{T1}(undef, nbx, nξ)
+    p1 = plan_rfft(x1, 1, flags=FFTW.MEASURE)
+    rfft_size = floor(Int, nbx/2) + 1
+    tvar = TmpRSF_2D(
+        [Matrix{T1}(undef, nx, nξ) for _ in 1: 5]...,
+        [zeros(T1, nbx, nξ) for _ in 1: 2]...,
+        [Matrix{Complex{T1}}(undef, rfft_size, nξ) for _ in 1: 2]...,
+        p1, xind)
+end
+
+create_tmp_var(gd::BoundaryElementGrid{1}) = create_tmp_var(gd.nξ)
+create_tmp_var(gd::BoundaryElementGrid{2}) = create_tmp_var(gd.nx, gd.nξ, gd.nbx, gd.xind)
+
+function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpRSFVariable{dim}, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
     _ndim = dim + 1
     v = selectdim(u, _ndim, 1)
     θ = selectdim(u, _ndim, 2)
@@ -406,37 +338,39 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpVariable
     dθ = selectdim(du, _ndim, 2)
     clamp!(θ, 0.0, Inf)
 
-    @. tvar.relv = mp.vpl - v
     dθ_dt!(dθ, se, v, θ, mp.L)
-    dτ_dt!(mp, tvar)
+    dτ_dt!(mp, tvar, v)
     dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
 end
 
-@inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpVariable)
+@inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpRSFVariable{1}, v::AbstractArray)
+    @. tvar.relv = mp.vpl - v
     mul!(tvar.dτ_dt, mp.k, tvar.relv)
 end
 
-@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpVariable)
-    tvar.relv_dft .= tvar.plan_2d * tvar.relv
-    fill!(tvar.dτ_dt_dft, 0.)
+@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray)
+    tvar.relv_bf[tvar.xind,:] .= mp.vpl .- v
+    tvar.relv_bf_dft .= tvar.plan * tvar.relv_bf
+    fill!(tvar.dτ_dt_bf_dft, 0.)
     nd = size(tvar.dτ_dt, 2)
     @inbounds for j = 1: nd
         @simd for l = 1: nd
-            tvar.dτ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]
+            tvar.dτ_dt_bf_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_bf_dft[:,l]
         end
     end
-    ldiv!(tvar.dτ_dt, tvar.plan_2d, tvar.dτ_dt_dft)
+    ldiv!(tvar.dτ_dt_bf, tvar.plan, tvar.dτ_dt_bf_dft)
+    tvar.dτ_dt .= tvar.dτ_dt_bf[tvar.xind,:]
 end
 
 dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecOrMat, U<:AbstractVecOrMat} = dθ .= dθ_dt.(Ref(se), v, θ, L)
 
-@inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
+@inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable) where {T<:AbstractVecOrMat}
     @. tvar.dμ_dθ = mp.σ * mp.b / θ
     @. tvar.dμ_dv = mp.σ * mp.a / v
     @. dv = dv_dt(tvar.dτ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
 end
 
-@inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpVariable) where {T<:AbstractVecOrMat}
+@inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable) where {T<:AbstractVecOrMat}
     @. tvar.ψ1 = exp((mp.f0 + mp.b * log(mp.v0 * θ / mp.L)) / mp.a) / 2mp.v0
     @. tvar.ψ2 = mp.σ * tvar.ψ1 / hypot(1, v * tvar.ψ1)
     @. tvar.dμ_dv = mp.a * tvar.ψ2
@@ -456,9 +390,9 @@ Return an `ODEProblem` that encapsulate all the parameters and functions require
 - `se::StateEvolutionLaw`: state evolution law to be applied.
 - `fform::FrictionLawForm`: forms of frictional law to be applied.
 """
-function EarthquakeCycleProblem(p::PlaneMaterialProperties{dim}, u0::AbstractArray, tspan::NTuple; se=DieterichStateLaw(), fform=CForm()) where {dim}
+function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties, u0::AbstractArray, tspan::NTuple; se=DieterichStateLaw(), fform=CForm()) where {dim}
     (fform == RForm() && minimum(p.η) ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
-    tvar = create_tmp_var(p.nsize)
+    tvar = create_tmp_var(gd)
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end

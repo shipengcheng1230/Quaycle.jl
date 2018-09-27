@@ -19,6 +19,7 @@ using JLD2
 include("rsf.jl")
 include("fault.jl")
 include("bem.jl")
+include("constructor.jl")
 include("utils.jl")
 include(joinpath(@__DIR__, "dc3d.jl"))
 
