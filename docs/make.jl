@@ -8,6 +8,8 @@ using Documenter
 using Literate
 using Plots # to not capture precompilation output
 
+ENV["GKSwstype"] = "100"
+
 function convert_examples_to_markdown(name::AbstractString; outdir=joinpath(@__DIR__, "src/generated"))
     ex = joinpath(@__DIR__, "..", "examples", name)
     Literate.markdown(ex, outdir)
