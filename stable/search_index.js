@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Overview",
     "category": "section",
-    "text": "This is a suite for numerically simulating earthquake sequences in Julia. The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.Features of this package are listed as below:Rate-State Friction Law\nOkada\'s Dislocation Method\nBoundary Element Method (Quasi-dynamic)Features to be implemented:Viscoelastic Relaxation (priority)\nFully Elastodynamic Effect\nOff-Fault Materials effect"
+    "text": "This is a suite for numerically simulating earthquake sequences in Julia. The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.Features of this package are listed as below:Rate-State Friction Law\nOkada\'s Dislocation Method\nBoundary Element Method (Quasi-dynamic)Features to be implemented:Viscoelastic Relaxation (priority)\nFully Elastodynamic Effect\nOff-Fault Materials Effect"
 },
 
 {
@@ -61,39 +61,55 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Basic Theory",
     "category": "section",
-    "text": "The governing equation is that at every time step, shear stress across the fault plane equals to frictional force plus a radiation damping term for approximating wave propagation effect:τ = σf + ηvHere μ is shear stress across the fault plain. Using Okada\'s dislocation theory, it can be shown as:τ = K  δwhere K is the so-called stiffness tensor, depicting relationship between displacements at one position regarding to dislocations somewhere else. δ is the dislocation, i.e. displacement at everywhere on the fault.  denotes tensor contraction.Back to f, we use rate-and-state frictional law to calculate its value, specifically as below:f(v θ) = f_0 + a lnfracVV_0 + b lnfracV_0 θLwhere f_0 and v_0 are reference friction coefficient and velocity, v and θ are velocity and state variable based on which frictional force is. a and b are two frictional parameters denoting contributions each of which comes from velocity and state variable respectively.Sometimes people use regularized form to avoid infinity when v  0, namely:f(v θ) = a sinh ^-1fracv2v_0 expfracf_0 + b lnv_0 θLaThere are many state evolution law that describes how state variable θ changes with time, one of which that most widely used is Dieterich law:fracmathrmdθmathrmdt = 1 - fracv θLFurther, η is a damping coefficient whose value is often chosen as μ  2vs where μ is shear modulus and vs shear wave velocity. σ is the effective normal stress.To simulate how fault evolves with time, we then take the derivative of the governing equation:fracmathrmd τmathrmd t = fracmathrmd f(v θ)mathrmd t + η fracmathrmd vmathrmd t\n= fracmathrmd fmathrmd v fracmathrmd vmathrmd t + fracmathrmd fmathrmd θ fracmathrmd θmathrmd t + η fracmathrmd vmathrmd tThus we arrive at:fracmathrmd vmathrmd t = fracfracmathrmd τmathrmd t - fracmathrmd τmathrmd θ fracmathrmd θmathrmd tfracmathrmd τmathrmd v + ηwhere fracmathrmd τmathrmd t = K  (vpl - v) where vpl is the plate rate.Hence, with both derivatives of velocity v and state variable θ, we are able to discover how fault evolves with various parameters settings."
+    "text": "The governing equation is that at every time step, shear stress across the fault plane equals to frictional force plus a radiation damping term for approximating wave propagation effect:τ = σf + ηVHere μ is shear stress across the fault plain. Using Okada\'s dislocation theory, it can be shown as:τ = K  δwhere K is the so-called stiffness tensor, depicting relationship between displacements at one position regarding to dislocations somewhere else. δ is the dislocation, i.e. displacement at everywhere on the fault.  denotes tensor contraction.Back to f, we use rate-and-state frictional law to calculate its value, specifically as below:f(V θ) = f_0 + a lnfracVV_0 + b lnleft(fracV_0 θLright)where f_0 and V_0 are reference friction coefficient and velocity, V and θ are velocity and state variable based on which frictional force is. a and b are two frictional parameters denoting contributions each of which comes from velocity and state variable respectively. L is critical distance after which frictional force return to new steady state.Sometimes people use regularized form to avoid infinity when V  0, namely:f(V θ) = a sinh ^-1leftfracV2V_0 expfracf_0 + b lnleft(V_0 θLright)arightThere are many state evolution law that describes how state variable θ changes with time, one of which that most widely used is Dieterich law:fracmathrmdθmathrmdt = 1 - fracV θLFurther, η is a damping coefficient whose value is often chosen as μ  2mathrmVs where μ is shear modulus and mathrmVs shear wave velocity and σ is the effective normal stress.To simulate how fault evolves with time, we then take the derivative of the governing equation:fracmathrmd τmathrmd t = fracmathrmd f(V θ)mathrmd t + η fracmathrmd Vmathrmd t\n= fracmathrmd fmathrmd V fracmathrmd Vmathrmd t + fracmathrmd fmathrmd θ fracmathrmd θmathrmd t + η fracmathrmd Vmathrmd tThus we arrive at:fracmathrmd Vmathrmd t = fracfracmathrmd τmathrmd t - fracmathrmd fmathrmd θ fracmathrmd θmathrmd tfracmathrmd fmathrmd V + ηwhere fracmathrmd τmathrmd t = K  (mathrmV_pl - V) where mathrmV_pl is the plate rate.note: Note\nThe direction of relative velocity, namely mathrmV_pl - V, must be in accordance to the direction of K which, here, we use the same meaning as Rice, J. (1993).Hence, with both derivatives of velocity V and state variable θ, we are able to discover how fault evolves with various parameters settings."
 },
 
 {
-    "location": "quasi_dynamic_example.html#",
-    "page": "Examples",
-    "title": "Examples",
-    "category": "page",
-    "text": ""
-},
-
-{
-    "location": "quasi_dynamic_example.html#Quasi-dynamic-Simulation-1",
-    "page": "Examples",
-    "title": "Quasi-dynamic Simulation",
-    "category": "section",
-    "text": ""
-},
-
-{
-    "location": "quasi_dynamic_example.html#Example-1:-1D-fault-1",
-    "page": "Examples",
+    "location": "generated/bp1.html#",
+    "page": "Example 1: 1D fault",
     "title": "Example 1: 1D fault",
-    "category": "section",
-    "text": "note: Note\nThe following example is from Benchmark Problem 1"
+    "category": "page",
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/../../../../build/shipengcheng1230/JuEQ.jl/examples/bp1.jl\"note: Note\nThis example is from Benchmark Problem 1 (hence referred as BP1)."
 },
 
 {
-    "location": "quasi_dynamic_example.html#Parameters-Setting-1",
-    "page": "Examples",
-    "title": "Parameters Setting",
+    "location": "generated/bp1.html#Define-parameters-1",
+    "page": "Example 1: 1D fault",
+    "title": "Define parameters",
     "category": "section",
-    "text": ""
+    "text": "First, we load the packageusing JuEQ\nusing PlotsInstead of using SI unit, we refactor ours into the follow:ms2mmyr = 365 * 86400 * 1e3 # convert velocity from m/s to mm/yr\nρ = 2670.0 # density [kg/m³]\nvs = 3464.0 # shear wave velocity [m/s]\nσ = 500.0 # effective normal stress [bar]\na0 = 0.010 # frictional paramter `a` in vw zone\namax = 0.025 # frictional paramter `a` in vs zone\nb0 = 0.015 # frictional paramter `b`\nL = 8.0 # critical distance [mm]\nvpl = 1e-9 * ms2mmyr # plate rate [mm/yr]\nvinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]\nv0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]\nf0 = 0.6 # reference frictional coefficient\nH = 15.0 # vw zone [km]\nh = 3.0 # vw-vs changing zone [km]\nWf = 40.0 # fault depth [km]\nΔz = 100.0e-3 # grid size interval [km]\ntf = 400.0; # simulation time [yr]warning: Warning\nMake sure your units are consistent across the whole variable space. Pontenial imporvement may incoporate Unitful.jl package.Then we arrive at some parameters that are implicit by above:μ = vs^2 * ρ / 1e5 / 1e6 # shear modulus [bar·km/mm]\nλ = μ # poisson material\nη = μ / 2(vs * 1e-3 * 365 * 86400)\nngrid = round(Int, Wf / Δz); # number of gridsNow, we start to construct our model using parameters above. First, we create a \'fault\' by specifying fault type and depth:tip: Tip\nHere, we do not need to provide dip for strike-slip fault as it automatically choose 90. See fault."
+},
+
+{
+    "location": "generated/bp1.html#Construct-Model-1",
+    "page": "Example 1: 1D fault",
+    "title": "Construct Model",
+    "category": "section",
+    "text": "fa = fault(StrikeSlipFault, Wf);Next, we generate the grid regarding the fault we just created by giving number of grids:note: Note\nThis package use ξ for denoting downdip coordinate and x for along-strike one. See discretize.gd = discretize(fa; nξ=ngrid);Next, we construct the required frictional parameter profile:z = -gd.ξ\naz = fill(a0, size(z))\naz[z .≥ (H + h)] .= amax\naz[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz));Then, we provide the required initial condition satisfying uniform slip distribution over the depth:τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit\nτz = fill(τ0, size(z))\nθz = @. L / v0 * exp(az / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / az / σ)) - f0 / b0)\nvz = fill(vinit, size(z))\nu0 = hcat(vz, θz);Let\'s simulate only the first 200 years:tspan = (0., 200.);Finally, we provide the material properties w.r.t. our \'fault\', \'grid\' as well as other necessary parameters predefined using the same grid size & dimension:mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η, λ=λ, μ=μ, k=:auto);tip: Tip\nCheck properties for extended options.Check our profile now:plot([mp.a, mp.b], z, label=[\"a\", \"b\"], yflip=true, ylabel=\"Depth (km)\")We then contruct the ODEProblem as following by stating which state evolution law to use and frcitonal law form, plus initial condition and simulation time:prob = EarthquakeCycleProblem(gd, mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());"
+},
+
+{
+    "location": "generated/bp1.html#Solve-Model-1",
+    "page": "Example 1: 1D fault",
+    "title": "Solve Model",
+    "category": "section",
+    "text": "We then solve the ODEs:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);tip: Tip\nFor details of solving options, see here.tip: Tip\nRaise the accuracy option if you get instability when solving these ODEs."
+},
+
+{
+    "location": "generated/bp1.html#Results-1",
+    "page": "Example 1: 1D fault",
+    "title": "Results",
+    "category": "section",
+    "text": "The first event happens at around 196 year:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", xlims=(190, 200), label=\"\")note: Note\nClick here for the slip evolution over 3000 years simulation. It may need some time to load the page.This page was generated using Literate.jl."
+},
+
+{
+    "location": "generated/otfsync.html#",
+    "page": "Example 2: 2D fault",
+    "title": "Example 2: 2D fault",
+    "category": "page",
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/../../../../build/shipengcheng1230/JuEQ.jl/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, buffer=0.);tip: Tip\nIt is recommended to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Here we need to reduce doc build time.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd; a=a, b=b, L=L, k=:auto, σ=σ, η=η, v0=v0, f0=f0, vpl=vpl, λ=λ, μ=μ);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
 },
 
 {
@@ -145,11 +161,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties{dim,U,P,T} where T<:Number where P<:AbstractArray where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Any}} where dim",
+    "location": "public_interface.html#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
     "page": "Public",
     "title": "JuEQ.EarthquakeCycleProblem",
     "category": "method",
-    "text": "EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())\n\nReturn an ODEProblem that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer DifferentialEquations.jl\n\nArguments\n\ngd::BoundaryElementGrid: grid set by user given a fault domain.\np::PlaneMaterialProperties: material profile w.r.t. the fault grid.\nu0: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.\ntspan: time interval to be simulated.\nse::StateEvolutionLaw: state evolution law to be applied.\nfform::FrictionLawForm: forms of frictional law to be applied.\n\n\n\n\n\n"
+    "text": "EarthquakeCycleProblem(p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())\n\nReturn an ODEProblem that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer DifferentialEquations.jl\n\nArguments\n\ngd::BoundaryElementGrid: grids for fault domain.\np::PlaneMaterialProperties: material profile.\nu0::AbstractArray: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.\ntspan::NTuple: time interval to be simulated.\nse::StateEvolutionLaw: state evolution law to be applied.\nfform::FrictionLawForm: forms of frictional law to be applied.\n\n\n\n\n\n"
 },
 
 {
@@ -165,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Public",
     "title": "JuEQ.discretize",
     "category": "method",
-    "text": "discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=50*one(T)::T)\n\nGenerate the grid for given 1D fault domain.\n\nArguments\n\nΔξ: grid space along-downdip\nax_ratio::Number: ration of along-strike length agsinst along-downdip length for mimicing an extended   2d (x & ξ) fault represented by 1d (ξ) domain. Default ax_ratio=50 is more than enough for producing consistent results.\n\n\n\n\n\n"
+    "text": "discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5)\n\nGenerate the grid for given 1D fault domain.\n\nArguments\n\nΔξ: grid space along-downdip\nax_ratio::Number: ration of along-strike length agsinst along-downdip length for mimicing an extended   2d (x & ξ) fault represented by 1d (ξ) domain. Default ax_ratio=12.5 is more than enough for producing consistent results.\n\n\n\n\n\n"
 },
 
 {
@@ -193,19 +209,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "public_interface.html#JuEQ.max_velocity-Tuple{Any}",
+    "page": "Public",
+    "title": "JuEQ.max_velocity",
+    "category": "method",
+    "text": "max_velocity(sol)\n\nReturn max velocity across the fault at each time step.\n\nArguments\n\nsol:: solution return by DifferentialEquations.solve given EarthquakeCycleProblem.\n\n\n\n\n\n"
+},
+
+{
     "location": "public_interface.html#JuEQ.properties-Union{Tuple{dim}, Tuple{PlaneFaultDomain,BoundaryElementGrid{dim,isuniform,T} where T where isuniform}} where dim",
     "page": "Public",
     "title": "JuEQ.properties",
     "category": "method",
-    "text": "properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}\n\nEstablishing a material-properties-profile given by the fault domain and grids. User must provide the     necessary parameters in according to the grid size specified or just a scalar for broadcasting.\n\nArguments that are needed:\n\na: contrib from velocity.\nb: contrib from state.\nL: critical distance.\nσ: effective normal stress.\nvpl: plate rate.\nf0: ref. frictional coeff.\nv0: ref. velocity.\n\nArguments that are optional\n\nk: stiffness tensor. If :auto, it will automatically calculate by seeking λ and μ otherwise should be a valid file path to a *.jld2.\nη: radiation damping. If :auto, it will automatically seek μ and vs and use μ  2vs.\nvs: shear wave velocity.\nλ: Lamé\'s first parameter\nμ: shear modulus\n\n\n\n\n\n"
-},
-
-{
-    "location": "public_interface.html#JuEQ.stiffness_tensor-Tuple{PlaneFaultDomain,JuEQ.BoundaryElementGrid,JuEQ.HomogeneousElasticProperties}",
-    "page": "Public",
-    "title": "JuEQ.stiffness_tensor",
-    "category": "method",
-    "text": "stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)\n\nCalculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array     due to the translational & reflective & perodic symmetry, such that the tensor contraction will be equivalent to convolution,     hence we could use FFT for better performace.\n\nNote\n\nFaults are originated from surface and extends downwards, thus dep = 0\n\n\n\n\n\n"
+    "text": "properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}\n\nEstablishing a material-properties-profile given by the fault domain and grids. User must provide the     necessary parameters in according to the grid size specified or just a scalar for broadcasting.\n\nArguments that are needed:\n\na: contrib from velocity.\nb: contrib from state.\nL: critical distance.\nσ: effective normal stress.\nvpl: plate rate.\nf0: ref. frictional coeff.\nv0: ref. velocity.\n\nArguments that are optional\n\nk: stiffness tensor. If :auto, it will automatically calculate by seeking λ and μ otherwise should be a valid file path to a *.jld2 or an AbstractArray.\nη: radiation damping. If :auto, it will automatically seek μ and vs and use μ  2mathrmVs.\nvs: shear wave velocity.\nλ: Lamé\'s first parameter\nμ: shear modulus\n\n\n\n\n\n"
 },
 
 {
@@ -249,9 +265,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.TmpVariable",
+    "location": "private_interface.html#JuEQ.TmpRSFVariable",
     "page": "Private",
-    "title": "JuEQ.TmpVariable",
+    "title": "JuEQ.TmpRSFVariable",
     "category": "type",
     "text": "Temporal variable in solving ODEs aimed to avoid allocation overheads.\n\n\n\n\n\n"
 },
@@ -265,7 +281,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.shear_traction-Tuple{Type{#s32} where #s32<:JuEQ.AbstractFault}",
+    "location": "private_interface.html#JuEQ.shear_traction-Tuple{Type{#s45} where #s45<:JuEQ.AbstractFault}",
     "page": "Private",
     "title": "JuEQ.shear_traction",
     "category": "method",
@@ -277,7 +293,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Private",
     "title": "JuEQ.stiffness_periodic_boundary_condition",
     "category": "method",
-    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nsame as dc3d_okada, see dc3d for details.\nax::T: along-strike fault length\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::T: length of repetition interval, see Note below\n\nNote\n\nThe buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.\n\n\n\n\n\n"
+    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nsame as dc3d_okada, see dc3d for details.\nax::AbstractVector: along-strike fault length\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::Number: length of repetition interval, see Note below\n\nNote\n\nThe buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.\n\n\n\n\n\n"
+},
+
+{
+    "location": "private_interface.html#JuEQ.stiffness_tensor-Tuple{PlaneFaultDomain,JuEQ.BoundaryElementGrid,JuEQ.HomogeneousElasticProperties}",
+    "page": "Private",
+    "title": "JuEQ.stiffness_tensor",
+    "category": "method",
+    "text": "stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)\n\nCalculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array     due to the translational & reflective & perodic symmetry, such that the tensor contraction will be equivalent to convolution,     hence we could use FFT for better performace.\n\nNote\n\nFaults are originated from surface and extends downwards, thus dep = 0\n\n\n\n\n\n"
 },
 
 {
