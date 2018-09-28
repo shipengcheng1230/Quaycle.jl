@@ -81,11 +81,11 @@ u0 = cat(vinit, θ0, dims=3);
 
 # Get our ODEs problem:
 
-prob = EarthquakeCycleProblem(gd, mp, u0, (0., 20.); se=DieterichStateLaw(), fform=RForm());
+prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());
 
 # Solve the model:
 
-sol = solve(prob, OwrenZen5(), reltol=1e-6, abstol=1e-6);
+sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
 
 # Take a look at the max velocity:
 
@@ -100,6 +100,6 @@ myplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)',
     yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),
     yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")
 
-snaps = [myplot(i) for i in ind-700: 200: ind+700]
+snaps = [myplot(i) for i in ind-700: 200: ind+500]
 
 plot(snaps..., layout=(length(snaps), 1), size=(600, 1800))
