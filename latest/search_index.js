@@ -73,11 +73,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/bp1.html#Paramters-Settings-1",
+    "location": "generated/bp1.html#Define-parameters-1",
     "page": "Example 1: 1D fault",
-    "title": "Paramters Settings",
+    "title": "Define parameters",
     "category": "section",
-    "text": "First, we load the packageusing JuEQ\nusing PlotsInstead of using SI unit, we refactor ours into the follow:ms2mmyr = 365 * 86400 * 1e3 # convert velocity from m/s to mm/yr\nρ = 2670.0 # density [kg/m³]\nvs = 3464.0 # shear wave velocity [m/s]\nσ = 500.0 # effective normal stress [bar]\na0 = 0.010 # frictional paramter `a` in vw zone\namax = 0.025 # frictional paramter `a` in vs zone\nb0 = 0.015 # frictional paramter `b`\nL = 8.0 # critical distance [mm]\nVpl = 1e-9 * ms2mmyr # plate rate [mm/yr]\nVinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]\nV0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]\nf0 = 0.6 # reference frictional coefficient\nH = 15.0 # vw zone [km]\nh = 3.0 # vw-vs changing zone [km]\nWf = 40.0 # fault depth [km]\nΔz = 25.0e-3 # grid size interval [km]\ntf = 400.0; # simulation time [yr]warning: Warning\nMake sure your units are consistent across the whole variable space. Pontenial imporvement may incoporate Unitful.jl package.Then we arrive at some parameters that are implicit by above:μ = vs^2 * ρ / 1e5 / 1e6 # shear modulus [bar·km/mm]\nλ = μ # poisson material\nη = μ / 2(vs * 1e-3 * 365 * 86400)\nngrid = round(Int, Wf / Δz); # number of gridsNow, we start to construct our model using parameters above. First, we create a \'fault\' by specifying fault type and depth:tip: Tip\nHere, we do not need to provide dip for strike-slip fault as it automatically choose 90.fa = fault(StrikeSlipFault, Wf);Next, we generate the grid regarding the fault we just created by giving number of grids:note: Note\nThis package use ξ for denoting downdip coordinate and x for along-strike one.gd = discretize(fa; nξ=ngrid);Next, we construct the required frictional parameter profile:z = -gd.ξ\naz = fill(a0, size(z))\naz[z .≥ (H + h)] .= amax\naz[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz));Then, we provide the required initial condition satisfying uniform slip distribution over the depth:τ0 = σ * amax * asinh(Vinit / 2V0 * exp((f0 + b0 * log(V0 / Vinit)) / amax)) + η * Vinit\nτz = fill(τ0, size(z))\nθz = @. L / V0 * exp(az / b0 * log(2V0 / Vinit * sinh((τz - η * Vinit) / az / σ)) - f0 / b0)\nvz = fill(Vinit, size(z))\nu0 = hcat(vz, θz);Let\'s simulate only the first 200 years:tspan = (0., 200.);Finally, we provide the material properties w.r.t. our \'fault\', \'grid\' as well as other necessary parameters predefined using the same grid size & dimension:mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=Vpl, f0=f0, v0=V0, η=η, λ=λ, μ=μ, k=:auto);Check our profile now:plot([mp.a, mp.b], z, label=[\"a\", \"b\"], yflip=true, ylabel=\"Depth (km)\")We then contruct the ODEProblem as following by stating which state evolution law to use and frcitonal law form, plus initial condition and simulation time:prob = EarthquakeCycleProblem(mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());We then solve the ODEs:tip: Tip\nFor details of solving options, see here.tip: Tip\nRaise the accuracy option if you get instability when solving these ODEs.sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);The first event happens at around 196 year:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", xlims=(190, 200), label=\"\")note: Note\nClick here for the slip evolution over 3000 years simulation. It may need some time to load the page.This page was generated using Literate.jl."
+    "text": "First, we load the packageusing JuEQ\nusing PlotsInstead of using SI unit, we refactor ours into the follow:ms2mmyr = 365 * 86400 * 1e3 # convert velocity from m/s to mm/yr\nρ = 2670.0 # density [kg/m³]\nvs = 3464.0 # shear wave velocity [m/s]\nσ = 500.0 # effective normal stress [bar]\na0 = 0.010 # frictional paramter `a` in vw zone\namax = 0.025 # frictional paramter `a` in vs zone\nb0 = 0.015 # frictional paramter `b`\nL = 8.0 # critical distance [mm]\nvpl = 1e-9 * ms2mmyr # plate rate [mm/yr]\nvinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]\nv0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]\nf0 = 0.6 # reference frictional coefficient\nH = 15.0 # vw zone [km]\nh = 3.0 # vw-vs changing zone [km]\nWf = 40.0 # fault depth [km]\nΔz = 100.0e-3 # grid size interval [km]\ntf = 400.0; # simulation time [yr]warning: Warning\nMake sure your units are consistent across the whole variable space. Pontenial imporvement may incoporate Unitful.jl package.Then we arrive at some parameters that are implicit by above:μ = vs^2 * ρ / 1e5 / 1e6 # shear modulus [bar·km/mm]\nλ = μ # poisson material\nη = μ / 2(vs * 1e-3 * 365 * 86400)\nngrid = round(Int, Wf / Δz); # number of gridsNow, we start to construct our model using parameters above. First, we create a \'fault\' by specifying fault type and depth:tip: Tip\nHere, we do not need to provide dip for strike-slip fault as it automatically choose 90. See fault."
+},
+
+{
+    "location": "generated/bp1.html#Construct-Model-1",
+    "page": "Example 1: 1D fault",
+    "title": "Construct Model",
+    "category": "section",
+    "text": "fa = fault(StrikeSlipFault, Wf);Next, we generate the grid regarding the fault we just created by giving number of grids:note: Note\nThis package use ξ for denoting downdip coordinate and x for along-strike one. See discretize.gd = discretize(fa; nξ=ngrid);Next, we construct the required frictional parameter profile:z = -gd.ξ\naz = fill(a0, size(z))\naz[z .≥ (H + h)] .= amax\naz[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz));Then, we provide the required initial condition satisfying uniform slip distribution over the depth:τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit\nτz = fill(τ0, size(z))\nθz = @. L / v0 * exp(az / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / az / σ)) - f0 / b0)\nvz = fill(vinit, size(z))\nu0 = hcat(vz, θz);Let\'s simulate only the first 200 years:tspan = (0., 200.);Finally, we provide the material properties w.r.t. our \'fault\', \'grid\' as well as other necessary parameters predefined using the same grid size & dimension:mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η, λ=λ, μ=μ, k=:auto);tip: Tip\nCheck properties for extended options.Check our profile now:plot([mp.a, mp.b], z, label=[\"a\", \"b\"], yflip=true, ylabel=\"Depth (km)\")We then contruct the ODEProblem as following by stating which state evolution law to use and frcitonal law form, plus initial condition and simulation time:prob = EarthquakeCycleProblem(gd, mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());"
+},
+
+{
+    "location": "generated/bp1.html#Solve-Model-1",
+    "page": "Example 1: 1D fault",
+    "title": "Solve Model",
+    "category": "section",
+    "text": "We then solve the ODEs:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);tip: Tip\nFor details of solving options, see here.tip: Tip\nRaise the accuracy option if you get instability when solving these ODEs."
+},
+
+{
+    "location": "generated/bp1.html#Results-1",
+    "page": "Example 1: 1D fault",
+    "title": "Results",
+    "category": "section",
+    "text": "The first event happens at around 196 year:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", xlims=(190, 200), label=\"\")note: Note\nClick here for the slip evolution over 3000 years simulation. It may need some time to load the page.This page was generated using Literate.jl."
+},
+
+{
+    "location": "generated/otfsync.html#",
+    "page": "Example 2: 2D fault",
+    "title": "Example 2: 2D fault",
+    "category": "page",
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/../../../../build/shipengcheng1230/JuEQ.jl/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, buffer=0.);tip: Tip\nIt is recommended to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Here we need to reduce doc build time.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd; a=a, b=b, L=L, k=:auto, σ=σ, η=η, v0=v0, f0=f0, vpl=vpl, λ=λ, μ=μ);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
 },
 
 {
@@ -129,11 +161,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{PlaneMaterialProperties{dim,U,P,T} where T<:Number where P<:AbstractArray where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
+    "location": "public_interface.html#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
     "page": "Public",
     "title": "JuEQ.EarthquakeCycleProblem",
     "category": "method",
-    "text": "EarthquakeCycleProblem(p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())\n\nReturn an ODEProblem that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer DifferentialEquations.jl\n\nArguments\n\np::PlaneMaterialProperties: material profile.\nu0::AbstractArray: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.\ntspan::NTuple: time interval to be simulated.\nse::StateEvolutionLaw: state evolution law to be applied.\nfform::FrictionLawForm: forms of frictional law to be applied.\n\n\n\n\n\n"
+    "text": "EarthquakeCycleProblem(p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())\n\nReturn an ODEProblem that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer DifferentialEquations.jl\n\nArguments\n\ngd::BoundaryElementGrid: grids for fault domain.\np::PlaneMaterialProperties: material profile.\nu0::AbstractArray: initial condition, should be organized such that the first of last dim is velocity while the 2nd of last dim is state.\ntspan::NTuple: time interval to be simulated.\nse::StateEvolutionLaw: state evolution law to be applied.\nfform::FrictionLawForm: forms of frictional law to be applied.\n\n\n\n\n\n"
 },
 
 {
@@ -233,9 +265,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.TmpVariable",
+    "location": "private_interface.html#JuEQ.TmpRSFVariable",
     "page": "Private",
-    "title": "JuEQ.TmpVariable",
+    "title": "JuEQ.TmpRSFVariable",
     "category": "type",
     "text": "Temporal variable in solving ODEs aimed to avoid allocation overheads.\n\n\n\n\n\n"
 },
