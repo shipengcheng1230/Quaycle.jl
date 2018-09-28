@@ -24,7 +24,7 @@ f0 = 0.6 # reference frictional coefficient
 H = 15.0 # vw zone [km]
 h = 3.0 # vw-vs changing zone [km]
 Wf = 40.0 # fault depth [km]
-Δz = 25.0e-3 # grid size interval [km]
+Δz = 100.0e-3 # grid size interval [km]
 tf = 400.0; # simulation time [yr]
 
 # !!! warning

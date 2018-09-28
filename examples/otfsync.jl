@@ -34,10 +34,11 @@ fa = fault(StrikeSlipFault, (80., 10.));
 
 # Generate grids:
 
-gd = discretize(fa; nx=160, nξ=20, buffer=80.);
+gd = discretize(fa; nx=160, nξ=20, buffer=0.);
 
 # !!! tip
 #     It is recommended to add buffer zones adjacent the horizontal edges to immitate *zero* dislocation at the ridge region.
+#     Here we need to reduce doc build time.
 
 # Time for us to establish frictional parameters profile:
 
