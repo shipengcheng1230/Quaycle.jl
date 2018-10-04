@@ -37,8 +37,14 @@ fa = fault(StrikeSlipFault, (80., 10.));
 gd = discretize(fa; nx=160, nξ=20, buffer=0.);
 
 # !!! tip
-#     It is recommended to add buffer zones adjacent the horizontal edges to immitate *zero* dislocation at the ridge region.
-#     Here we need to reduce doc build time.
+#     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
+#     to immitate *zero* dislocation at the ridge region.
+#     Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.
+
+#     Under such circumstance, the grid will expand outside the actual fault domain. However, in the buffer zone, relative
+#     velocity is *zero* at all time, so are the derivatives of velocity & state variable. Users may need to extract the solutions
+#     in the actually fault domain using `xs_index::BitArray`, one of the fields of the grid structure
+#     that indicate which part of along-strike is the actually fault domain.
 
 # Time for us to establish frictional parameters profile:
 
@@ -86,7 +92,7 @@ prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), ffo
 
 # Solve the model:
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
 
 # Take a look at the max velocity:
 

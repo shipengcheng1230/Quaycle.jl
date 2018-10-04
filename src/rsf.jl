@@ -1,6 +1,6 @@
 abstract type StateEvolutionLaw end
 
-"`\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"
 struct DieterichStateLaw <: StateEvolutionLaw end
 
 "``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = -\\frac{v θ}{L} * \\log{\\frac{v θ}{L}}``"

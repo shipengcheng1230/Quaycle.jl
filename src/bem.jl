@@ -1,14 +1,14 @@
-@traitdef IsOnYZPlane{faulttype}
-@traitimpl IsOnYZPlane{faulttype} <- isonyz(faulttype)
+@traitdef IsDisplacementOnYZPlane{faulttype}
+@traitimpl IsDisplacementOnYZPlane{faulttype} <- is_diplacement_on_yz_plane(faulttype)
 
-isonyz(::Type{NormalFault}) = true
-isonyz(::Type{ThrustFault}) = true
-isonyz(::Type{StrikeSlipFault}) = false
+is_diplacement_on_yz_plane(::Type{NormalFault}) = true
+is_diplacement_on_yz_plane(::Type{ThrustFault}) = true
+is_diplacement_on_yz_plane(::Type{StrikeSlipFault}) = false
 
-abstract type AbstractDifferenceGrids{dim, isuniform, T} end
-abstract type BoundaryElementGrid{dim, isuniform, T} <: AbstractDifferenceGrids{dim, isuniform, T} end
+abstract type AbstractDifferenceGrids{dim} end
+abstract type BoundaryElementGrid{dim} <: AbstractDifferenceGrids{dim} end
 
-struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{1, true, T}
+struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{1}
     ξ::U1 # along-downdip
     Δξ::T
     nξ::I
@@ -18,33 +18,32 @@ struct BEMGrid_1D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     ax::U1 # (psudo) cell boundary along-strike (length)
 end
 
-struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer} <: BoundaryElementGrid{2, true, T}
+struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer, V<:BitArray} <: BoundaryElementGrid{2}
     x::U1 # along-strike
     ξ::U1 # along-downdip
-    Δx::T # number of fault domain grids, excluding buffer zone
+    Δx::T
     Δξ::T
     nx::I
     nξ::I
-    ax::U2 # cell boundary along-strike (length), including buffer zone
-    aξ::U2 # cell boundary along-downdip (width), including buffer zone
+    ax::U2 # cell boundary along-strike (length)
+    aξ::U2 # cell boundary along-downdip (width)
     y::U1 # y-component of `ξ`
     z::U1 # z-component of `ξ`
-    xind::Vector{Bool} # along-strike index of actual zone
-    bx::U1 # along-strike cell centroid, including buffer zone
-    nbx::I # number of total grids, including buffer zone
+    xs_index::V # bools that indicate actual fault domain, excluding buffer zone if exists
+    bf_index::V # bools that indicate buffer zone
 end
 
 """
     discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5)
 
-Generate the grid for given 1D fault domain.
+Generate the grid for given 1D fault domain. The grids will be forced to start at (x=0, y=0, z=0).
 
 ## Arguments
 - `Δξ`: grid space along-downdip
 - `ax_ratio::Number`: ration of along-strike length agsinst along-downdip length for mimicing an extended
     2d (x & ξ) fault represented by 1d (ξ) domain. Default `ax_ratio=12.5` is more than enough for producing consistent results.
 """
-function discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5) where {ftype, T}
+function discretize(fa::PlaneFaultDomain{ftype, 1, T}, Δξ::T; ax_ratio=12.5) where {ftype<:PlaneFault, T<:Number}
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
     ax = fa[:ξ] * ax_ratio .* [-one(T), one(T)]
     BEMGrid_1D(ξ, Δξ, nξ, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), ax)
@@ -53,34 +52,36 @@ end
 """
     discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
 
-Generate the grid for given 2D fault domain.
+Generate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.
+    By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.
 
 ## Arguments
 - `Δx, Δξ`: grid space along-strike and along-downdip respectively
 - `buffer::Union{T, Symbol}`: length of buffer size for introducing *zero-dislocation* area at along-strike edges of defined fault domain.
 """
-function discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}
+function discretize(fa::PlaneFaultDomain{ftype, 2, T}, Δx::T, Δξ::T; buffer=:auto) where {ftype<:PlaneFault, T<:Number}
     if buffer == :auto
         buffersize = ftype == StrikeSlipFault ? fa[:x] : zero(typeof(fa[:x]))
-    elseif typeof(buffer) <: Number
+    elseif typeof(buffer) <: T
         buffersize = buffer
     else
-        error("Received buffer: $buffer. Valid `buffer` should be `:auto` or a number.")
+        error("Received buffer: $buffer. Valid `buffer` should be `:auto` or a $T.")
         return nothing
     end
 
     ξ, nξ, aξ = _divide_segment(Val(:halfspace), promote(fa[:ξ], Δξ)...)
     x, nx, ax = _divide_segment(Val(:symmatzero), promote(fa[:x]+buffersize, Δx)...)
 
-    xind = fill(false, nx)
+    xs_index = convert(BitArray, fill(false, nx))
     ind = argmin(abs.(-fa[:x]/2 .- ax[:,1]))
-    xind[ind: end-ind+1] .= true
+    xs_index[ind: end-ind+1] .= true
+    bf_index = .!(xs_index)
 
-    BEMGrid_2D(x[xind], ξ, Δx, Δξ, sum(xind), nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), xind, x, nx)
+    BEMGrid_2D(x, ξ, Δx, Δξ, nx, nξ, ax, aξ, ξ.*cospi(fa.dip/180), ξ.*sinpi(fa.dip/180), xs_index, bf_index)
 end
 
-discretize(fa::PlaneFaultDomain{ftype, 1}; nξ=500, kwargs...) where {ftype} = discretize(fa, fa[:ξ]/nξ; kwargs...)
-discretize(fa::PlaneFaultDomain{ftype, 2}; nx=64, nξ=32, buffer=:auto) where  {ftype} = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; buffer=buffer)
+discretize(fa::PlaneFaultDomain{ftype, 1}; nξ::Integer=500, kwargs...) where {ftype<:PlaneFault} = discretize(fa, fa[:ξ]/nξ; kwargs...)
+discretize(fa::PlaneFaultDomain{ftype, 2}; nx::Integer=60, nξ::Integer=30, kwargs...) where  {ftype<:PlaneFault} = discretize(fa, fa[:x]/nx, fa[:ξ]/nξ; kwargs...)
 
 function _divide_segment(::Val{:halfspace}, x::T, Δx::T) where {T<:Number}
     xi = collect(range(zero(T), stop=-x+Δx, step=-Δx)) .- Δx/2
@@ -117,6 +118,12 @@ end
     vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
     f0::T # ref. frictional coeff
     v0::T # ref. velocity
+
+    @assert size(a) == comsize
+    @assert size(b) == comsize
+    @assert size(L) == comsize
+    @assert size(σ) == comsize
+    @assert size(η) == comsize
 end
 
 """
@@ -135,14 +142,14 @@ Calculate the shear traction on the fault plane w.r.t. fault types.
 """
 shear_traction(ftype::Type{<:AbstractFault}) = NaN
 
-@inline @traitfn function shear_traction(::Type{FT}, u, λ, μ, dip) where {FT<:PlaneFault; IsOnYZPlane{FT}}
+@inline @traitfn function shear_traction(::Type{FT}, u::AbstractVector, λ::T, μ::T, dip::T) where {FT<:PlaneFault, T<:Number; IsDisplacementOnYZPlane{FT}}
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
     -((σzz - σyy)/2 * sinpi(2dip/180) + τyz * cospi(2dip/180))
 end
 
-@inline @traitfn function shear_traction(::Type{FT}, u, λ, μ, dip) where {FT<:PlaneFault; !IsOnYZPlane{FT}}
+@inline @traitfn function shear_traction(::Type{FT}, u::AbstractVector, λ::T, μ::T, dip::T) where {FT<:PlaneFault, T<:Number; !IsDisplacementOnYZPlane{FT}}
     # Special case for `dip = 90.` against above, however, at x-y plane instead.
     μ * (u[5] + u[7])
 end
@@ -160,85 +167,87 @@ Calculate the reduced stiffness tensor. For 2D fault, the final result will be d
 function stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties; kwargs...)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1}, gd::BoundaryElementGrid{1, true, T}, ep::HomogeneousElasticProperties,
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1}, ep::HomogeneousElasticProperties,
     kwargs...) where {ftype<:PlaneFault, T<:Number}
 
-    udisl = applied_unit_dislocation(ftype)
+    unit_disl = applied_unit_dislocation(ftype)
     if nprocs() == 1
         u12 = zeros(T, 12)
         ST = zeros(T, gd.nξ, gd.nξ)
         for j = 1: gd.nξ
             @inbounds @simd for i = 1: gd.nξ
-                u12 .= dc3d_okada(zero(T), gd.y[i], gd.z[i], ep.α, zero(T), fa.dip, gd.ax, gd.aξ[j,:], udisl)
+                # As stated in `BEMGrid_1D`, here `x` and `depth` are both fixed at 0
+                u12 .= dc3d_okada(zero(T), gd.y[i], gd.z[i], ep.α, zero(T), fa.dip, gd.ax, gd.aξ[j,:], unit_disl)
                 ST[i,j] = shear_traction(ftype, u12, ep.λ, ep.μ, fa.dip)
             end
         end
         return ST
     else
-        return stiffness_tensor_parfor(fa, gd, ep, udisl)
+        return stiffness_tensor_parfor(fa, gd, ep, unit_disl)
     end
 end
 
-function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1}, gd::BoundaryElementGrid{1, true, T}, ep::HomogeneousElasticProperties,
-    _udisl::AbstractVector) where {ftype<:PlaneFault, T<:Number}
+function stiffness_tensor_parfor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1}, ep::HomogeneousElasticProperties,
+    unit_disl::AbstractVector) where {ftype<:PlaneFault, T<:Number}
 
     ST = SharedArray{T}(gd.nξ, gd.nξ)
     @sync begin
         for p in procs(ST)
-            @async remotecall_wait(()->(fa, gd, ep, _udisl), p)
+            @async remotecall_wait(()->(fa, gd, ep, unit_disl), p)
         end
     end
 
     @sync @distributed for j = 1: gd.nξ
         @inbounds @simd for i = 1: gd.nξ
-            _u = dc3d_okada(zero(T), gd.y[i], gd.z[i], ep.α, zero(T), fa.dip, gd.ax, gd.aξ[j,:], _udisl)
+            _u = dc3d_okada(zero(T), gd.y[i], gd.z[i], ep.α, zero(T), fa.dip, gd.ax, gd.aξ[j,:], unit_disl)
             ST[i,j] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
         end
     end
 
-    clear!([:fa, :gd, :ep, :_udisl, :_u], procs(ST))
+    clear!([:fa, :gd, :ep, :unit_disl, :_u], procs(ST))
     return sdata(ST)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties;
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2}, ep::HomogeneousElasticProperties;
     nrept::Integer=2) where {ftype<:PlaneFault, T<:Number}
 
-    udisl = applied_unit_dislocation(ftype)
-    ST = SharedArray{T}(gd.nbx, gd.nξ, gd.nξ)
+    unit_disl = applied_unit_dislocation(ftype)
+    ST = SharedArray{T}(gd.nx, gd.nξ, gd.nξ)
 
     @sync begin
         for p in procs(ST)
-            @async remotecall_wait(stiffness_shared_chunk!, p, ST, fa, gd, ep, udisl, nrept)
+            @async remotecall_wait(stiffness_shared_chunk!, p, ST, fa, gd, ep, unit_disl, nrept)
         end
     end
 
     ST = sdata(ST)
     FFTW.set_num_threads(nthreads())
-    x1 = zeros(T, gd.nbx)
+    x1 = zeros(T, gd.nx)
     p1 = plan_rfft(x1, flags=FFTW.MEASURE)
-    ST_DFT = Array{Complex{T}}(undef, floor(Int, gd.nbx/2)+1, gd.nξ, gd.nξ)
+    ST_DFT = Array{Complex{T}}(undef, floor(Int, gd.nx/2)+1, gd.nξ, gd.nξ)
     @inbounds for l = 1: gd.nξ, j = 1: gd.nξ
         ST_DFT[:,j,l] .= p1 * ST[:,j,l]
     end
     return ST_DFT
 end
 
-function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties,
-    _udisl, nrept, subs) where {ftype, T}
+function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2}, ep::HomogeneousElasticProperties,
+    unit_disl::AbstractVector, nrept::Integer, subs::AbstractArray) where {ftype, T}
     _u = zeros(T, 12)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
-        _u .= stiffness_periodic_boundary_condition(gd.bx[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], _udisl, nrept, gd.nbx * gd.Δx)
+        # As stated in `BEMGrid_2D`, `depth` here are fixed at 0
+        _u .= stiffness_periodic_boundary_condition(gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], unit_disl, nrept, gd.nx * gd.Δx)
         ST[i,j,l] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
     end
 end
 
-function stiffness_shared_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2}, gd::BoundaryElementGrid{2, true, T}, ep::HomogeneousElasticProperties,
-    _udisl, nrept) where {ftype, T}
+function stiffness_shared_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2}, ep::HomogeneousElasticProperties,
+    unit_disl::AbstractVector, nrept::Integer) where {ftype, T}
     i2s = CartesianIndices(ST)
     inds = localindices(ST)
     subs = i2s[inds]
-    stiffness_chunk!(ST, fa, gd, ep, _udisl, nrept, subs)
+    stiffness_chunk!(ST, fa, gd, ep, unit_disl, nrept, subs)
 end
 
 """
@@ -284,36 +293,36 @@ struct TmpRSF_1D{T<:AbstractVecOrMat{<:Real}} <: TmpRSFVariable{1}
     relv::T
 end
 
-struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan, V<:AbstractVector{Bool}} <: TmpRSFVariable{2}
+struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan, V<:BitArray} <: TmpRSFVariable{2}
     dτ_dt::T
     dμ_dθ::T
     dμ_dv::T
     ψ1::T
     ψ2::T
-    dτ_dt_bf::T
-    relv_bf::T
-    dτ_dt_bf_dft::U
-    relv_bf_dft::U
+    relv::T
+    dτ_dt_dft::U
+    relv_dft::U
     plan::P
-    xind::V
+    xs_index::V
+    bf_index::V
 end
 
 create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for _ in 1: 6]...)
 
-function create_tmp_var(nx::I, nξ::I, nbx::I, xind::Vector{Bool}; T1=Float64) where {I <: Integer}
+function create_tmp_var(nx::I, nξ::I, xs_index, bf_index; T1=Float64) where {I <: Integer}
     FFTW.set_num_threads(nthreads())
-    x1 = Matrix{T1}(undef, nbx, nξ)
+    x1 = Matrix{T1}(undef, nx, nξ)
     p1 = plan_rfft(x1, 1, flags=FFTW.MEASURE)
-    rfft_size = floor(Int, nbx/2) + 1
+    rfft_size = floor(Int, nx/2) + 1
     tvar = TmpRSF_2D(
         [Matrix{T1}(undef, nx, nξ) for _ in 1: 5]...,
-        [zeros(T1, nbx, nξ) for _ in 1: 2]...,
+        zeros(T1, nx, nξ), # for relative velocity
         [Matrix{Complex{T1}}(undef, rfft_size, nξ) for _ in 1: 2]...,
-        p1, xind)
+        p1, xs_index, bf_index)
 end
 
-create_tmp_var(gd::BoundaryElementGrid{1}) = create_tmp_var(gd.nξ)
-create_tmp_var(gd::BoundaryElementGrid{2}) = create_tmp_var(gd.nx, gd.nξ, gd.nbx, gd.xind)
+create_tmp_var(gd::BoundaryElementGrid{1}) = create_tmp_var(gd.nξ; T1=typeof(gd.Δξ))
+create_tmp_var(gd::BoundaryElementGrid{2}) = create_tmp_var(gd.nx, gd.nξ, gd.xs_index, gd.bf_index; T1=typeof(gd.Δx))
 
 function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpRSFVariable{dim}, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
     _ndim = dim + 1
@@ -321,11 +330,24 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpRSFVaria
     θ = selectdim(u, _ndim, 2)
     dv = selectdim(du, _ndim, 1)
     dθ = selectdim(du, _ndim, 2)
-    clamp!(θ, 0.0, Inf)
 
+    variable_trim!(v, θ)
     dθ_dt!(dθ, se, v, θ, mp.L)
     dτ_dt!(mp, tvar, v)
     dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
+    derivative_trim!(dv, dθ, tvar)
+end
+
+@inline function variable_trim!(v::T, θ::T) where {T<:AbstractVecOrMat{<:Float64}}
+    clamp!(θ, 0., Inf)
+end
+
+@inline function derivative_trim!(dv::T, dθ::T, tvar::TmpRSFVariable{1}) where {T<:AbstractVector}
+end
+
+@inline function derivative_trim!(dv::T, dθ::T, tvar::TmpRSFVariable{2}) where {E<:Number, T<:AbstractMatrix{E}}
+    dv[tvar.bf_index,:] .= zero(E)
+    dθ[tvar.bf_index,:] .= zero(E)
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpRSFVariable{1}, v::AbstractArray)
@@ -334,17 +356,16 @@ end
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray)
-    tvar.relv_bf[tvar.xind,:] .= mp.vpl .- v
-    tvar.relv_bf_dft .= tvar.plan * tvar.relv_bf
-    fill!(tvar.dτ_dt_bf_dft, 0.)
-    nd = size(tvar.dτ_dt, 2)
+    tvar.relv[tvar.xs_index,:] .= mp.vpl .- v[tvar.xs_index,:]
+    tvar.relv_dft .= tvar.plan * tvar.relv
+    fill!(tvar.dτ_dt_dft, 0.)
+    nd = mp.comsize[2]
     @inbounds for j = 1: nd
         @simd for l = 1: nd
-            tvar.dτ_dt_bf_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_bf_dft[:,l]
+            tvar.dτ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]
         end
     end
-    ldiv!(tvar.dτ_dt_bf, tvar.plan, tvar.dτ_dt_bf_dft)
-    tvar.dτ_dt .= tvar.dτ_dt_bf[tvar.xind,:]
+    ldiv!(tvar.dτ_dt, tvar.plan, tvar.dτ_dt_dft)
 end
 
 dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecOrMat, U<:AbstractVecOrMat} = dθ .= dθ_dt.(Ref(se), v, θ, L)
