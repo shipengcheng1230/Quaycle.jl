@@ -26,6 +26,14 @@ struct RForm <: FrictionLawForm end # regularized form
     friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
 
 Calculate friction given by the form of fomula as well as other necessary parameters.
+- Conventional Form:
+```math
+f(V, θ) = f_0 + a \\ln{\\frac{V}{V_0}} + b \\ln{\\left(\\frac{V_0 θ}{L}\\right)}
+```
+- Regularized Form:
+```math
+f(V, θ) = a \\sinh ^{-1}{\\left[\\frac{V}{2V_0} \\exp{\\frac{f_0 + b \\ln{\\left(V_0 θ/L\\right)}}{a}}\\right]}
+```
 """
 function friction(::CForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
     f0 + a * log(v / v0) + b * log(v0 * θ / L)
@@ -85,7 +93,7 @@ friction(p::MaterialProperties{0}, v, θ; fform=CForm()) = friction(fform, v, θ
 
 friction(p::MaterialProperties{0}, vθ::AbstractVecOrMat{T}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
 
-friction(p::MaterialProperties{0}, vθ::AbstractArray{T}) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ)
+friction(p::MaterialProperties{0}, vθ::AbstractArray{T}; kwargs...) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ; kwargs...)
 
 function derivations!(du, u, p::MaterialProperties{0}, t, se::StateEvolutionLaw, fform::FrictionLawForm)
     du[1], du[2] = dv_dθ_dt(p, u[1], u[2], se, fform)

@@ -403,3 +403,12 @@ function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialPropert
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end
+
+function friction(mp::PlaneMaterialProperties{N}, v::AbstractVecOrMat, θ::AbstractVecOrMat; fform=CForm()::FrictionLawForm) where {N}
+    friction.(Ref(fform), v, θ, mp.L, mp.a, mp.b, mp.f0, mp.v0)
+end
+
+function friction(mp::PlaneMaterialProperties{N}, vθ::AbstractArray; kwargs...) where {N}
+    ndim = ndims(vθ)
+    friction(mp, selectdim(vθ, ndim, 1), selectdim(vθ, ndim, 2); kwargs...)
+end
