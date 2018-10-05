@@ -78,7 +78,7 @@ plot(p1, p2, layout=(2, 1))
 
 # Construct our material property profile:
 
-mp = properties(fa, gd; a=a, b=b, L=L, k=:auto, σ=σ, η=η, v0=v0, f0=f0, vpl=vpl, λ=λ, μ=μ);
+mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);
 
 # Provide the initial condition:
 
@@ -92,7 +92,7 @@ prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), ffo
 
 # Solve the model:
 
-@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
 
 # Take a look at the max velocity:
 

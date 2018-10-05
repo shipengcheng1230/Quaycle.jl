@@ -107,8 +107,8 @@ Okada's [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) on
     α::T = (λ + μ) / (λ + 2μ) # material constants which equals (λ + μ) / (λ + 2μ)
 end
 
-@with_kw struct PlaneMaterialProperties{N, T<:Number, U<:AbstractArray, P<:AbstractArray} <: AbstractMaterialProperties{N}
-    comsize::Dims{N}
+@with_kw struct PlaneMaterialProperties{N, T<:Number, U<:AbstractVecOrMat, P<:AbstractArray} <: AbstractMaterialProperties{N}
+    dims::Dims{N}
     a::U # contrib from velocity
     b::U # contrib from state
     L::U # critical distance
@@ -119,11 +119,11 @@ end
     f0::T # ref. frictional coeff
     v0::T # ref. velocity
 
-    @assert size(a) == comsize
-    @assert size(b) == comsize
-    @assert size(L) == comsize
-    @assert size(σ) == comsize
-    @assert size(η) == comsize
+    @assert size(a) == dims
+    @assert size(b) == dims
+    @assert size(L) == dims
+    @assert size(σ) == dims
+    @assert size(η) == dims
 end
 
 """
@@ -167,7 +167,7 @@ Calculate the reduced stiffness tensor. For 2D fault, the final result will be d
 function stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties; kwargs...)
 end
 
-function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1}, ep::HomogeneousElasticProperties,
+function stiffness_tensor(fa::PlaneFaultDomain{ftype, 1, T}, gd::BoundaryElementGrid{1}, ep::HomogeneousElasticProperties;
     kwargs...) where {ftype<:PlaneFault, T<:Number}
 
     unit_disl = applied_unit_dislocation(ftype)
@@ -359,7 +359,7 @@ end
     tvar.relv[tvar.xs_index,:] .= mp.vpl .- v[tvar.xs_index,:]
     tvar.relv_dft .= tvar.plan * tvar.relv
     fill!(tvar.dτ_dt_dft, 0.)
-    nd = mp.comsize[2]
+    nd = mp.dims[2]
     @inbounds for j = 1: nd
         @simd for l = 1: nd
             tvar.dτ_dt_dft[:,j] .+= mp.k[:,j,l] .* tvar.relv_dft[:,l]

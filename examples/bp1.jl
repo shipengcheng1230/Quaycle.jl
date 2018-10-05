@@ -74,7 +74,7 @@ tspan = (0., 200.);
 # Finally, we provide the material properties w.r.t. our 'fault', 'grid' as well as other necessary parameters predefined
 # using the same grid size & dimension:
 
-mp = properties(fa, gd; a=az, b=b0, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η, λ=λ, μ=μ, k=:auto);
+mp = properties(;fault=fa, grid=gd, parameters=[:a=>az, :b=>b0, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);
 
 # !!! tip
 #     Check [`properties`](@ref) for extended options.
