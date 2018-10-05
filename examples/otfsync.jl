@@ -37,8 +37,14 @@ fa = fault(StrikeSlipFault, (80., 10.));
 gd = discretize(fa; nx=160, nξ=20, buffer=0.);
 
 # !!! tip
-#     It is recommended to add buffer zones adjacent the horizontal edges to immitate *zero* dislocation at the ridge region.
-#     Here we need to reduce doc build time.
+#     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
+#     to immitate *zero* dislocation at the ridge region.
+#     Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.
+
+#     Under such circumstance, the grid will expand outside the actual fault domain. However, in the buffer zone, relative
+#     velocity is *zero* at all time, so are the derivatives of velocity & state variable. Users may need to extract the solutions
+#     in the actually fault domain using `xs_index::BitArray`, one of the fields of the grid structure
+#     that indicate which part of along-strike is the actually fault domain.
 
 # Time for us to establish frictional parameters profile:
 
@@ -72,7 +78,7 @@ plot(p1, p2, layout=(2, 1))
 
 # Construct our material property profile:
 
-mp = properties(fa, gd; a=a, b=b, L=L, k=:auto, σ=σ, η=η, v0=v0, f0=f0, vpl=vpl, λ=λ, μ=μ);
+mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);
 
 # Provide the initial condition:
 

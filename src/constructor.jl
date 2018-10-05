@@ -1,100 +1,73 @@
+function get_arg(name::Symbol, collection::Dict)
+    x = get(collection, name, nothing)
+    x == nothing && error("`$name` is not provided.")
+    return x
+end
+
+broadcast_arg(x::Number, bcsize::NTuple) = x .* ones(bcsize...)
+broadcast_arg(x::AbstractArray, bcsize::NTuple) = (size(x) == bcsize) ? x : error("$(size(x)) received, $bcsize required.")
+
+parse_k(fa, gd, options::AbstractArray{<:Pair}) = parse_k(fa, gd, Dict(options))
+
+function parse_k(fa, gd, options::Dict)
+    if haskey(options, :filepath)
+        filepath = options[:filepath]
+        if isfile(filepath) && endswith(filepath, ".jld2")
+            @info "Loading stiffness: $_k ..."
+            @load filepath k
+        else
+            error("Invalid file path $filepath.")
+        end
+    elseif haskey(options, :μ)
+        μ = options[:μ]
+        λ = haskey(options, :λ) ? options[:λ] : μ
+        ep = HomogeneousElasticProperties(λ=λ, μ=μ)
+        @info "Calculating stiffness tensor ..."
+        # `nrept` works only for 2D fault and is ignored by 1D case
+        nrept = get(options, :nrept, 2)
+        k = stiffness_tensor(fa, gd, ep; nrept=2)
+    elseif haskey(options, :array)
+        k = options[:array]
+    else
+        error("Insufficient options for stiffness tensor.")
+    end
+    return k
+end
+
 """
     properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
 
 Establishing a material-properties-profile given by the fault domain and grids. User must provide the
     necessary parameters in according to the grid size specified or just a scalar for broadcasting.
 
-## Arguments that are needed:
+## Arguments that are required:
 - `a`: contrib from velocity.
 - `b`: contrib from state.
 - `L`: critical distance.
 - `σ`: effective normal stress.
+- `η`: radiation damping. It is recommended to set as ``μ / 2\\mathrm{Vs}`` where ``μ`` is *shear modulus* and ``\\mathrm{Vs}`` shear wave velocity.
 - `vpl`: plate rate.
 - `f0`: ref. frictional coeff.
 - `v0`: ref. velocity.
 
-## Arguments that are optional
-- `k`: stiffness tensor. If `:auto`, it will automatically calculate by seeking `λ` and `μ` otherwise should be a valid file path to a `*.jld2` or an `AbstractArray`.
-- `η`: radiation damping. If `:auto`, it will automatically seek `μ` and `vs` and use ``μ / 2\\mathrm{Vs}``.
-- `vs`: shear wave velocity.
-- `λ`: Lamé's first parameter
-- `μ`: shear modulus
+## Arguments that need options
+- `k`: stiffness tensor.
+
+   (1) Providing *shear modulus* denoted as `μ` and *Lamé's first parameter* denoted as `λ` (same as `μ` if missing),
+   then calculate it based on grid and fault domain, choosing parallel scheme if `nprocs() != 1`.
+   (2) A valid file path to a *.jld2* that contains valid stiffness tensor. No verification will be performed here.
+   (3) an `AbstractArray` represent the pre-calculated stiffness tensor. No verification will be performed here.
 """
-function properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
+properties(fa::PlaneFaultDomain{ftype, dim}, gd::BoundaryElementGrid, parameters::AbstractArray{<:Pair}) where {ftype<:PlaneFault, dim} = properties(fa, gd, Dict(parameters))
+properties(;fault::PlaneFaultDomain{ftype, dim}, grid::BoundaryElementGrid, parameters::AbstractArray{<:Pair}) where {ftype<:PlaneFault, dim} = properties(fault, grid, parameters)
 
-    function get_k()
-        _k = get(kwargs, :k, :auto)
-        _tk = typeof(_k)
-        if _tk <: AbstractString && isfile(_k) && endswith(_k, ".jld2")
-            @info "Loading stiffness: $_k ..."
-            @load _k k
-        elseif _tk <: AbstractArray
-            k = _k
-        elseif _k == :auto
-            λ = args_get_expand(:λ, kwargs, (), false)
-            μ = args_get_expand(:μ, kwargs, (), false)
-            ep = HomogeneousElasticProperties(λ=μ, μ=μ)
-            @info "Calculating stiffness tensor..."
-            k = stiffness_tensor(fa, gd, ep)
-        else
-            error("""
-                Invalid option: $_k, should be:
-                (1) A valid file path to a `*.jld2` file
-                (2) An `AbstractArray`
-                (3) Symbol `:auto`.
-                (4) NamedTuple containts `:nrept`.
-            """)
-        end
-
-        path = get(kwargs, :savek, nothing)
-        if typeof(path) <: AbstractString && ispath(path)
-            @info "Saving stiffness: $path ..."
-            @save path k
-        end
-        return k
-    end
-
-    function get_η()
-        _η = get(kwargs, :η, nothing)
-        if _η == :auto || _η == nothing
-            μ = args_get_expand(:μ, kwargs, (), false)
-            vs = args_get_expand(:vs, kwargs, gsize)
-            η = μ ./ 2vs
-        else
-            η = args_get_expand(:η, kwargs, gsize)
-        end
-    end
-
-    gsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
-    xind = dim == 1 ? fill(true, gd.nξ) : gd.xind
-    kwargs = _kwargs.data
-    a = args_get_expand(:a, kwargs, gsize)
-    b = args_get_expand(:b, kwargs, gsize)
-    L = args_get_expand(:L, kwargs, gsize)
-    σ = args_get_expand(:σ, kwargs, gsize)
-
-    vpl = args_get_expand(:vpl, kwargs, (), false)
-    f0 = args_get_expand(:f0, kwargs, (), false)
-    v0 = args_get_expand(:v0, kwargs, (), false)
-
-    k = get_k()
-    η = get_η()
-
-    mp = PlaneMaterialProperties(comsize=gsize ,a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
+function properties(fa::PlaneFaultDomain{ftype, dim}, gd::BoundaryElementGrid{dim}, parameters::Dict) where {ftype<:PlaneFault, dim}
+    bcsize = dim == 1 ? (gd.nξ,) : (gd.nx, gd.nξ)
+    get_x = (name) -> broadcast_arg(get_arg(name, parameters), bcsize)
+    a, b, L, σ, η = [get_x(name) for name in [:a, :b, :L, :σ, :η]]
+    vpl, f0, v0 = [get_arg(name, parameters) for name in [:vpl, :f0, :v0]]
+    k = parse_k(fa, gd, get_arg(:k, parameters))
+    mp = PlaneMaterialProperties(dims=bcsize, a=a, b=b, L=L, k=k, σ=σ, η=η, vpl=vpl, f0=f0, v0=v0)
+    @info "Fault material properties establised."
     return mp
-end
-
-function args_get_expand(sym::Symbol, kwargs::NamedTuple, gsize::NTuple, expand::Bool=true)
-    x = get(kwargs, sym, nothing)
-    x == nothing && error("`$sym` is not provided.")
-    if expand
-        if typeof(x) <: Number
-            x = x .* ones(gsize...)
-        elseif typeof(x) <: AbstractArray
-            size(x) == gsize || error("Dim `$sym` does not match with given grid, $(size(x)) received, $gsize required.")
-        else
-            error("Illegal input type of `$sym`, get $x, required `Number` or `AbstractArray`.")
-        end
-    end
-    return x
 end
