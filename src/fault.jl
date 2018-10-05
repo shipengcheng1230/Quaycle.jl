@@ -35,8 +35,11 @@ Generate a fault given the fault type, dip angle and its spatial span.
 """
 fault(ftype::Type{<:PlaneFault}, dip::T, span::NTuple{N, T}) where {N, T} = PlaneFaultDomain(ftype, dip, span)
 fault(ftype::Type{<:PlaneFault}, dip, span::Number) = fault(ftype, dip, tuple(span))
-fault(ftype::Type{<:PlaneFault}, dip, span::AbstractVector{<:Number}) = fault(ftype, dip, tuple(span...))
 fault(ftype::Type{<:PlaneFault}, dip::T, span::NTuple{N, T}) where {N, T<:Integer} = fault(ftype, Float64(dip), span)
+
+# Ref to [signal (4): Illegal instruction](https://github.com/JuliaLang/julia/issues/29066)
+# Problems solved by using type stable convertion from array to tuple, see: https://discourse.julialang.org/t/array-to-tuple/9024/3
+fault(ftype::Type{<:PlaneFault}, dip, span::AbstractVector{<:Number}) = fault(ftype, dip, ntuple(i -> span[i], Val{length(span)}()))
 
 function fault(ftype::Type{<:PlaneFault}, dip::T1, span::NTuple{N, T2}) where {N, T1, T2}
     pt = promote_type(T1, T2)
