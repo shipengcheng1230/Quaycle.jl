@@ -4,7 +4,7 @@
 [![License:MIT](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://shipengcheng1230.github.io/JuEQ.jl/stable)
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://shipengcheng1230.github.io/JuEQ.jl/latest)
-
+[![Gitter](https://img.shields.io/badge/chat-on%20gitter-ff69b4.svg)](https://gitter.im/JuEQ-jl/Lobby)
 
 This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.
 
