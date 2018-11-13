@@ -29,7 +29,7 @@ struct BEMGrid_2D{U1<:AbstractVector, U2<:AbstractMatrix, T<:Number, I<:Integer}
     aξ::U2 # cell boundary along-downdip (width)
     y::U1 # y-component of `ξ`
     z::U1 # z-component of `ξ`
-    bufferratio::T # ratio of buffer zone length against along-strike length
+    bufferratio::Union{T,I} # ratio of buffer zone length against along-strike length
 end
 
 """
@@ -282,7 +282,7 @@ struct TmpRSF_1D{T<:AbstractVecOrMat{<:Real}} <: TmpRSFVariable{1}
     relv::T
 end
 
-struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}} <: TmpRSFVariable{2}
+struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan, BA<:BitArray} <: TmpRSFVariable{2}
     dτ_dt::T
     dμ_dθ::T
     dμ_dv::T
@@ -292,8 +292,8 @@ struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}} <: TmpRS
     dτ_dt_dft::U
     relv_dft::U
     dτ_dt_buffer::T
-    pf::Plan
-    xindex::BitArray
+    pf::P
+    xindex::BA
 end
 
 create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for _ in 1: 6]...)

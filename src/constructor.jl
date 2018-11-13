@@ -14,7 +14,8 @@ function parse_k(fa, gd, options::Dict)
         filepath = options[:filepath]
         if isfile(filepath) && endswith(filepath, ".jld2")
             @info "Loading stiffness: $_k ..."
-            @load filepath k
+            # the stiffness tensor is stored under attr named `k`
+            k = load(filename, "k")
         else
             error("Invalid file path $filepath.")
         end
