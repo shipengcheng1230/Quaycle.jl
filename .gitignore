@@ -11,13 +11,6 @@ deps/deps.jl
 .vscode
 .idea/*
 
-demos/*.jld2
-demos/*.h5
-demos/.ipynb_checkpoints
-demos/*.mp4
-demos/*.png
-demos/*.ipynb
-
 docs/build/
 docs/site/
 docs/src/generated

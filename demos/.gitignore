@@ -1,0 +1,6 @@
+*.jld2
+*.h5
+.ipynb_checkpoints
+*.mp4
+*.png
+*.ipynb
