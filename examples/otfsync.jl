@@ -34,17 +34,15 @@ fa = fault(StrikeSlipFault, (80., 10.));
 
 # Generate grids:
 
-gd = discretize(fa; nx=160, nξ=20, buffer=0.);
+gd = discretize(fa; nx=160, nξ=20, bufferratio=1);
 
 # !!! tip
 #     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
 #     to immitate *zero* dislocation at the ridge region.
 #     Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.
 
-#     Under such circumstance, the grid will expand outside the actual fault domain. However, in the buffer zone, relative
-#     velocity is *zero* at all time, so are the derivatives of velocity & state variable. Users may need to extract the solutions
-#     in the actually fault domain using `xs_index::BitArray`, one of the fields of the grid structure
-#     that indicate which part of along-strike is the actually fault domain.
+#     Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of `bufferratio/2*fa[:x]`.
+#     Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.
 
 # Time for us to establish frictional parameters profile:
 
