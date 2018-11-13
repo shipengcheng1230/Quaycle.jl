@@ -1,12 +1,12 @@
 abstract type StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{v θ}{L}``"
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{V θ}{L}``"
 struct DieterichStateLaw <: StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = -\\frac{v θ}{L} * \\log{\\frac{v θ}{L}}``"
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = -\\frac{V θ}{L} * \\log{\\frac{V θ}{L}}``"
 struct RuinaStateLaw <: StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - (\\frac{v θ}{2L})^2``"
+"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - (\\frac{V θ}{2L})^2``"
 struct PrzStateLaw <: StateEvolutionLaw end
 
 dθ_dt(::DieterichStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - v * θ / L

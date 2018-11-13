@@ -14,7 +14,7 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 using FileIO
-using JLD2
+using JLD
 
 include("rsf.jl")
 include("fault.jl")
