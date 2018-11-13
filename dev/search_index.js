@@ -1,7 +1,7 @@
 var documenterSearchIndex = {"docs": [
 
 {
-    "location": "index.html#",
+    "location": "#",
     "page": "Home",
     "title": "Home",
     "category": "page",
@@ -9,7 +9,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#JuEQ.jl-Documentation-1",
+    "location": "#JuEQ.jl-Documentation-1",
     "page": "Home",
     "title": "JuEQ.jl Documentation",
     "category": "section",
@@ -17,7 +17,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Overview-1",
+    "location": "#Overview-1",
     "page": "Home",
     "title": "Overview",
     "category": "section",
@@ -25,7 +25,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Installation-1",
+    "location": "#Installation-1",
     "page": "Home",
     "title": "Installation",
     "category": "section",
@@ -33,7 +33,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Acknowledgements-1",
+    "location": "#Acknowledgements-1",
     "page": "Home",
     "title": "Acknowledgements",
     "category": "section",
@@ -41,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "quasi_dynamic_intro.html#",
+    "location": "quasi_dynamic_intro/#",
     "page": "Introduction",
     "title": "Introduction",
     "category": "page",
@@ -49,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "quasi_dynamic_intro.html#Quasi-dynamic-Simulation-1",
+    "location": "quasi_dynamic_intro/#Quasi-dynamic-Simulation-1",
     "page": "Introduction",
     "title": "Quasi-dynamic Simulation",
     "category": "section",
@@ -57,7 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "quasi_dynamic_intro.html#Basic-Theory-1",
+    "location": "quasi_dynamic_intro/#Basic-Theory-1",
     "page": "Introduction",
     "title": "Basic Theory",
     "category": "section",
@@ -65,15 +65,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/bp1.html#",
+    "location": "generated/bp1/#",
     "page": "Example 1: 1D fault",
     "title": "Example 1: 1D fault",
     "category": "page",
-    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/../../../../build/shipengcheng1230/JuEQ.jl/examples/bp1.jl\"note: Note\nThis example is from Benchmark Problem 1 (hence referred as BP1)."
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/examples/bp1.jl\"note: Note\nThis example is from Benchmark Problem 1 (hence referred as BP1)."
 },
 
 {
-    "location": "generated/bp1.html#Define-parameters-1",
+    "location": "generated/bp1/#Define-parameters-1",
     "page": "Example 1: 1D fault",
     "title": "Define parameters",
     "category": "section",
@@ -81,7 +81,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/bp1.html#Construct-Model-1",
+    "location": "generated/bp1/#Construct-Model-1",
     "page": "Example 1: 1D fault",
     "title": "Construct Model",
     "category": "section",
@@ -89,7 +89,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/bp1.html#Solve-Model-1",
+    "location": "generated/bp1/#Solve-Model-1",
     "page": "Example 1: 1D fault",
     "title": "Solve Model",
     "category": "section",
@@ -97,7 +97,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/bp1.html#Results-1",
+    "location": "generated/bp1/#Results-1",
     "page": "Example 1: 1D fault",
     "title": "Results",
     "category": "section",
@@ -105,15 +105,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "generated/otfsync.html#",
+    "location": "generated/otfsync/#",
     "page": "Example 2: 2D fault",
     "title": "Example 2: 2D fault",
     "category": "page",
-    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/../../../../build/shipengcheng1230/JuEQ.jl/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, buffer=0.);tip: Tip\nIt is recommended (from Yajing Liu\'s personal communication) to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.Under such circumstance, the grid will expand outside the actual fault domain. However, in the buffer zone, relative velocity is zero at all time, so are the derivatives of velocity & state variable. Users may need to extract the solutions in the actually fault domain using xs_index::BitArray, one of the fields of the grid structure that indicate which part of along-strike is the actually fault domain.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, bufferratio=1);tip: Tip\nIt is recommended (from Yajing Liu\'s personal communication) to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of bufferratio/2*fa[:x]. Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
 },
 
 {
-    "location": "public_interface.html#",
+    "location": "public_interface/#",
     "page": "Public",
     "title": "Public",
     "category": "page",
@@ -121,7 +121,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#Public-Interface-1",
+    "location": "public_interface/#Public-Interface-1",
     "page": "Public",
     "title": "Public Interface",
     "category": "section",
@@ -129,7 +129,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#Index-1",
+    "location": "public_interface/#Index-1",
     "page": "Public",
     "title": "Index",
     "category": "section",
@@ -137,31 +137,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.DieterichStateLaw",
+    "location": "public_interface/#JuEQ.DieterichStateLaw",
     "page": "Public",
     "title": "JuEQ.DieterichStateLaw",
     "category": "type",
-    "text": "fracmathrmdθmathrmdt = 1 - fracv θL\n\n\n\n\n\n"
+    "text": "fracmathrmdθmathrmdt = 1 - fracV θL\n\n\n\n\n\n"
 },
 
 {
-    "location": "public_interface.html#JuEQ.PrzStateLaw",
+    "location": "public_interface/#JuEQ.PrzStateLaw",
     "page": "Public",
     "title": "JuEQ.PrzStateLaw",
     "category": "type",
-    "text": "fracmathrmdθmathrmdt = 1 - (fracv θ2L)^2\n\n\n\n\n\n"
+    "text": "fracmathrmdθmathrmdt = 1 - (fracV θ2L)^2\n\n\n\n\n\n"
 },
 
 {
-    "location": "public_interface.html#JuEQ.RuinaStateLaw",
+    "location": "public_interface/#JuEQ.RuinaStateLaw",
     "page": "Public",
     "title": "JuEQ.RuinaStateLaw",
     "category": "type",
-    "text": "fracmathrmdθmathrmdt = -fracv θL * logfracv θL\n\n\n\n\n\n"
+    "text": "fracmathrmdθmathrmdt = -fracV θL * logfracV θL\n\n\n\n\n\n"
 },
 
 {
-    "location": "public_interface.html#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
+    "location": "public_interface/#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
     "page": "Public",
     "title": "JuEQ.EarthquakeCycleProblem",
     "category": "method",
@@ -169,7 +169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.dc3d_okada-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number",
+    "location": "public_interface/#JuEQ.dc3d_okada-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number",
     "page": "Public",
     "title": "JuEQ.dc3d_okada",
     "category": "method",
@@ -177,7 +177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},T}} where T<:Number where ftype<:JuEQ.PlaneFault",
+    "location": "public_interface/#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},T}} where T<:Number where ftype<:JuEQ.PlaneFault",
     "page": "Public",
     "title": "JuEQ.discretize",
     "category": "method",
@@ -185,15 +185,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T<:Number where ftype<:JuEQ.PlaneFault",
+    "location": "public_interface/#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T<:Number where ftype<:JuEQ.PlaneFault",
     "page": "Public",
     "title": "JuEQ.discretize",
     "category": "method",
-    "text": "discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}\n\nGenerate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.     By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.\n\nArguments\n\nΔx, Δξ: grid space along-strike and along-downdip respectively\nbuffer::Union{T, Symbol}: length of buffer size for introducing zero-dislocation area at along-strike edges of defined fault domain.\n\n\n\n\n\n"
+    "text": "discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}\n\nGenerate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.     By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.\n\nArguments\n\nΔx, Δξ: grid space along-strike and along-downdip respectively\n`bufferratio::Integer: ration of buffer size against along-strike length for introducing zero-dislocation area at along-strike edges of defined fault domain.\n\n\n\n\n\n"
 },
 
 {
-    "location": "public_interface.html#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s32} where #s32<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N",
+    "location": "public_interface/#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s32} where #s32<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N",
     "page": "Public",
     "title": "JuEQ.fault",
     "category": "method",
@@ -201,7 +201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T<:Number",
+    "location": "public_interface/#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T<:Number",
     "page": "Public",
     "title": "JuEQ.friction",
     "category": "method",
@@ -209,7 +209,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.max_velocity-Tuple{Any}",
+    "location": "public_interface/#JuEQ.max_velocity-Tuple{Any}",
     "page": "Public",
     "title": "JuEQ.max_velocity",
     "category": "method",
@@ -217,7 +217,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s45,N} where N where #s45<:Pair}} where dim where ftype<:JuEQ.PlaneFault",
+    "location": "public_interface/#JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s45,N} where N where #s45<:Pair}} where dim where ftype<:JuEQ.PlaneFault",
     "page": "Public",
     "title": "JuEQ.properties",
     "category": "method",
@@ -225,7 +225,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface.html#Interfaces-1",
+    "location": "public_interface/#Interfaces-1",
     "page": "Public",
     "title": "Interfaces",
     "category": "section",
@@ -233,7 +233,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#",
+    "location": "private_interface/#",
     "page": "Private",
     "title": "Private",
     "category": "page",
@@ -241,7 +241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#Private-Interface-1",
+    "location": "private_interface/#Private-Interface-1",
     "page": "Private",
     "title": "Private Interface",
     "category": "section",
@@ -249,7 +249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#Index-1",
+    "location": "private_interface/#Index-1",
     "page": "Private",
     "title": "Index",
     "category": "section",
@@ -257,7 +257,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.HomogeneousElasticProperties",
+    "location": "private_interface/#JuEQ.HomogeneousElasticProperties",
     "page": "Private",
     "title": "JuEQ.HomogeneousElasticProperties",
     "category": "type",
@@ -265,7 +265,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.TmpRSFVariable",
+    "location": "private_interface/#JuEQ.TmpRSFVariable",
     "page": "Private",
     "title": "JuEQ.TmpRSFVariable",
     "category": "type",
@@ -273,7 +273,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.applied_unit_dislocation-Tuple{Type{NormalFault}}",
+    "location": "private_interface/#JuEQ.applied_unit_dislocation-Tuple{Type{NormalFault}}",
     "page": "Private",
     "title": "JuEQ.applied_unit_dislocation",
     "category": "method",
@@ -281,7 +281,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.shear_traction-Tuple{Type{#s45} where #s45<:JuEQ.AbstractFault}",
+    "location": "private_interface/#JuEQ.shear_traction-Tuple{Type{#s45} where #s45<:JuEQ.AbstractFault}",
     "page": "Private",
     "title": "JuEQ.shear_traction",
     "category": "method",
@@ -289,7 +289,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.stiffness_periodic_boundary_condition-Union{Tuple{T}, Tuple{T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Number",
+    "location": "private_interface/#JuEQ.stiffness_periodic_boundary_condition-Union{Tuple{T}, Tuple{T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Number",
     "page": "Private",
     "title": "JuEQ.stiffness_periodic_boundary_condition",
     "category": "method",
@@ -297,7 +297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#JuEQ.stiffness_tensor-Tuple{PlaneFaultDomain,JuEQ.BoundaryElementGrid,JuEQ.HomogeneousElasticProperties}",
+    "location": "private_interface/#JuEQ.stiffness_tensor-Tuple{PlaneFaultDomain,JuEQ.BoundaryElementGrid,JuEQ.HomogeneousElasticProperties}",
     "page": "Private",
     "title": "JuEQ.stiffness_tensor",
     "category": "method",
@@ -305,7 +305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface.html#Interfaces-1",
+    "location": "private_interface/#Interfaces-1",
     "page": "Private",
     "title": "Interfaces",
     "category": "section",
