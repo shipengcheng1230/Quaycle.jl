@@ -19,7 +19,6 @@ branches:
 addons:
   homebrew:
     packages:
-    - gcc
     - hdf5
 
 after_success:
