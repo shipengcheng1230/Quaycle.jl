@@ -16,10 +16,11 @@ branches:
   only:
     - master
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
-before_install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew --version; fi
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew add gcc; fi
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install hdf5; fi
+addons:
+  homebrew:
+    packages:
+    - gcc
+    - hdf5
 
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
