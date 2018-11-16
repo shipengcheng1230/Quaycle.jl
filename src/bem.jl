@@ -209,7 +209,7 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElement
     ST = sdata(ST)
     FFTW.set_num_threads(nthreads())
     x1 = zeros(T, 2 * gd.nx - 1)
-    p1 = plan_rfft(x1, flags=FFTW.MEASURE)
+    p1 = plan_rfft(x1, flags=FFTW.PATIENT)
     ST_DFT = Array{Complex{T}}(undef, gd.nx, gd.nξ, gd.nξ)
     @inbounds for l = 1: gd.nξ, j = 1: gd.nξ
         # The most tricky part to ensure correct FFT, see `dτ_dt!` for 2D case as well.
@@ -301,7 +301,7 @@ create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for
 function create_tmp_var(nx::I, nξ::I; T1=Float64) where {I <: Integer}
     FFTW.set_num_threads(nthreads())
     x1 = Matrix{T1}(undef, 2 * nx - 1, nξ)
-    p1 = plan_rfft(x1, 1, flags=FFTW.MEASURE)
+    p1 = plan_rfft(x1, 1, flags=FFTW.PATIENT)
     xindex = convert(BitArray, fill(false, 2*nx-1))
     xindex[1:nx] .= true
     tvar = TmpRSF_2D(
