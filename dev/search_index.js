@@ -165,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Public",
     "title": "JuEQ.DECallbackSaveToFile",
     "category": "method",
-    "text": "DECallbackSaveToFile(iot::IOStream, iou::IOStream)\n\nConstruct a functional callback to write ODESolution (t & u) into file. The reason to separate t and u is for more easily reshape u w.r.t grids specification.\n\nNote It is strongly not recommended to use \"skipping\" scheme (by defining thrd and dts(a) for each case) when solution is too oscillated.\n\n\n\n\n\n"
+    "text": "DECallbackSaveToFile(iot::IOStream, iou::IOStream)\n\nConstruct a functional callback to write ODESolution (t & u) into file. The reason to separate t and u is for more easily reshape u w.r.t grids specification. It right now falls on users\' memory on what the type of solution is for accurately retrieving results.\n\nArguments\n\niot::IOStream: stream pointing to solution of time\niou::IOStream: stream pointing to solution of domain\n\nNote It is strongly not recommended to use \"skipping\" scheme (by defining thrd and dts(a) for each case) when solution is too oscillated.\n\n\n\n\n\n"
 },
 
 {
@@ -305,11 +305,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface/#JuEQ.stiffness_periodic_boundary_condition-Union{Tuple{T}, Tuple{T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Number",
+    "location": "private_interface/#JuEQ.stiffness_periodic_boundary_condition!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Number",
     "page": "Private",
-    "title": "JuEQ.stiffness_periodic_boundary_condition",
+    "title": "JuEQ.stiffness_periodic_boundary_condition!",
     "category": "method",
-    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nsame as dc3d_okada, see dc3d for details.\nax::AbstractVector: along-strike fault length\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::Number: length of repetition interval, see Note below\n\nNote\n\nThe buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.\n\n\n\n\n\n"
+    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nu::AbstractVector: In-place output which is a 12-elements vector (exactly the output of dc3d_okada). No assertion here imposed.\nsame as dc3d_okada, see dc3d for details.\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::Number: length of repetition interval, see Note below\n\nNote\n\nThe buffer block length is (bufferratio - 1) multipled by along-strike length.\n\n\n\n\n\n"
 },
 
 {
