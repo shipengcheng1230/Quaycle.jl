@@ -14,14 +14,15 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 using FileIO
-# using JLD
+using JLD
 
 include("rsf.jl")
 include("fault.jl")
 include("bem.jl")
 include("constructor.jl")
 include("utils.jl")
-include(joinpath(@__DIR__, "dc3d.jl"))
+include("dc3d.jl")
+include("config.jl")
 
 export NormalFault, ThrustFault, StrikeSlipFault
 export PlaneFaultDomain
