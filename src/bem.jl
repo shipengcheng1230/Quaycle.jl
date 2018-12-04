@@ -222,11 +222,11 @@ end
 function stiffness_chunk!(ST::SharedArray, fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElementGrid{2}, ep::HomogeneousElasticProperties,
     unit_disl::AbstractVector, nrept::Integer, subs::AbstractArray) where {ftype, T}
     lrept = (gd.bufferratio + one(T)) * fa[:x]
-    _u = zeros(T, 12)
+    _u = Vector{T}(undef, 12)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         # As stated in `BEMGrid_2D`, `depth` here are fixed at 0
-        _u .= stiffness_periodic_boundary_condition(gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], unit_disl, nrept, lrept)
+        stiffness_periodic_boundary_condition!(_u, gd.x[i], gd.y[j], gd.z[j], ep.α, zero(T), fa.dip, gd.ax[1,:], gd.aξ[l,:], unit_disl, nrept, lrept)
         ST[i,j,l] = shear_traction(ftype, _u, ep.λ, ep.μ, fa.dip)
     end
 end
@@ -243,21 +243,20 @@ end
 Periodic boundary condition for 2D faults.
 
 ## Arguments
+- `u::AbstractVector`: In-place output which is a 12-elements vector (exactly the output of [`dc3d_okada`](@ref)). No assertion here imposed.
 - same as [`dc3d_okada`](@ref), see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
-- `ax::AbstractVector`: along-strike fault length
 - `nrept::Integer`: (half) number of repetition, as denoted by `-npret: nrept`
 - `lrept::Number`: length of repetition interval, see *Note* below
 
 ## Note
-- The buffer block is evenly distributed on the two along-strike edges, each of which contains half of that.
+- The buffer block length is (`bufferratio` - 1) multipled by along-strike length.
 """
-function stiffness_periodic_boundary_condition(x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
+function stiffness_periodic_boundary_condition!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
     nrept::Integer, lrept::T) where {T<:Number}
-    u = zeros(T, 12)
+    fill!(u, zero(T))
     @fastmath @simd for i = -nrept: nrept
         u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i * lrept, aw, disl)
     end
-    return u
 end
 
 """
@@ -328,14 +327,14 @@ end
     mul!(tvar.dτ_dt, mp.k, tvar.relv)
 end
 
-@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray)
+@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray{T}) where {T<:Number}
     @fastmath @inbounds for j = 1: mp.dims[2]
         @simd for i = 1: mp.dims[1]
             tvar.relv[i,j] = mp.vpl - v[i,j]
         end
     end
     mul!(tvar.relv_dft, tvar.pf, tvar.relv)
-    fill!(tvar.dτ_dt_dft, 0.)
+    fill!(tvar.dτ_dt_dft, zero(T))
 
     @fastmath @inbounds for l = 1: mp.dims[2]
         for j = 1: mp.dims[2]
