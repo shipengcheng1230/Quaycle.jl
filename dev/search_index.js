@@ -161,6 +161,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "public_interface/#JuEQ.DECallbackSaveToFile-Tuple{IOStream,IOStream}",
+    "page": "Public",
+    "title": "JuEQ.DECallbackSaveToFile",
+    "category": "method",
+    "text": "DECallbackSaveToFile(iot::IOStream, iou::IOStream)\n\nConstruct a functional callback to write ODESolution (t & u) into file. The reason to separate t and u is for more easily reshape u w.r.t grids specification.\n\nNote It is strongly not recommended to use \"skipping\" scheme (by defining thrd and dts(a) for each case) when solution is too oscillated.\n\n\n\n\n\n"
+},
+
+{
     "location": "public_interface/#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim",
     "page": "Public",
     "title": "JuEQ.EarthquakeCycleProblem",
@@ -209,11 +217,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface/#JuEQ.max_velocity-Tuple{Any}",
+    "location": "public_interface/#JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}",
     "page": "Public",
     "title": "JuEQ.max_velocity",
     "category": "method",
-    "text": "max_velocity(sol)\n\nReturn max velocity across the fault at each time step.\n\nArguments\n\nsol:: solution return by DifferentialEquations.solve given EarthquakeCycleProblem.\n\n\n\n\n\n"
+    "text": "max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)\n\nReturn max velocity across the fault at each time step. A number of convenient interfaces for common output are implemented.\n\nArguments\n\nt::AbstractVector: vector of time steps\nu::AbstractArray: array of solution\ngetu::Function: method for retrieving velocity section at each time step\n\n\n\n\n\n"
+},
+
+{
+    "location": "public_interface/#JuEQ.moment_magnitude-Union{Tuple{T}, Tuple{T,T,T}} where T<:Number",
+    "page": "Public",
+    "title": "JuEQ.moment_magnitude",
+    "category": "method",
+    "text": "Calculate moment magnitude.\n\n\n\n\n\n"
 },
 
 {
