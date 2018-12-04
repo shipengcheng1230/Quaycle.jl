@@ -5,9 +5,9 @@ Return max velocity across the fault at each time step. A number of convenient i
 output are implemented.
 
 ## Arguments
-- t::AbstractVector: vector of time steps
-- u::AbstractArray: array of solution
-- getu::Function: method for retrieving velocity section at each time step
+- `t::AbstractVector`: vector of time steps
+- `u::AbstractArray`: array of solution
+- `getu::Function`: method for retrieving velocity section at each time step
 """
 function max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)
     x = similar(t)
@@ -39,7 +39,12 @@ moment_magnitude(μ::T, d::T, A::T) where {T<:Number} = μ * d * A
     DECallbackSaveToFile(iot::IOStream, iou::IOStream)
 
 Construct a functional callback to write `ODESolution` (`t` & `u`) into file. The reason to separate `t` and `u` is
-for more easily reshape `u` w.r.t grids specification.
+for more easily reshape `u` w.r.t grids specification. It right now falls on users' memory on what the type of solution is
+for accurately retrieving results.
+
+## Arguments
+- `iot::IOStream`: stream pointing to solution of time
+- `iou::IOStream`: stream pointing to solution of domain
 
 **Note**
 It is strongly not recommended to use "skipping" scheme (by defining `thrd` and `dts(a)` for each case) when solution is too
