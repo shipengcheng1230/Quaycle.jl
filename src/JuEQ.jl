@@ -21,7 +21,8 @@ include("fault.jl")
 include("bem.jl")
 include("constructor.jl")
 include("utils.jl")
-include(joinpath(@__DIR__, "dc3d.jl"))
+include("dc3d.jl")
+include("config.jl")
 
 export NormalFault, ThrustFault, StrikeSlipFault
 export PlaneFaultDomain
@@ -36,6 +37,6 @@ export discretize, properties
 export EarthquakeCycleProblem
 export dc3d_okada
 
-export max_velocity
+export max_velocity, moment_magnitude, DECallbackSaveToFile
 
 end

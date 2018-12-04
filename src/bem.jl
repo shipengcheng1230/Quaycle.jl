@@ -207,9 +207,9 @@ function stiffness_tensor(fa::PlaneFaultDomain{ftype, 2, T}, gd::BoundaryElement
     end
 
     ST = sdata(ST)
-    FFTW.set_num_threads(nthreads())
+    FFTW.set_num_threads(fft_configs["FFT_NUM_THREADS"])
     x1 = zeros(T, 2 * gd.nx - 1)
-    p1 = plan_rfft(x1, flags=FFTW.PATIENT)
+    p1 = plan_rfft(x1, flags=fft_configs["FFT_FLAG"])
     ST_DFT = Array{Complex{T}}(undef, gd.nx, gd.nξ, gd.nξ)
     @inbounds for l = 1: gd.nξ, j = 1: gd.nξ
         # The most tricky part to ensure correct FFT, see `dτ_dt!` for 2D case as well.
@@ -275,41 +275,31 @@ abstract type TmpRSFVariable{dim} end
 
 struct TmpRSF_1D{T<:AbstractVecOrMat{<:Real}} <: TmpRSFVariable{1}
     dτ_dt::T
-    dμ_dθ::T
-    dμ_dv::T
-    ψ1::T
-    ψ2::T
     relv::T
 end
 
-struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan, BA<:BitArray} <: TmpRSFVariable{2}
+struct TmpRSF_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: TmpRSFVariable{2}
     dτ_dt::T
-    dμ_dθ::T
-    dμ_dv::T
-    ψ1::T
-    ψ2::T
     relv::T
     dτ_dt_dft::U
     relv_dft::U
     dτ_dt_buffer::T
     pf::P
-    xindex::BA
 end
 
-create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for _ in 1: 6]...)
+create_tmp_var(nξ::Integer; T1=Float64) = TmpRSF_1D([Vector{T1}(undef, nξ) for _ in 1: 2]...)
 
 function create_tmp_var(nx::I, nξ::I; T1=Float64) where {I <: Integer}
-    FFTW.set_num_threads(nthreads())
+    FFTW.set_num_threads(fft_configs["FFT_NUM_THREADS"])
     x1 = Matrix{T1}(undef, 2 * nx - 1, nξ)
-    p1 = plan_rfft(x1, 1, flags=FFTW.PATIENT)
-    xindex = convert(BitArray, fill(false, 2*nx-1))
-    xindex[1:nx] .= true
+    p1 = plan_rfft(x1, 1, flags=fft_configs["FFT_FLAG"])
+
     tvar = TmpRSF_2D(
-        [Matrix{T1}(undef, nx, nξ) for _ in 1: 5]...,
-        zeros(T1, 2*nx-1, nξ), # for relative velocity
+        Matrix{T1}(undef, nx, nξ),
+        zeros(T1, 2nx-1, nξ), # for relative velocity
         [Matrix{Complex{T1}}(undef, nx, nξ) for _ in 1: 2]...,
-        Matrix{T1}(undef, 2*nx-1, nξ),
-        p1, xindex)
+        Matrix{T1}(undef, 2nx-1, nξ),
+        p1)
 end
 
 create_tmp_var(gd::BoundaryElementGrid{1}) = create_tmp_var(gd.nξ; T1=typeof(gd.Δξ))
@@ -323,9 +313,8 @@ function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::TmpRSFVaria
     dθ = selectdim(du, _ndim, 2)
 
     variable_trim!(v, θ)
-    dθ_dt!(dθ, se, v, θ, mp.L)
     dτ_dt!(mp, tvar, v)
-    dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar)
+    dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar, se)
 end
 
 @inline function variable_trim!(v::T, θ::T) where {T<:AbstractVecOrMat{<:Float64}}
@@ -333,38 +322,56 @@ end
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpRSFVariable{1}, v::AbstractArray)
-    @. tvar.relv = mp.vpl - v
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
+        tvar.relv[i] = mp.vpl - v[i]
+    end
     mul!(tvar.dτ_dt, mp.k, tvar.relv)
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray)
-    tvar.relv[tvar.xindex,:] .= mp.vpl .- v
-    tvar.relv_dft .= tvar.pf * tvar.relv
-    fill!(tvar.dτ_dt_dft, 0.)
-    nd = mp.dims[2]
-    @inbounds for j = 1: nd
-        @simd for l = 1: nd
-            tvar.dτ_dt_dft[:,j] .+= view(mp.k,:,j,l) .* view(tvar.relv_dft,:,l)
+    @fastmath @inbounds for j = 1: mp.dims[2]
+        @simd for i = 1: mp.dims[1]
+            tvar.relv[i,j] = mp.vpl - v[i,j]
         end
     end
+    mul!(tvar.relv_dft, tvar.pf, tvar.relv)
+    fill!(tvar.dτ_dt_dft, 0.)
+
+    @fastmath @inbounds for l = 1: mp.dims[2]
+        for j = 1: mp.dims[2]
+            @simd for i = 1: mp.dims[1]
+                tvar.dτ_dt_dft[i,j] += mp.k[i,j,l] * tvar.relv_dft[i,l]
+            end
+        end
+    end
+
     ldiv!(tvar.dτ_dt_buffer, tvar.pf, tvar.dτ_dt_dft)
-    tvar.dτ_dt .= view(tvar.dτ_dt_buffer, tvar.xindex, :)
+
+    @fastmath @inbounds for j = 1: mp.dims[2]
+        @simd for i = 1: mp.dims[1]
+            tvar.dτ_dt[i,j] = tvar.dτ_dt_buffer[i,j]
+        end
+    end
 end
 
-dθ_dt!(dθ::T, se::StateEvolutionLaw, v::T, θ::T, L::U) where {T<:AbstractVecOrMat, U<:AbstractVecOrMat} = dθ .= dθ_dt.(Ref(se), v, θ, L)
-
-@inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable) where {T<:AbstractVecOrMat}
-    @. tvar.dμ_dθ = mp.σ * mp.b / θ
-    @. tvar.dμ_dv = mp.σ * mp.a / v
-    @. dv = dv_dt(tvar.dτ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
+@inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable, se::StateEvolutionLaw) where {T<:AbstractVecOrMat}
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
+        dμ_dθ = mp.σ[i] * mp.b[i] / θ[i]
+        dμ_dv = mp.σ[i] * mp.a[i] / v[i]
+        dθ[i] = dθ_dt(se, v[i], θ[i], mp.L[i])
+        dv[i] = dv_dt(tvar.dτ_dt[i], dμ_dv, dμ_dθ, dθ[i], mp.η[i])
+    end
 end
 
-@inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable) where {T<:AbstractVecOrMat}
-    @. tvar.ψ1 = exp((mp.f0 + mp.b * log(mp.v0 * θ / mp.L)) / mp.a) / 2mp.v0
-    @. tvar.ψ2 = mp.σ * tvar.ψ1 / hypot(1, v * tvar.ψ1)
-    @. tvar.dμ_dv = mp.a * tvar.ψ2
-    @. tvar.dμ_dθ = mp.b / θ * v * tvar.ψ2
-    @. dv = dv_dt(tvar.dτ_dt, tvar.dμ_dv, tvar.dμ_dθ, dθ, mp.η)
+@inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable, se::StateEvolutionLaw) where {T<:AbstractVecOrMat}
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
+        ψ1 = exp((mp.f0 + mp.b[i] * log(mp.v0 * θ[i] / mp.L[i])) / mp.a[i]) / 2mp.v0
+        ψ2 = mp.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
+        dμ_dv = mp.a[i] * ψ2
+        dμ_dθ = mp.b[i] / θ[i] * v[i] * ψ2
+        dθ[i] = dθ_dt(se, v[i], θ[i], mp.L[i])
+        dv[i] = dv_dt(tvar.dτ_dt[i], dμ_dv, dμ_dθ, dθ[i], mp.η[i])
+    end
 end
 
 """
