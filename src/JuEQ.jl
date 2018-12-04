@@ -37,6 +37,6 @@ export discretize, properties
 export EarthquakeCycleProblem
 export dc3d_okada
 
-export max_velocity
+export max_velocity, moment_magnitude, DECallbackSaveToFile
 
 end

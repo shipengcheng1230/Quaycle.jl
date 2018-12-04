@@ -322,14 +322,14 @@ end
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::TmpRSFVariable{1}, v::AbstractArray)
-    @inbounds @simd for i = 1: prod(mp.dims)
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
         tvar.relv[i] = mp.vpl - v[i]
     end
     mul!(tvar.dτ_dt, mp.k, tvar.relv)
 end
 
 @inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::TmpRSFVariable{2}, v::AbstractArray)
-    @inbounds for j = 1: mp.dims[2]
+    @fastmath @inbounds for j = 1: mp.dims[2]
         @simd for i = 1: mp.dims[1]
             tvar.relv[i,j] = mp.vpl - v[i,j]
         end
@@ -337,7 +337,7 @@ end
     mul!(tvar.relv_dft, tvar.pf, tvar.relv)
     fill!(tvar.dτ_dt_dft, 0.)
 
-    @inbounds for l = 1: mp.dims[2]
+    @fastmath @inbounds for l = 1: mp.dims[2]
         for j = 1: mp.dims[2]
             @simd for i = 1: mp.dims[1]
                 tvar.dτ_dt_dft[i,j] += mp.k[i,j,l] * tvar.relv_dft[i,l]
@@ -347,7 +347,7 @@ end
 
     ldiv!(tvar.dτ_dt_buffer, tvar.pf, tvar.dτ_dt_dft)
 
-    @inbounds for j = 1: mp.dims[2]
+    @fastmath @inbounds for j = 1: mp.dims[2]
         @simd for i = 1: mp.dims[1]
             tvar.dτ_dt[i,j] = tvar.dτ_dt_buffer[i,j]
         end
@@ -355,7 +355,7 @@ end
 end
 
 @inline function dv_dθ_dt!(::CForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable, se::StateEvolutionLaw) where {T<:AbstractVecOrMat}
-    @inbounds @simd for i = 1: prod(mp.dims)
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
         dμ_dθ = mp.σ[i] * mp.b[i] / θ[i]
         dμ_dv = mp.σ[i] * mp.a[i] / v[i]
         dθ[i] = dθ_dt(se, v[i], θ[i], mp.L[i])
@@ -364,7 +364,7 @@ end
 end
 
 @inline function dv_dθ_dt!(::RForm, dv::T, dθ::T, v::T, θ::T, mp::PlaneMaterialProperties, tvar::TmpRSFVariable, se::StateEvolutionLaw) where {T<:AbstractVecOrMat}
-    @inbounds @simd for i = 1: prod(mp.dims)
+    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
         ψ1 = exp((mp.f0 + mp.b[i] * log(mp.v0 * θ[i] / mp.L[i])) / mp.a[i]) / 2mp.v0
         ψ2 = mp.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
         dμ_dv = mp.a[i] * ψ2
