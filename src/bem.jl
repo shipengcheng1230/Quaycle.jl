@@ -257,7 +257,7 @@ applied_unit_dislocation(::Type{StrikeSlipFault}) = [1., 0., 0.]
 
 
 ## Core functions/methods for boundary element methods
-"Temporal variable in solving ODEs aimed to avoid allocation overheads."
+"Intermediate variable in solving ODEs aimed to avoid allocation overheads."
 abstract type ODEStateVariable{dim} end
 
 struct ODEState_1D{T<:AbstractVecOrMat{<:Real}} <: ODEStateVariable{1}
@@ -274,9 +274,9 @@ struct ODEState_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Pla
     pf::P
 end
 
-create_tmp_var(nξ::Integer; T1=Float64) = ODEState_1D([Vector{T1}(undef, nξ) for _ in 1: 2]...)
+create_ode_state_vars(nξ::Integer; T1=Float64) = ODEState_1D([Vector{T1}(undef, nξ) for _ in 1: 2]...)
 
-function create_tmp_var(nx::I, nξ::I; T1=Float64) where {I <: Integer}
+function create_ode_state_vars(nx::I, nξ::I; T1=Float64) where {I <: Integer}
     FFTW.set_num_threads(FFT_CONFIGS["FFT_NUM_THREADS"])
     x1 = Matrix{T1}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=FFT_CONFIGS["FFT_FLAG"])
@@ -289,8 +289,8 @@ function create_tmp_var(nx::I, nξ::I; T1=Float64) where {I <: Integer}
         p1)
 end
 
-create_tmp_var(gd::BoundaryElementGrid{1}) = create_tmp_var(gd.nξ; T1=typeof(gd.Δξ))
-create_tmp_var(gd::BoundaryElementGrid{2}) = create_tmp_var(gd.nx, gd.nξ; T1=typeof(gd.Δx))
+create_ode_state_vars(gd::BoundaryElementGrid{1}) = create_ode_state_vars(gd.nξ; T1=typeof(gd.Δξ))
+create_ode_state_vars(gd::BoundaryElementGrid{2}) = create_ode_state_vars(gd.nx, gd.nξ; T1=typeof(gd.Δx))
 
 function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::ODEStateVariable{dim}, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
     _ndim = dim + 1
@@ -376,7 +376,7 @@ Return an `ODEProblem` that encapsulate all the parameters and functions require
 """
 function EarthquakeCycleProblem(gd::BoundaryElementGrid, p::PlaneMaterialProperties, u0::AbstractArray, tspan::NTuple; se=DieterichStateLaw(), fform=CForm()) where {dim}
     (fform == RForm() && minimum(p.η) ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
-    tvar = create_tmp_var(gd)
+    tvar = create_ode_state_vars(gd)
     f! = (du, u, p, t) -> derivations!(du, u, p, tvar, se, fform)
     ODEProblem(f!, u0, tspan, p)
 end
