@@ -1,6 +1,6 @@
 ## Global Performace Settings
 
-fft_configs = Dict(
+FFT_CONFIGS = Dict(
     # threads for fft
     "FFT_NUM_THREADS" => nthreads(),
 
