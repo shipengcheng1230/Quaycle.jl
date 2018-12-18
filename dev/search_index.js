@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Example 2: 2D fault",
     "title": "Example 2: 2D fault",
     "category": "page",
-    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, bufferratio=1);tip: Tip\nIt is recommended (from Yajing Liu\'s personal communication) to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of bufferratio/2*fa[:x]. Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
+    "text": "EditURL = \"https://github.com/shipengcheng1230/JuEQ.jl/blob/master/examples/otfsync.jl\"note: Note\nThis example is adapted from Wei, 2016 AGUtip: Tip\nIt will automatically use parallel scheme if nprocs() ≂̸ 1 when building stiffness tensor. To do so:using Distributed\naddprocs(4); # add # of cores you desire\nusing JuEQFirst, we load the package and define some basic parameters:using JuEQ\nusing Plots\n\nms2mmyr = 365 * 86400 * 1e3\nρ = 2670.0 # kg/m³\ncs = 3044.0 # m/s\nvpl = 100.0 # mm/yr\nv0 = 3.2e4 # mm/yr\nf0 = 0.6;Then we come to parameters implicit by above:μ = 0.3 # Bar·km/mm\nλ = μ # poisson material\nα = (λ + μ) / (λ + 2μ)\nη = μ / 2(cs * 1e-3 * 365 * 86400); # Bar·yr/mmCreate a fault:fa = fault(StrikeSlipFault, (80., 10.));Generate grids:gd = discretize(fa; nx=160, nξ=20, buffer_ratio=1);tip: Tip\nIt is recommended (from Yajing Liu\'s personal communication) to add buffer zones adjacent the horizontal edges to immitate zero dislocation at the ridge region. Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of bufferratio/2*fa[:x]. Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.Time for us to establish frictional parameters profile:a = 0.015 .* ones(gd.nx, gd.nξ)\nb = 0.0115 .* ones(gd.nx, gd.nξ)\nleft_patch = @. -25. ≤ gd.x ≤ -5.\nright_patch = @. 5. ≤ gd.x ≤ 25.\nvert_patch = @. -6. ≤ gd.z ≤ -1.\nb[xor.(left_patch, right_patch), vert_patch] .= 0.0185\namb = a - b\nσmax = 500.\nσ = [min(σmax, 15. + 180. * z) for z in -gd.z]\nσ = Matrix(repeat(σ, 1, gd.nx)\')\nL = 12.;Check our profile:p1 = heatmap(amb\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"a-b\"\n    );\n\np2 = heatmap(σ\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"\\\\sigma\"\n    );\n\nplot(p1, p2, layout=(2, 1))Construct our material property profile:mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);Provide the initial condition:vinit = vpl .* ones(gd.nx, gd.nξ)\nθ0 = L ./ vinit ./ 1.1\nu0 = cat(vinit, θ0, dims=3);Get our ODEs problem:prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());Solve the model:sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);Take a look at the max velocity:maxv = max_velocity(sol)\nplot(sol.t, log10.(maxv / ms2mmyr), xlabel=\"Time (year)\", ylabel=\"Max Velocity (log10 (m/s))\", label=\"\")View some snapshots to see the rupture (quasi-dynamic) patterns:ind = argmax(maxv)\nmyplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)\',\n    xticks=(0: 10/gd.Δx: gd.nx, -fa.span[1]/2: 10: fa.span[1]/2),\n    yticks=(0: 5/gd.Δξ: gd.nξ, 0: -5: -fa.span[2]),\n    yflip=true, color=:isolum, aspect_ratio=2, title=\"t = $(sol.t[ind])\")\n\nsnaps = [myplot(i) for i in ind-700: 200: ind+500]\n\nplot(snaps..., layout=(length(snaps), 1), size=(600, 1800))This page was generated using Literate.jl."
 },
 
 {
@@ -197,11 +197,11 @@ var documenterSearchIndex = {"docs": [
     "page": "Public",
     "title": "JuEQ.discretize",
     "category": "method",
-    "text": "discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}\n\nGenerate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.     By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.\n\nArguments\n\nΔx, Δξ: grid space along-strike and along-downdip respectively\n`bufferratio::Integer: ration of buffer size against along-strike length for introducing zero-dislocation area at along-strike edges of defined fault domain.\n\n\n\n\n\n"
+    "text": "discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype <: PlaneFault}\n\nGenerate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.     By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.\n\nArguments\n\nΔx, Δξ: grid space along-strike and along-downdip respectively\n`buffer_ratio::Number: ration of buffer size against along-strike length for introducing zero-dislocation area at along-strike edges of defined fault domain.\n\n\n\n\n\n"
 },
 
 {
-    "location": "public_interface/#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s32} where #s32<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N",
+    "location": "public_interface/#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s33} where #s33<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N",
     "page": "Public",
     "title": "JuEQ.fault",
     "category": "method",
@@ -233,11 +233,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "public_interface/#JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s45,N} where N where #s45<:Pair}} where dim where ftype<:JuEQ.PlaneFault",
+    "location": "public_interface/#JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s46,N} where N where #s46<:Pair}} where dim where ftype<:JuEQ.PlaneFault",
     "page": "Public",
     "title": "JuEQ.properties",
     "category": "method",
     "text": "properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}\n\nEstablishing a material-properties-profile given by the fault domain and grids. User must provide the     necessary parameters in according to the grid size specified or just a scalar for broadcasting.\n\nArguments that are required:\n\na: contrib from velocity.\nb: contrib from state.\nL: critical distance.\nσ: effective normal stress.\nη: radiation damping. It is recommended to set as μ  2mathrmVs where μ is shear modulus and mathrmVs shear wave velocity.\nvpl: plate rate.\nf0: ref. frictional coeff.\nv0: ref. velocity.\n\nArguments that need options\n\nk: stiffness tensor.\n(1) Providing shear modulus denoted as μ and Lamé\'s first parameter denoted as λ (same as μ if missing),  then calculate it based on grid and fault domain, choosing parallel scheme if nprocs() != 1.  (2) A valid file path to a .jld2 that contains valid stiffness tensor. No verification will be performed here.  (3) an AbstractArray represent the pre-calculated stiffness tensor. No verification will be performed here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "public_interface/#JuEQ.stiffness_tensor-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},BoundaryElementGrid{1},HomogeneousElasticProperties}} where T<:Number where ftype<:JuEQ.PlaneFault",
+    "page": "Public",
+    "title": "JuEQ.stiffness_tensor",
+    "category": "method",
+    "text": "stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)\n\nCalculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array     due to the translational & reflective & perodic symmetry, such that the tensor contraction will be equivalent to convolution,     hence we could use FFT for better performace.\n\nNote\n\nFaults are originated from surface and extends downwards, thus dep = 0\n\n\n\n\n\n"
 },
 
 {
@@ -281,11 +289,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface/#JuEQ.TmpRSFVariable",
+    "location": "private_interface/#JuEQ.ODEStateVariable",
     "page": "Private",
-    "title": "JuEQ.TmpRSFVariable",
+    "title": "JuEQ.ODEStateVariable",
     "category": "type",
-    "text": "Temporal variable in solving ODEs aimed to avoid allocation overheads.\n\n\n\n\n\n"
+    "text": "Intermediate variable in solving ODEs aimed to avoid allocation overheads.\n\n\n\n\n\n"
 },
 
 {
@@ -297,7 +305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "private_interface/#JuEQ.shear_traction-Tuple{Type{#s45} where #s45<:JuEQ.AbstractFault}",
+    "location": "private_interface/#JuEQ.shear_traction-Tuple{Type{#s46} where #s46<:JuEQ.AbstractFault}",
     "page": "Private",
     "title": "JuEQ.shear_traction",
     "category": "method",
@@ -309,15 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Private",
     "title": "JuEQ.stiffness_periodic_boundary_condition!",
     "category": "method",
-    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nu::AbstractVector: In-place output which is a 12-elements vector (exactly the output of dc3d_okada). No assertion here imposed.\nsame as dc3d_okada, see dc3d for details.\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::Number: length of repetition interval, see Note below\n\nNote\n\nThe buffer block length is (bufferratio - 1) multipled by along-strike length.\n\n\n\n\n\n"
-},
-
-{
-    "location": "private_interface/#JuEQ.stiffness_tensor-Tuple{PlaneFaultDomain,JuEQ.BoundaryElementGrid,JuEQ.HomogeneousElasticProperties}",
-    "page": "Private",
-    "title": "JuEQ.stiffness_tensor",
-    "category": "method",
-    "text": "stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)\n\nCalculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array     due to the translational & reflective & perodic symmetry, such that the tensor contraction will be equivalent to convolution,     hence we could use FFT for better performace.\n\nNote\n\nFaults are originated from surface and extends downwards, thus dep = 0\n\n\n\n\n\n"
+    "text": "Periodic boundary condition for 2D faults.\n\nArguments\n\nu::AbstractVector: In-place output which is a 12-elements vector (exactly the output of dc3d_okada). No assertion here imposed.\nsame as dc3d_okada, see dc3d for details.\nnrept::Integer: (half) number of repetition, as denoted by -npret: nrept\nlrept::Number: length of repetition interval, see Note below\n\nNote\n\nThe buffer block length is (buffer_ratio - 1) multipled by along-strike length.\n\n\n\n\n\n"
 },
 
 {
