@@ -34,7 +34,7 @@ fa = fault(StrikeSlipFault, (80., 10.));
 
 # Generate grids:
 
-gd = discretize(fa; nx=160, nξ=20, bufferratio=1);
+gd = discretize(fa; nx=160, nξ=20, buffer_ratio=1);
 
 # !!! tip
 #     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges

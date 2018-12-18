@@ -33,7 +33,7 @@ export CForm, RForm
 export friction
 export MaterialProperties
 
-export discretize, properties
+export discretize, properties, stiffness_tensor
 export EarthquakeCycleProblem
 export dc3d_okada
 
