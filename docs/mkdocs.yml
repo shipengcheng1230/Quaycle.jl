@@ -3,7 +3,7 @@ repo_url:         https://github.com/shipengcheng1230/JuEQ.jl
 site_description: Julia implementations of earthquake cycle simulation
 site_author:      Pengcheng Shi
 
-theme: cinder
+theme: windmill
 
 extra_css:
     - assets/Documenter.css

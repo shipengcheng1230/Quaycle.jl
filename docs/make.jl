@@ -21,7 +21,7 @@ makedocs(
 
 deploydocs(
   repo  = "github.com/shipengcheng1230/JuEQ.jl.git",
-  target = "site",
-  deps = Deps.pip("mkdocs", "pygments", "python-markdown-math", "mkdocs-cinder"),
+  deps = Deps.pip("pygments", "mkdocs", "python-markdown-math", "mkdocs-windmill"),
   make = () -> run(`mkdocs build`),
+  julia = "1.0",
 )
