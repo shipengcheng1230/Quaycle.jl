@@ -21,7 +21,7 @@ markdown_extensions:
 
 docs_dir: 'build'
 
-nav:
+pages:
     - Home: 'index.md'
     - 'Quasi Dynamic Simulation using BEM':
         - 'Basic Theory': 'quasi_dynamic_intro.md'
