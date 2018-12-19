@@ -1,4 +1,4 @@
-# Quasi-dynamic Simulation
+# Quasi-dynamic Simulation using BEM
 
 ## Basic Theory
 The governing equation is that at every time step, shear stress across the fault plane equals to frictional force plus a radiation damping term for approximating wave propagation effect:
@@ -10,10 +10,10 @@ The governing equation is that at every time step, shear stress across the fault
 Here ``μ`` is shear stress across the fault plain. Using [Okada's dislocation theory](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html), it can be shown as:
 
 ```math
-τ = K ⊗ δ
+τ = \mathrm{K} ⊗ δ
 ```
 
-where ``K`` is the so-called stiffness tensor, depicting relationship between displacements at one position regarding to dislocations somewhere else. ``δ`` is the dislocation, i.e. displacement at everywhere on the fault. ``⊗`` denotes tensor contraction.
+where ``\mathrm{K}`` is the so-called stiffness tensor, depicting relationship between displacements at one position regarding to dislocations somewhere else. ``δ`` is the dislocation, i.e. displacement at everywhere on the fault. ``⊗`` denotes tensor contraction.
 
 Back to ``f``, we use rate-and-state frictional law to calculate its value, specifically as below:
 
@@ -49,10 +49,10 @@ Thus we arrive at:
 \frac{\mathrm{d} V}{\mathrm{d} t} = \frac{\frac{\mathrm{d} τ}{\mathrm{d} t} - \frac{\mathrm{d} f}{\mathrm{d} θ} \frac{\mathrm{d} θ}{\mathrm{d} t}}{\frac{\mathrm{d} f}{\mathrm{d} V} + η}
 ```
 
-where ``\frac{\mathrm{d} τ}{\mathrm{d} t} = K ⊗ (\mathrm{V_{pl}} - V)`` where ``\mathrm{V_{pl}}`` is the plate rate.
+where ``\frac{\mathrm{d} τ}{\mathrm{d} t} = \mathrm{K} ⊗ (\mathrm{V_{pl}} - V)`` where ``\mathrm{V_{pl}}`` is the plate rate.
 
 !!! note
-    The direction of relative velocity, namely ``\mathrm{V_{pl} - V}``, must be in accordance to the direction of ``K`` which, here, we use the same
+    The direction of relative velocity, namely ``\mathrm{V_{pl} - V}``, must be in accordance to the direction of ``\mathrm{K}`` which, here, we use the same
     meaning as Rice, J. (1993).
 
 Hence, with both derivatives of velocity ``V`` and state variable ``θ``, we are able to discover how fault evolves with various parameters settings.
