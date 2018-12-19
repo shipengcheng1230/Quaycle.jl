@@ -15,13 +15,9 @@ cp(joinpath(@__DIR__, "..", "LICENSE"), joinpath(@__DIR__, "src", "LICENSE.md");
 makedocs(
     doctest=false,
     modules = [JuEQ],
-    sitename = "JuEQ",
-    format = Markdown(),
 )
 
 deploydocs(
   repo  = "github.com/shipengcheng1230/JuEQ.jl.git",
-  deps = Deps.pip("pygments", "mkdocs", "python-markdown-math", "mkdocs-windmill"),
-  make = () -> run(`mkdocs build`),
-  julia = "1.0",
+  deps = Deps.pip("pygments", "mkdocs", "python-markdown-math", "mkdocs-yeti"),
 )
