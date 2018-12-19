@@ -16,10 +16,10 @@ branches:
   only:
     - master
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
-addons:
-  homebrew:
-    packages:
-    - hdf5
+# addons:
+#   homebrew:
+#     packages:
+#     - hdf5
 
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'

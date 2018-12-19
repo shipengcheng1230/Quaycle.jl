@@ -10,16 +10,7 @@ broadcast_arg(x::AbstractArray, bcsize::NTuple) = (size(x) == bcsize) ? x : erro
 parse_k(fa, gd, options::AbstractArray{<:Pair}) = parse_k(fa, gd, Dict(options))
 
 function parse_k(fa, gd, options::Dict)
-    if haskey(options, :filepath)
-        filepath = options[:filepath]
-        if isfile(filepath) && endswith(filepath, ".jld2")
-            @info "Loading stiffness: $_k ..."
-            # the stiffness tensor is stored under attr named `k`
-            k = load(filename, "k")
-        else
-            error("Invalid file path $filepath.")
-        end
-    elseif haskey(options, :μ)
+    if haskey(options, :μ)
         μ = options[:μ]
         λ = haskey(options, :λ) ? options[:λ] : μ
         ep = HomogeneousElasticProperties(λ=λ, μ=μ)
@@ -56,8 +47,7 @@ Establishing a material-properties-profile given by the fault domain and grids. 
 
    (1) Providing *shear modulus* denoted as `μ` and *Lamé's first parameter* denoted as `λ` (same as `μ` if missing),
    then calculate it based on grid and fault domain, choosing parallel scheme if `nprocs() != 1`.
-   (2) A valid file path to a *.jld2* that contains valid stiffness tensor. No verification will be performed here.
-   (3) an `AbstractArray` represent the pre-calculated stiffness tensor. No verification will be performed here.
+   (2) an `AbstractArray` represent the pre-calculated stiffness tensor. No verification will be performed here.
 """
 properties(fa::PlaneFaultDomain{ftype, dim}, gd::BoundaryElementGrid, parameters::AbstractArray{<:Pair}) where {ftype<:PlaneFault, dim} = properties(fa, gd, Dict(parameters))
 properties(;fault::PlaneFaultDomain{ftype, dim}, grid::BoundaryElementGrid, parameters::AbstractArray{<:Pair}) where {ftype<:PlaneFault, dim} = properties(fault, grid, parameters)
