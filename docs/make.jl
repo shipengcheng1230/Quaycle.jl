@@ -20,7 +20,7 @@ makedocs(
 
 deploydocs(
   repo = "github.com/shipengcheng1230/JuEQ.jl.git",
-  deps = Deps.pip("pygments", "mkdocs", "python-markdown-math", "mkdocs-bootswatch"),
+  deps = Deps.pip("pygments", "mkdocs", "python-markdown-math", "mkdocs-material"),
   target = "site",
   make = () -> run(`mkdocs build`),
 )
