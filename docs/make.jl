@@ -10,7 +10,7 @@ ENV["GKSwstype"] = "100"
 
 include("generate.jl")
 
-cp(joinpath(@__DIR__, "..", "LICENSE"), joinpath(@__DIR__, "src", "LICENSE.md"); force = true)
+cp(joinpath(@__DIR__, "..", "LICENSE"), joinpath(@__DIR__, "src", "LICENSE.md"); force=true)
 
 makedocs(
     doctest=false,
