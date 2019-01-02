@@ -1,34 +1,26 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
-
 os:
   - linux
   - osx
-
 julia:
   - 1.0
   # - nightly
-
 matrix:
   allow_failures:
     - julia: nightly
   fast_finish: true
-
 matrix:
   - PYTHON=python3
-
 notifications:
   email: false
-
 branches:
   only:
     - master
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
-
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
   - julia --project=test/coverage test/coverage/coverage.jl
-
 jobs:
   include:
     - stage: "Documentation"
