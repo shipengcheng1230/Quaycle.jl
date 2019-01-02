@@ -9,6 +9,7 @@
 #     using JuEQ
 #     ```
 
+# ### Define Parameters
 # First, we load the package and define some basic parameters:
 
 using JuEQ
@@ -74,6 +75,7 @@ p2 = heatmap(σ',
 
 plot(p1, p2, layout=(2, 1))
 
+# ### Construct Model
 # Construct our material property profile:
 
 mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);
@@ -88,10 +90,12 @@ u0 = cat(vinit, θ0, dims=3);
 
 prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());
 
+# ### Solve Model
 # Solve the model:
 
 sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
 
+# ### Sanity Check of Results
 # Take a look at the max velocity:
 
 maxv = max_velocity(sol)

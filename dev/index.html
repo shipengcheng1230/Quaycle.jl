@@ -280,13 +280,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#acknowledgements" title="Acknowledgements" class="md-nav__link">
-    Acknowledgements
-  </a>
-  
-</li>
-      
       
       
       
@@ -411,6 +404,42 @@
       
 
 
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      References
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        References
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="references/" title="References" class="md-nav__link">
+      References
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
   <li class="md-nav__item">
     <a href="LICENSE/" title="License" class="md-nav__link">
       License
@@ -452,13 +481,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#acknowledgements" title="Acknowledgements" class="md-nav__link">
-    Acknowledgements
-  </a>
-  
-</li>
-      
       
       
       
@@ -483,17 +505,16 @@
 <p><a id='Overview-1'></a></p>
 <h2 id="overview">Overview</h2>
 <p>This is a suite for numerically simulating earthquake sequences in <a href="https://julialang.org/">Julia</a>. The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.</p>
-<p>Features of this package are listed as below:</p>
-<ul>
-<li>Rate-State Friction Law</li>
-<li>Okada's Dislocation Method</li>
-<li>Boundary Element Method (Quasi-dynamic)</li>
+<p>Features of this package currently:</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Rate-State Friction Law</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Boundary Element Method (Quasi-dynamic)</li>
 </ul>
 <p>Features to be implemented:</p>
-<ul>
-<li><strong>Viscoelastic Relaxation</strong> (priority)</li>
-<li>Fully Elastodynamic Effect</li>
-<li>Off-Fault Materials Effect</li>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Viscoelastic relaxation</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Fully elastodynamics</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Finite element method</li>
 </ul>
 <p><a id='Installation-1'></a></p>
 <h2 id="installation">Installation</h2>
@@ -505,11 +526,6 @@
 <p>To load the package:</p>
 <div class="codehilite"><pre><span></span><span class="k">using</span> <span class="n">JuEQ</span>
 </pre></div>
-
-
-<p><a id='Acknowledgements-1'></a></p>
-<h2 id="acknowledgements">Acknowledgements</h2>
-<p>The simulation of episodic seismic and slow slip events using boundary-element-method is largely benifit from <a href="https://liumcgill.wordpress.com/">Yajing Liu</a> original Fortran code.</p>
                 
                   
                 
@@ -551,6 +567,10 @@
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+          </div>
         
         powered by
         <a href="https://www.mkdocs.org">MkDocs</a>
