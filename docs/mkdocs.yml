@@ -2,6 +2,7 @@ site_name:        JuEQ.jl
 repo_url:         https://github.com/shipengcheng1230/JuEQ.jl/
 site_description: Julia implementations of earthquake cycle simulation
 site_author:      Pengcheng Shi
+copyright: Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
 
 theme: material
 
@@ -19,10 +20,12 @@ markdown_extensions:
     - mdx_math
     - admonition
     - codehilite
+    - pymdownx.tasklist:
+        custom_checkbox: true
 
 docs_dir: 'build'
 
-pages:
+nav:
     - Home: 'index.md'
     - 'Quasi Dynamic Simulation using BEM':
         - 'Basic Theory': 'quasi_dynamic_intro.md'
@@ -31,4 +34,6 @@ pages:
     - Library:
         - Public: 'public_interface.md'
         - Private: 'private_interface.md'
+    - References:
+        - 'references.md'
     - License: 'LICENSE.md'

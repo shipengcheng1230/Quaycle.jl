@@ -3,17 +3,15 @@
 ## Overview
 This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.
 
-Features of this package are listed as below:
+Features of this package currently:
 
-- Rate-State Friction Law
-- Okada's Dislocation Method
-- Boundary Element Method (Quasi-dynamic)
-
+- [x] Rate-State Friction Law
+- [x] Boundary Element Method (Quasi-dynamic)
 
 Features to be implemented:
-- **Viscoelastic Relaxation** (priority)
-- Fully Elastodynamic Effect
-- Off-Fault Materials Effect
+- [ ] Viscoelastic relaxation
+- [ ] Fully elastodynamics
+- [ ] Finite element method
 
 
 ## Installation
@@ -28,7 +26,3 @@ To load the package:
 ```julia
 using JuEQ
 ```
-
-## Acknowledgements
-
-The simulation of episodic seismic and slow slip events using boundary-element-method is largely benifit from [Yajing Liu](https://liumcgill.wordpress.com/) original Fortran code.
