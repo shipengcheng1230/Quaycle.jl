@@ -12,6 +12,13 @@ matrix:
   fast_finish: true
 matrix:
   - PYTHON=python3
+addons:
+  apt:
+    packages:
+      - python3
+  homebrew:
+    packages:
+      - python3
 notifications:
   email: false
 branches:
