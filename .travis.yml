@@ -10,13 +10,6 @@ matrix:
   allow_failures:
     - julia: nightly
   fast_finish: true
-env:
-  matrix:
-    - PYTHON=python3 # python 3.5
-addons:
-  apt:
-    packages:
-      - python3-pip
 notifications:
   email: false
 branches:
@@ -31,6 +24,7 @@ jobs:
     - stage: "Documentation"
       julia: 1.0
       os: linux
+      env: PYTHON=python3
       script:
         - julia --project=docs -e 'using Pkg; Pkg.instantiate(); Pkg.add(PackageSpec(path=pwd()))'
         - julia --project=docs docs/make.jl
