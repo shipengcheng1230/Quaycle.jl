@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/quasi_dynamic_intro/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/bp1/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/otfsync/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/public_interface/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/private_interface/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/references/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>None</loc>
-     <lastmod>2019-01-02</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/LICENSE/</loc>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>

@@ -13,6 +13,8 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
+        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/public_interface/">
+      
       
         <meta name="author" content="Pengcheng Shi">
       
@@ -33,7 +35,7 @@
       
         <meta name="lang:search.result.other" content="# matching documents">
       
-        <meta name="lang:search.tokenizer" content="[\s\-]+">
+        <meta name="lang:search.tokenizer" content="[\s\-\.]+">
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.2.0">
@@ -46,6 +48,12 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/application.572ca0f0.css">
       
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#03a9f4">
       
     
     
@@ -66,7 +74,9 @@
     
   </head>
   
-    <body dir="ltr">
+    
+    
+    <body dir="ltr" data-md-color-primary="light-blue" data-md-color-accent="light-blue">
   
     <svg class="md-svg">
       <defs>
@@ -106,7 +116,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon"></i>
           
@@ -177,7 +187,7 @@
       </div>
     
     <div class="md-source__repository">
-      GitHub
+      JuEQ.jl
     </div>
   </a>
 
@@ -202,7 +212,7 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
       
         <i class="md-icon"></i>
       
@@ -226,7 +236,7 @@
       </div>
     
     <div class="md-source__repository">
-      GitHub
+      JuEQ.jl
     </div>
   </a>
 
@@ -406,34 +416,10 @@
       
 
 
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
-    
-    <label class="md-nav__link" for="nav-4">
-      References
-    </label>
-    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
-      <label class="md-nav__title" for="nav-4">
-        References
-      </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
   <li class="md-nav__item">
     <a href="../references/" title="References" class="md-nav__link">
       References
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
   </li>
 
     
@@ -503,9 +489,9 @@
                 
                 
                 <p><a id='Public-Interface-1'></a></p>
-<h1 id="public-interface">Public Interface</h1>
+<h1 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h1>
 <p><a id='Index-1'></a></p>
-<h2 id="index">Index</h2>
+<h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="./#JuEQ.DieterichStateLaw"><code>JuEQ.DieterichStateLaw</code></a></li>
 <li><a href="./#JuEQ.PrzStateLaw"><code>JuEQ.PrzStateLaw</code></a></li>
@@ -513,8 +499,8 @@
 <li><a href="./#JuEQ.DECallbackSaveToFile-Tuple{IOStream,IOStream}"><code>JuEQ.DECallbackSaveToFile</code></a></li>
 <li><a href="./#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim"><code>JuEQ.EarthquakeCycleProblem</code></a></li>
 <li><a href="./#JuEQ.dc3d_okada-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>JuEQ.dc3d_okada</code></a></li>
-<li><a href="./#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T&lt;:Number where ftype&lt;:JuEQ.PlaneFault"><code>JuEQ.discretize</code></a></li>
 <li><a href="./#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},T}} where T&lt;:Number where ftype&lt;:JuEQ.PlaneFault"><code>JuEQ.discretize</code></a></li>
+<li><a href="./#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T&lt;:Number where ftype&lt;:JuEQ.PlaneFault"><code>JuEQ.discretize</code></a></li>
 <li><a href="./#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s33} where #s33&lt;:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N"><code>JuEQ.fault</code></a></li>
 <li><a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T&lt;:Number"><code>JuEQ.friction</code></a></li>
 <li><a href="./#JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}"><code>JuEQ.max_velocity</code></a></li>
@@ -523,7 +509,7 @@
 <li><a href="./#JuEQ.stiffness_tensor-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},BoundaryElementGrid{1},HomogeneousElasticProperties}} where T&lt;:Number where ftype&lt;:JuEQ.PlaneFault"><code>JuEQ.stiffness_tensor</code></a></li>
 </ul>
 <p><a id='Interfaces-1'></a></p>
-<h2 id="interfaces">Interfaces</h2>
+<h2 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h2>
 <p><a id='JuEQ.DieterichStateLaw' href='#JuEQ.DieterichStateLaw'>#</a>
 <strong><code>JuEQ.DieterichStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <p>$\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}$</p>
@@ -535,9 +521,9 @@
 <p>$\frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\frac{V θ}{L}}$</p>
 <p><a id='JuEQ.DECallbackSaveToFile-Tuple{IOStream,IOStream}' href='#JuEQ.DECallbackSaveToFile-Tuple{IOStream,IOStream}'>#</a>
 <strong><code>JuEQ.DECallbackSaveToFile</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>DECallbackSaveToFile(iot::IOStream, iou::IOStream)
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>DECallbackSaveToFile(iot::IOStream, iou::IOStream)
 </pre></div>
-
+</td></tr></table>
 
 <p>Construct a functional callback to write <code>ODESolution</code> (<code>t</code> &amp; <code>u</code>) into file. The reason to separate <code>t</code> and <code>u</code> is for more easily reshape <code>u</code> w.r.t grids specification. It right now falls on users' memory on what the type of solution is for accurately retrieving results.</p>
 <p><strong>Arguments</strong></p>
@@ -548,9 +534,9 @@
 <p><strong>Note</strong> It is strongly not recommended to use "skipping" scheme (by defining <code>thrd</code> and <code>dts(a)</code> for each case) when solution is too oscillated.</p>
 <p><a id='JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim' href='#JuEQ.EarthquakeCycleProblem-Union{Tuple{dim}, Tuple{BoundaryElementGrid,PlaneMaterialProperties,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where dim'>#</a>
 <strong><code>JuEQ.EarthquakeCycleProblem</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span><span class="nt">EarthquakeCycleProblem</span><span class="o">(</span><span class="nt">p</span><span class="p">::</span><span class="nd">PlaneMaterialProperties</span><span class="o">,</span> <span class="nt">u0</span><span class="o">,</span> <span class="nt">tspan</span><span class="o">;</span> <span class="nt">se</span><span class="o">=</span><span class="nt">DieterichStateLaw</span><span class="o">(),</span> <span class="nt">fform</span><span class="o">=</span><span class="nt">CForm</span><span class="o">())</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>EarthquakeCycleProblem(p::PlaneMaterialProperties, u0, tspan; se=DieterichStateLaw(), fform=CForm())
 </pre></div>
-
+</td></tr></table>
 
 <p>Return an <code>ODEProblem</code> that encapsulate all the parameters and functions required for simulation. For the entailing usage, please refer <a href="http://docs.juliadiffeq.org/latest/">DifferentialEquations.jl</a></p>
 <p><strong>Arguments</strong></p>
@@ -567,7 +553,54 @@
 <p>Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace. See <a href="http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html">dc3d</a> for details.</p>
 <p><em>test/test_okada.dat</em> is obtained using <a href="http://www.bosai.go.jp/study/application/dc3d/download/DC3Dfortran.txt">DC3dfortran</a></p>
 <p>An example wrapper for DC3D in julia as below:</p>
-<div class="codehilite"><pre><span></span><span class="k">function</span> <span class="n">dc3d_fortran</span><span class="p">(</span><span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">α</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dep</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">al1</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">al2</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">aw1</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">aw2</span><span class="o">::</span><span class="n">T</span><span class="p">,</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">function</span> <span class="n">dc3d_fortran</span><span class="p">(</span><span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">α</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dep</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">al1</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">al2</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">aw1</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">aw2</span><span class="o">::</span><span class="n">T</span><span class="p">,</span>
     <span class="n">disl1</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">disl2</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">disl3</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span> <span class="o">&lt;:</span> <span class="kt">AbstractFloat</span><span class="p">}</span>
 
     <span class="c"># initial return values</span>
@@ -616,10 +649,57 @@
     <span class="p">)</span>
 <span class="k">end</span>
 </pre></div>
-
+</td></tr></table>
 
 <p>The corresponding fortran module is:</p>
-<div class="codehilite"><pre><span></span><span class="k">MODULE </span><span class="n">okada</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">MODULE </span><span class="n">okada</span>
   <span class="k">USE</span><span class="p">,</span> <span class="k">INTRINSIC</span> <span class="kd">::</span> <span class="nb">iso_c_binding</span>
 <span class="nb">  </span><span class="k">IMPLICIT NONE</span>
 <span class="k">CONTAINS</span>
@@ -668,10 +748,22 @@
 
 <span class="k">END MODULE </span><span class="n">okada</span>
 </pre></div>
-
+</td></tr></table>
 
 <p>A sample of makefile is as below:</p>
-<div class="codehilite"><pre><span></span><span class="c"># Build Okada&#39;s code for calculating deformation due to a fault model</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="c"># Build Okada&#39;s code for calculating deformation due to a fault model</span>
 <span class="c">#</span>
 <span class="nv">CC</span> <span class="o">=</span> gfortran
 <span class="nv">CFLAGS</span> <span class="o">=</span> -fPIC -w -O3
@@ -685,13 +777,13 @@
 <span class="nf">$(TARGET)</span><span class="o">:</span> <span class="k">$(</span><span class="nv">OBJS</span><span class="k">)</span>
     <span class="k">$(</span>CC<span class="k">)</span> <span class="k">$(</span>CFLAGS<span class="k">)</span> <span class="k">$(</span>LDFLAGS<span class="k">)</span> -o <span class="k">$(</span>TARGET<span class="k">)</span> <span class="k">$(</span>OBJS<span class="k">)</span>
 </pre></div>
-
+</td></tr></table>
 
 <p><a id='JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},T}} where T<:Number where ftype<:JuEQ.PlaneFault' href='#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},T}} where T<:Number where ftype<:JuEQ.PlaneFault'>#</a>
 <strong><code>JuEQ.discretize</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span><span class="nt">discretize</span><span class="o">(</span><span class="nt">fa</span><span class="p">::</span><span class="nd">PlaneFaultDomain</span><span class="p">{</span><span class="err">ftype,</span> <span class="err">1</span><span class="p">}</span><span class="o">,</span> <span class="nt">Δξ</span><span class="p">::</span><span class="nd">T</span><span class="o">;</span> <span class="nt">ax_ratio</span><span class="o">=</span><span class="nt">12</span><span class="p">.</span><span class="nc">5</span><span class="o">)</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>discretize(fa::PlaneFaultDomain{ftype, 1}, Δξ::T; ax_ratio=12.5)
 </pre></div>
-
+</td></tr></table>
 
 <p>Generate the grid for given 1D fault domain. The grids will be forced to start at (x=0, y=0, z=0).</p>
 <p><strong>Arguments</strong></p>
@@ -701,9 +793,9 @@
 </ul>
 <p><a id='JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T<:Number where ftype<:JuEQ.PlaneFault' href='#JuEQ.discretize-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,2,T},T,T}} where T<:Number where ftype<:JuEQ.PlaneFault'>#</a>
 <strong><code>JuEQ.discretize</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span><span class="nt">discretize</span><span class="o">(</span><span class="nt">fa</span><span class="p">::</span><span class="nd">PlaneFaultDomain</span><span class="p">{</span><span class="err">ftype,</span> <span class="err">2</span><span class="p">}</span><span class="o">,</span> <span class="nt">Δx</span><span class="o">,</span> <span class="nt">Δξ</span><span class="o">;</span> <span class="nt">buffer</span><span class="o">=</span><span class="p">:</span><span class="nd">auto</span><span class="o">)</span> <span class="nt">where</span> <span class="p">{</span><span class="err">ftype</span> <span class="err">&lt;:</span> <span class="err">PlaneFault</span><span class="p">}</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>discretize(fa::PlaneFaultDomain{ftype, 2}, Δx, Δξ; buffer=:auto) where {ftype &lt;: PlaneFault}
 </pre></div>
-
+</td></tr></table>
 
 <p>Generate the grid for given 2D fault domain. The grids will be forced to start at (z=0) and spread symmetrically along x-axis w.r.t y-z plane.     By such setting, we would be able to utilize the symmetry properties of stiffness tensor for performance speed up.</p>
 <p><strong>Arguments</strong></p>
@@ -713,9 +805,9 @@
 </ul>
 <p><a id='JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s33} where #s33<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N' href='#JuEQ.fault-Union{Tuple{T}, Tuple{N}, Tuple{Type{#s33} where #s33<:PlaneFault,T,Tuple{Vararg{T,N}}}} where T where N'>#</a>
 <strong><code>JuEQ.fault</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>fault(ftype::Type{&lt;:PlaneFault}, dip, span)
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>fault(ftype::Type{&lt;:PlaneFault}, dip, span)
 </pre></div>
-
+</td></tr></table>
 
 <p>Generate a fault given the fault type, dip angle and its spatial span.</p>
 <p><strong>Arguments</strong></p>
@@ -726,9 +818,9 @@
 </ul>
 <p><a id='JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T<:Number' href='#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T<:Number'>#</a>
 <strong><code>JuEQ.friction</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T&lt;:Number}
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T&lt;:Number}
 </pre></div>
-
+</td></tr></table>
 
 <p>Calculate friction given by the form of fomula as well as other necessary parameters.</p>
 <ul>
@@ -749,9 +841,9 @@ f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 �
 </p>
 <p><a id='JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}' href='#JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}'>#</a>
 <strong><code>JuEQ.max_velocity</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)
 </pre></div>
-
+</td></tr></table>
 
 <p>Return max velocity across the fault at each time step. A number of convenient interfaces for common output are implemented.</p>
 <p><strong>Arguments</strong></p>
@@ -765,9 +857,9 @@ f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 �
 <p>Calculate moment magnitude.</p>
 <p><a id='JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s46,N} where N where #s46<:Pair}} where dim where ftype<:JuEQ.PlaneFault' href='#JuEQ.properties-Union{Tuple{dim}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,dim,T} where T,BoundaryElementGrid,AbstractArray{#s46,N} where N where #s46<:Pair}} where dim where ftype<:JuEQ.PlaneFault'>#</a>
 <strong><code>JuEQ.properties</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span><span class="nt">properties</span><span class="o">(</span><span class="nt">fa</span><span class="p">::</span><span class="nd">PlaneFaultDomain</span><span class="o">,</span> <span class="nt">gd</span><span class="p">::</span><span class="nd">BoundaryElementGrid</span><span class="p">{</span><span class="err">dim</span><span class="p">}</span><span class="o">;</span> <span class="nt">_kwargs</span><span class="o">...)</span> <span class="nt">where</span> <span class="p">{</span><span class="err">dim</span><span class="p">}</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>properties(fa::PlaneFaultDomain, gd::BoundaryElementGrid{dim}; _kwargs...) where {dim}
 </pre></div>
-
+</td></tr></table>
 
 <p>Establishing a material-properties-profile given by the fault domain and grids. User must provide the     necessary parameters in according to the grid size specified or just a scalar for broadcasting.</p>
 <p><strong>Arguments that are required:</strong></p>
@@ -790,9 +882,9 @@ f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 �
 </ul>
 <p><a id='JuEQ.stiffness_tensor-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},BoundaryElementGrid{1},HomogeneousElasticProperties}} where T<:Number where ftype<:JuEQ.PlaneFault' href='#JuEQ.stiffness_tensor-Union{Tuple{T}, Tuple{ftype}, Tuple{PlaneFaultDomain{ftype,1,T},BoundaryElementGrid{1},HomogeneousElasticProperties}} where T<:Number where ftype<:JuEQ.PlaneFault'>#</a>
 <strong><code>JuEQ.stiffness_tensor</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>stiffness_tensor(fa::PlaneFaultDomain, gd::BoundaryElementGrid, ep::HomogeneousElasticProperties)
 </pre></div>
-
+</td></tr></table>
 
 <p>Calculate the reduced stiffness tensor. For 2D fault, the final result will be dimensionally reduced to a 3D array     due to the <em>translational</em> &amp; <em>reflective</em> &amp; <em>perodic</em> symmetry, such that the tensor contraction will be equivalent to convolution,     hence we could use FFT for better performace.</p>
 <p><strong>Note</strong></p>
@@ -867,6 +959,19 @@ f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 �
       </div>
       
         
+  <div class="md-footer-social">
+    <link rel="stylesheet" href="../assets/fonts/font-awesome.css">
+    
+      <a href="https://github.com/shipengcheng1230" class="md-footer-social__link fa fa-github"></a>
+    
+      <a href="https://www.linkedin.com/in/pengcheng-shi-396960148" class="md-footer-social__link fa fa-linkedin"></a>
+    
+      <a href="https://steamcommunity.com/profiles/76561198054638928/" class="md-footer-social__link fa fa-steam"></a>
+    
+      <a href="https://live.xbox.com/en-US/Profile?Gamertag=ElyseesKukushka" class="md-footer-social__link fa fa-xbox"></a>
+    
+  </div>
+
       
     </div>
   </div>

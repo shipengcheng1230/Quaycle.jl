@@ -13,6 +13,8 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
+        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/private_interface/">
+      
       
         <meta name="author" content="Pengcheng Shi">
       
@@ -33,7 +35,7 @@
       
         <meta name="lang:search.result.other" content="# matching documents">
       
-        <meta name="lang:search.tokenizer" content="[\s\-]+">
+        <meta name="lang:search.tokenizer" content="[\s\-\.]+">
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.2.0">
@@ -46,6 +48,12 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/application.572ca0f0.css">
       
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#03a9f4">
       
     
     
@@ -66,7 +74,9 @@
     
   </head>
   
-    <body dir="ltr">
+    
+    
+    <body dir="ltr" data-md-color-primary="light-blue" data-md-color-accent="light-blue">
   
     <svg class="md-svg">
       <defs>
@@ -106,7 +116,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon"></i>
           
@@ -177,7 +187,7 @@
       </div>
     
     <div class="md-source__repository">
-      GitHub
+      JuEQ.jl
     </div>
   </a>
 
@@ -202,7 +212,7 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
       
         <i class="md-icon"></i>
       
@@ -226,7 +236,7 @@
       </div>
     
     <div class="md-source__repository">
-      GitHub
+      JuEQ.jl
     </div>
   </a>
 
@@ -406,34 +416,10 @@
       
 
 
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
-    
-    <label class="md-nav__link" for="nav-4">
-      References
-    </label>
-    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
-      <label class="md-nav__title" for="nav-4">
-        References
-      </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
   <li class="md-nav__item">
     <a href="../references/" title="References" class="md-nav__link">
       References
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
   </li>
 
     
@@ -503,9 +489,9 @@
                 
                 
                 <p><a id='Private-Interface-1'></a></p>
-<h1 id="private-interface">Private Interface</h1>
+<h1 id="private-interface">Private Interface<a class="headerlink" href="#private-interface" title="Permanent link">&para;</a></h1>
 <p><a id='Index-1'></a></p>
-<h2 id="index">Index</h2>
+<h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="./#JuEQ.HomogeneousElasticProperties"><code>JuEQ.HomogeneousElasticProperties</code></a></li>
 <li><a href="./#JuEQ.ODEStateVariable"><code>JuEQ.ODEStateVariable</code></a></li>
@@ -514,7 +500,7 @@
 <li><a href="./#JuEQ.stiffness_periodic_boundary_condition!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T&lt;:Number"><code>JuEQ.stiffness_periodic_boundary_condition!</code></a></li>
 </ul>
 <p><a id='Interfaces-1'></a></p>
-<h2 id="interfaces">Interfaces</h2>
+<h2 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h2>
 <p><a id='JuEQ.HomogeneousElasticProperties' href='#JuEQ.HomogeneousElasticProperties'>#</a>
 <strong><code>JuEQ.HomogeneousElasticProperties</code></strong> &mdash; <em>Type</em>.</p>
 <p>Okada's <a href="http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html">dc3d</a> only applies on isotropic materials,     therefore, elastic modulus are constrained to be scalars.</p>
@@ -528,9 +514,9 @@
 <p>The unit of <em>unit dislocation</em> below is the same of <code>v * t</code> at set by user so to avoid normalization step.</p>
 <p><a id='JuEQ.shear_traction-Tuple{Type{#s46} where #s46<:JuEQ.AbstractFault}' href='#JuEQ.shear_traction-Tuple{Type{#s46} where #s46<:JuEQ.AbstractFault}'>#</a>
 <strong><code>JuEQ.shear_traction</code></strong> &mdash; <em>Method</em>.</p>
-<div class="codehilite"><pre><span></span>shear_traction(::Type{&lt;:PlaneFault}, u, λ, μ, dip)
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>shear_traction(::Type{&lt;:PlaneFault}, u, λ, μ, dip)
 </pre></div>
-
+</td></tr></table>
 
 <p>Calculate the shear traction on the fault plane w.r.t. fault types.</p>
 <p><strong>Arguments</strong></p>
@@ -626,6 +612,19 @@
       </div>
       
         
+  <div class="md-footer-social">
+    <link rel="stylesheet" href="../assets/fonts/font-awesome.css">
+    
+      <a href="https://github.com/shipengcheng1230" class="md-footer-social__link fa fa-github"></a>
+    
+      <a href="https://www.linkedin.com/in/pengcheng-shi-396960148" class="md-footer-social__link fa fa-linkedin"></a>
+    
+      <a href="https://steamcommunity.com/profiles/76561198054638928/" class="md-footer-social__link fa fa-steam"></a>
+    
+      <a href="https://live.xbox.com/en-US/Profile?Gamertag=ElyseesKukushka" class="md-footer-social__link fa fa-xbox"></a>
+    
+  </div>
+
       
     </div>
   </div>
