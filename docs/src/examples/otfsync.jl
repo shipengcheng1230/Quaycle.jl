@@ -3,7 +3,7 @@
 
 # !!! tip
 #     It will automatically use parallel scheme if `nprocs() ≂̸ 1` when building stiffness tensor. To do so:
-#     ```julia
+#     ```julia linenums="1"
 #     using Distributed
 #     addprocs(4); # add # of cores you desire
 #     using JuEQ
