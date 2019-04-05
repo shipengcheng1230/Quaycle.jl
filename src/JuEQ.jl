@@ -14,12 +14,14 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 
+include("geometry.jl")
+
 include("rsf.jl")
 include("fault.jl")
 include("bem.jl")
 include("constructor.jl")
-include("utils.jl")
-include("dc3d.jl")
+# include("utils.jl")
+# include("dc3d.jl")
 include("config.jl")
 
 export NormalFault, ThrustFault, StrikeSlipFault
