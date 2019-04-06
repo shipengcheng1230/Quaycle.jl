@@ -1,94 +1,87 @@
 ## operators of greens function
 
-abstract type ODEStateVariable{dim} end
+export gf_operator, gen_alloc
 
-struct ODEState_1D{T<:AbstractVecOrMat{<:Real}} <: ODEStateVariable{1}
-    dτ_dt::T
-    relv::T
+abstract type Allocation{dim} end
+abstract type OkadaGFAllocation{dim} <: Allocation{dim} end
+
+
+struct OkadaGFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaGFAllocation{1}
+    dims::Dims{1}
+    dτ_dt::T # stress rate
+    relv::T # relative velocity
 end
 
-struct ODEState_2D{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: ODEStateVariable{2}
-    dτ_dt::T
-    relv::T
-    dτ_dt_dft::U
-    relv_dft::U
-    dτ_dt_buffer::T
-    pf::P
+
+struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: OkadaGFAllocation{2}
+    dims::Dims{2}
+    dτ_dt::T # stress rate of interest
+    relv::T # relative velocity
+    dτ_dt_dft::U # stress rate in discrete fourier domain
+    relv_dft::U # relative velocity in discrete fourier domain
+    dτ_dt_buffer::T # stress rate including zero-padding zone for fft
+    pf::P # fft operator
 end
 
-create_ode_state_vars(nξ::Integer; T1=Float64) = ODEState_1D([Vector{T1}(undef, nξ) for _ in 1: 2]...)
 
-function create_ode_state_vars(nx::I, nξ::I; T1=Float64) where {I <: Integer}
-    FFTW.set_num_threads(FFT_CONFIGS["FFT_NUM_THREADS"])
-    x1 = Matrix{T1}(undef, 2 * nx - 1, nξ)
-    p1 = plan_rfft(x1, 1, flags=FFT_CONFIGS["FFT_FLAG"])
+gen_alloc(gtype::Val{:okada}, mesh::SimpleLineGrid) = gen_alloc(gtype, mesh.nξ; T=typeof(mesh.Δξ))
 
-    tvar = ODEState_2D(
-        Matrix{T1}(undef, nx, nξ),
-        zeros(T1, 2nx-1, nξ), # for relative velocity
-        [Matrix{Complex{T1}}(undef, nx, nξ) for _ in 1: 2]...,
-        Matrix{T1}(undef, 2nx-1, nξ),
+gen_alloc(gtype::Val{:okada}, mesh::SimpleRectGrid) = gen_alloc(gtype, mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
+
+gen_alloc(gtype::Val{:okada}, nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
+
+
+function gen_alloc(::Val{:okada}, nx::I, nξ::I; T=Float64) where {I <: Integer}
+    FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
+    x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
+    p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
+
+    alloc = OkadaGFAllocFFTConv(
+        (nx, nξ),
+        Matrix{T}(undef, nx, nξ),
+        zeros(T, 2nx-1, nξ), # for relative velocity
+        [Matrix{Complex{T}}(undef, nx, nξ) for _ in 1: 2]...,
+        Matrix{T}(undef, 2nx-1, nξ),
         p1)
 end
 
-create_ode_state_vars(gd::BoundaryElementGrid{1}) = create_ode_state_vars(gd.nξ; T1=typeof(gd.Δξ))
-create_ode_state_vars(gd::BoundaryElementGrid{2}) = create_ode_state_vars(gd.nx, gd.nξ; T1=typeof(gd.Δx))
 
-function derivations!(du, u, mp::PlaneMaterialProperties{dim}, tvar::ODEStateVariable{dim}, se::StateEvolutionLaw, fform::FrictionLawForm) where {dim}
-    _ndim = dim + 1
-    v = selectdim(u, _ndim, 1)
-    θ = selectdim(u, _ndim, 2)
-    dv = selectdim(du, _ndim, 1)
-    dθ = selectdim(du, _ndim, 2)
-
-    variable_trim!(v, θ)
-    dτ_dt!(mp, tvar, v)
-    dv_dθ_dt!(fform, dv, dθ, v, θ, mp, tvar, se)
-end
-
-@inline function variable_trim!(v::T, θ::T) where {T<:AbstractVecOrMat{<:Float64}}
-    clamp!(θ, 0., Inf)
-end
-
-function gf_operator_kernel(::Val{:okada}, gf::AbstractArray{T, 2}, v::AbstractVector, v0::T) where T
-
+function gf_operator(::Val{:okada}, gf::AbstractArray, alloc::OkadaGFAllocation, vpl::T) where T
+    f! = (alloc, v) -> dτ_dt!(gf, alloc, vpl, v)
+    return f!
 end
 
 
-function gf_operator_kernel(::Val{:okada}, gf::AbstractArray{T, 3}, v::AbstractMatrix, v0::T) where T
-
-end
-
-
-@inline function dτ_dt!(mp::PlaneMaterialProperties{1}, tvar::ODEStateVariable{1}, v::AbstractArray)
-    @fastmath @inbounds @simd for i = 1: prod(mp.dims)
-        tvar.relv[i] = mp.vpl - v[i]
+@inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::OkadaGFAllocMatrix, vpl::T, v::AbstractVector) where T<:Number
+    @fastmath @inbounds @simd for i = 1: alloc.dims[1]
+        alloc.relv[i] = vpl - v[i]
     end
-    mul!(tvar.dτ_dt, mp.k, tvar.relv)
+    mul!(alloc.dτ_dt, gf, alloc.relv)
 end
 
-@inline function dτ_dt!(mp::PlaneMaterialProperties{2}, tvar::ODEStateVariable{2}, v::AbstractArray{T}) where {T<:Number}
-    @fastmath @inbounds for j = 1: mp.dims[2]
-        @simd for i = 1: mp.dims[1]
-            tvar.relv[i,j] = mp.vpl - v[i,j]
+
+@inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::OkadaGFAllocFFTConv, vpl::U, v::AbstractMatrix) where {T<:Complex, U<:Number}
+    @fastmath @inbounds for j = 1: alloc.dims[2]
+        @simd for i = 1: alloc.dims[1]
+            alloc.relv[i,j] = vpl - v[i,j]
         end
     end
-    mul!(tvar.relv_dft, tvar.pf, tvar.relv)
-    fill!(tvar.dτ_dt_dft, zero(T))
+    mul!(alloc.relv_dft, alloc.pf, alloc.relv)
+    fill!(alloc.dτ_dt_dft, zero(T))
 
-    @fastmath @inbounds for l = 1: mp.dims[2]
-        for j = 1: mp.dims[2]
-            @simd for i = 1: mp.dims[1]
-                tvar.dτ_dt_dft[i,j] += mp.k[i,j,l] * tvar.relv_dft[i,l]
+    @fastmath @inbounds for l = 1: alloc.dims[2]
+        for j = 1: alloc.dims[2]
+            @simd for i = 1: alloc.dims[1]
+                alloc.dτ_dt_dft[i,j] += gf[i,j,l] * alloc.relv_dft[i,l]
             end
         end
     end
 
-    ldiv!(tvar.dτ_dt_buffer, tvar.pf, tvar.dτ_dt_dft)
+    ldiv!(alloc.dτ_dt_buffer, alloc.pf, alloc.dτ_dt_dft)
 
-    @fastmath @inbounds for j = 1: mp.dims[2]
-        @simd for i = 1: mp.dims[1]
-            tvar.dτ_dt[i,j] = tvar.dτ_dt_buffer[i,j]
+    @fastmath @inbounds for j = 1: alloc.dims[2]
+        @simd for i = 1: alloc.dims[1]
+            alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
         end
     end
 end

@@ -35,11 +35,6 @@ end
 end
 
 
-@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; IsOnYZPlane{FT}} = [0.0, 1.0, 0.0]
-
-@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; !IsOnYZPlane{FT}} = [1.0, 0.0, 0.0]
-
-
 function okada_greens_function(mesh::SimpleMesh{1}, λ::T, μ::T, dip::T, ft::FaultType; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
     okada_greens_function!(st, mesh, λ, μ, dip, ft; kwargs...)
@@ -52,12 +47,12 @@ function okada_greens_function(mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::Fa
     okada_greens_function!(st, mesh, λ, μ, dip, ft; kwargs...)
 
     function __convert_to_fourier_domain__()
-        FFTW.set_num_threads(FFT_CONFIGS["FFT_NUM_THREADS"])
+        FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
         x1 = zeros(T, 2 * mesh.nx - 1)
-        p1 = plan_rfft(x1, flags=FFT_CONFIGS["FFT_FLAG"])
+        p1 = plan_rfft(x1, flags=parameters["FFT"]["FLAG"])
         st_dft = Array{Complex{T}}(undef, mesh.nx, mesh.nξ, mesh.nξ)
         @inbounds for l = 1: mesh.nξ, j = 1: mesh.nξ
-            # The most tricky part to ensure correct FFT, see `dτ_dt!` for 2D case as well.
+            # The most tricky part to ensure correct FFT
             # Ref -> (https://github.com/JuliaMatrices/ToeplitzMatrices.jl/blob/cbe29c344be8363f33eb17090121f8cff600b72e/src/ToeplitzMatrices.jl#L627)
             st_dft[:,j,l] .= p1 * [st[:,j,l]; reverse(st[2:end,j,l])]
         end
@@ -106,17 +101,22 @@ function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::
     y, z = mesh.ξ .* cosd(dip), mesh.ξ .* sind(dip)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
-        # As stated in `BEMGrid_2D`, `depth` here are fixed at 0
-        okada_gf_periodic_boundary_condition!(u, mesh.x[i], y[i], z[i], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
+        # For simple rectangular mesh, `depth` here are fixed at 0.
+        okada_gf_periodic_bc!(u, mesh.x[i], y[i], z[i], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
         st[i,j,l] = shear_traction(ft, u, λ, μ, dip)
     end
 end
 
 
-function okada_gf_periodic_boundary_condition!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
+function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
     nrept::Integer, lrept::T) where {T<:Number}
     fill!(u, zero(T))
     @fastmath @simd for i = -nrept: nrept
         u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i * lrept, aw, disl)
     end
 end
+
+
+@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; IsOnYZPlane{FT}} = [0.0, 1.0, 0.0]
+
+@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; !IsOnYZPlane{FT}} = [1.0, 0.0, 0.0]

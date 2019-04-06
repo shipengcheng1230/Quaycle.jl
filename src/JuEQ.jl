@@ -9,6 +9,7 @@ using SimpleTraits
 using Parameters
 using FFTW
 using FFTW: Plan
+using HDF5
 
 using Distributed
 using Base.Threads
@@ -18,6 +19,10 @@ using SharedArrays
 include("config.jl")
 include("geometry.jl")
 include("greensfun.jl")
+include("gfoperator.jl")
+include("properties.jl")
+
+
 
 include("rsf.jl")
 include("fault.jl")
