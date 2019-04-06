@@ -1,7 +1,7 @@
 using JuEQ
-using Test
 
-include("test_rsf.jl")
-include("test_okada.jl")
-include("test_bem.jl")
-include("test_fault.jl")
+const TESTDIR = @__DIR__
+
+for f in filter!(x -> startswith(x, "test_") && endswith(x, ".jl"), readdir(TESTDIR))
+    include(abspath(joinpath(TESTDIR, f)))
+end

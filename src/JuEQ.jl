@@ -3,6 +3,7 @@ module JuEQ
 using Reexport
 
 @reexport using DifferentialEquations
+@reexport using Sundials
 
 using SimpleTraits
 using Parameters
@@ -14,7 +15,9 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 
+include("config.jl")
 include("geometry.jl")
+include("greensfun.jl")
 
 include("rsf.jl")
 include("fault.jl")
@@ -22,7 +25,7 @@ include("bem.jl")
 include("constructor.jl")
 # include("utils.jl")
 # include("dc3d.jl")
-include("config.jl")
+
 
 export NormalFault, ThrustFault, StrikeSlipFault
 export PlaneFaultDomain
@@ -35,7 +38,6 @@ export MaterialProperties
 
 export discretize, properties, stiffness_tensor
 export EarthquakeCycleProblem
-export dc3d_okada
 
 export max_velocity, moment_magnitude, DECallbackSaveToFile
 

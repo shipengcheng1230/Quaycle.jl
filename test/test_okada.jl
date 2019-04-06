@@ -1,4 +1,5 @@
 using DelimitedFiles
+using Test
 
 @testset "Test Okada's displacement" begin
     @testset "Normal computations" begin
