@@ -1,3 +1,8 @@
+## rate-and-state friction
+
+export CForm, RForm
+export DieterichStateLaw, RuinaStateLaw, PrzStateLaw
+
 abstract type StateEvolutionLaw end
 
 "``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{V θ}{L}``"

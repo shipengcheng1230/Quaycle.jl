@@ -5,13 +5,11 @@ export gf_operator, gen_alloc
 abstract type Allocation{dim} end
 abstract type OkadaGFAllocation{dim} <: Allocation{dim} end
 
-
 struct OkadaGFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaGFAllocation{1}
     dims::Dims{1}
     dτ_dt::T # stress rate
     relv::T # relative velocity
 end
-
 
 struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: OkadaGFAllocation{2}
     dims::Dims{2}
@@ -25,11 +23,8 @@ end
 
 
 gen_alloc(gtype::Val{:okada}, mesh::SimpleLineGrid) = gen_alloc(gtype, mesh.nξ; T=typeof(mesh.Δξ))
-
 gen_alloc(gtype::Val{:okada}, mesh::SimpleRectGrid) = gen_alloc(gtype, mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
-
 gen_alloc(gtype::Val{:okada}, nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
-
 
 function gen_alloc(::Val{:okada}, nx::I, nξ::I; T=Float64) where {I <: Integer}
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
@@ -45,12 +40,10 @@ function gen_alloc(::Val{:okada}, nx::I, nξ::I; T=Float64) where {I <: Integer}
         p1)
 end
 
-
 function gf_operator(::Val{:okada}, gf::AbstractArray, alloc::OkadaGFAllocation, vpl::T) where T
     f! = (alloc, v) -> dτ_dt!(gf, alloc, vpl, v)
     return f!
 end
-
 
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::OkadaGFAllocMatrix, vpl::T, v::AbstractVector) where T<:Number
     @fastmath @inbounds @simd for i = 1: alloc.dims[1]
@@ -58,7 +51,6 @@ end
     end
     mul!(alloc.dτ_dt, gf, alloc.relv)
 end
-
 
 @inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::OkadaGFAllocFFTConv, vpl::U, v::AbstractMatrix) where {T<:Complex, U<:Number}
     @fastmath @inbounds for j = 1: alloc.dims[2]

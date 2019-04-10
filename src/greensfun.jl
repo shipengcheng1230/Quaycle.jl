@@ -1,10 +1,6 @@
 ## static green's function
 export greens_function
 
-abstract type FaultType end
-struct DIPPING <: FaultType end
-struct STRIKING <: FaultType end
-
 @traitdef IsOnYZPlane{X}
 @traitimpl IsOnYZPlane{X} <- isonyzplane(X)
 isonyzplane(DIPPING) = true
@@ -18,31 +14,27 @@ for f in filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR))
 end
 
 ## okada
-greens_function(::Val{:okada}, mesh::SimpleMesh, λ::Number, μ::Number, dip::Number, ft::FT; kwargs...) where {FT<:FaultType} = okada_greens_function(mesh, promote(λ, μ, dip)..., ft; kwargs...)
+greens_function(::Val{:okada}, mesh::SimpleMesh, λ::Real, μ::Real, dip::Real, ft::FT; kwargs...) where {FT<:PlaneFault} = okada_greens_function(mesh, promote(λ, μ, dip)..., ft; kwargs...)
 
-
-@inline @traitfn function shear_traction(::FT, u::AbstractVector, λ::T, μ::T, dip::T) where {T<:Number, FT<:FaultType; IsOnYZPlane{FT}}
+@inline @traitfn function shear_traction(::FT, u::AbstractVector, λ::T, μ::T, dip::T) where {T<:Real, FT<:PlaneFault; IsOnYZPlane{FT}}
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
     -((σzz - σyy)/2 * sinpi(2dip/180) + τyz * cospi(2dip/180))
 end
 
-
-@inline @traitfn function shear_traction(::FT, u::AbstractVector, λ::T, μ::T, dip::T) where {T<:Number, FT<:FaultType; !IsOnYZPlane{FT}}
+@inline @traitfn function shear_traction(::FT, u::AbstractVector, λ::T, μ::T, dip::T) where {T<:Real, FT<:PlaneFault; !IsOnYZPlane{FT}}
     # Special case for `dip = 90.` against above, however, at x-y plane instead.
     μ * (u[5] + u[7])
 end
 
-
-function okada_greens_function(mesh::SimpleMesh{1}, λ::T, μ::T, dip::T, ft::FaultType; kwargs...) where T
+function okada_greens_function(mesh::SimpleMesh{1}, λ::T, μ::T, dip::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
     okada_greens_function!(st, mesh, λ, μ, dip, ft; kwargs...)
     return sdata(st)
 end
 
-
-function okada_greens_function(mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::FaultType; fourier_domain=true, kwargs...) where T
+function okada_greens_function(mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
     okada_greens_function!(st, mesh, λ, μ, dip, ft; kwargs...)
 
@@ -62,8 +54,7 @@ function okada_greens_function(mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::Fa
     fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
-
-function okada_greens_function!(st::SharedArray, mesh::SimpleMesh, λ::T, μ::T, dip::T, ft::FaultType; kwargs...) where T
+function okada_greens_function!(st::SharedArray, mesh::SimpleMesh, λ::T, μ::T, dip::T, ft::PlaneFault; kwargs...) where T
     @sync begin
         for p in procs(st)
             @async remotecall_wait(okada_gf_shared_chunk!, WorkerPool(workers()), st, mesh, λ, μ, dip, ft; kwargs...)
@@ -71,16 +62,14 @@ function okada_greens_function!(st::SharedArray, mesh::SimpleMesh, λ::T, μ::T,
     end
 end
 
-
-function okada_gf_shared_chunk!(st::SharedArray, mesh::SimpleMesh, λ::T, μ::T, dip::T, ft::FaultType; kwargs...) where T
+function okada_gf_shared_chunk!(st::SharedArray, mesh::SimpleMesh, λ::T, μ::T, dip::T, ft::PlaneFault; kwargs...) where T
     i2s = CartesianIndices(st)
     inds = localindices(st)
     subs = i2s[inds]
     okada_gf_chunk!(st, mesh, λ, μ, dip, ft, subs; kwargs...)
 end
 
-
-function okada_gf_chunk!(st::SharedArray{T, 2}, mesh::SimpleMesh{1}, λ::T, μ::T, dip::T, ft::FaultType, subs::AbstractArray; ax_ratio::Number=12.5) where T
+function okada_gf_chunk!(st::SharedArray{T, 2}, mesh::SimpleMesh{1}, λ::T, μ::T, dip::T, ft::PlaneFault, subs::AbstractArray; ax_ratio::Real=12.5) where T
     ud = unit_dislocation(ft)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
@@ -92,8 +81,7 @@ function okada_gf_chunk!(st::SharedArray{T, 2}, mesh::SimpleMesh{1}, λ::T, μ::
     end
 end
 
-
-function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::FaultType, subs::AbstractArray; nrept::Integer=2, buffer_ratio::Integer=1) where T
+function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::T, dip::T, ft::PlaneFault, subs::AbstractArray; nrept::Integer=2, buffer_ratio::Integer=1) where T
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
@@ -107,16 +95,13 @@ function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::
     end
 end
 
-
 function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
-    nrept::Integer, lrept::T) where {T<:Number}
+    nrept::Integer, lrept::T) where {T<:Real}
     fill!(u, zero(T))
     @fastmath @simd for i = -nrept: nrept
         u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i * lrept, aw, disl)
     end
 end
 
-
-@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; IsOnYZPlane{FT}} = [0.0, 1.0, 0.0]
-
-@inline @traitfn unit_dislocation(::FT) where {FT<:FaultType; !IsOnYZPlane{FT}} = [1.0, 0.0, 0.0]
+@inline @traitfn unit_dislocation(::FT) where {FT<:PlaneFault; IsOnYZPlane{FT}} = [0.0, 1.0, 0.0]
+@inline @traitfn unit_dislocation(::FT) where {FT<:PlaneFault; !IsOnYZPlane{FT}} = [1.0, 0.0, 0.0]
