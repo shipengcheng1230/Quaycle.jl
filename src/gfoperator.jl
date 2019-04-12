@@ -62,8 +62,8 @@ end
     fill!(alloc.dτ_dt_dft, zero(T))
 
     @fastmath @threads for j = 1: alloc.dims[2]
-        for i = 1: alloc.dims[1]
-            @simd for l = 1: alloc.dims[2]
+        for l = 1: alloc.dims[2]
+            @simd for i = 1: alloc.dims[1]
                 @inbounds alloc.dτ_dt_dft[i,j] += gf[i,j,l] * alloc.relv_dft[i,l]
             end
         end
