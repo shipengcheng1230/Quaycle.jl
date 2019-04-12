@@ -18,4 +18,11 @@ using Test
         @test ft5.mesh.aξ == ft6.mesh.aξ
     end
 
+    @testset "Dipping Fault Projection" begin
+        ft1 = fault(Val(:CSFS), DIPPING(), 40.0, (10.0, 5.0), (1.0, 0.5))
+        ft2 = fault(Val(:CSFS), STRIKING(), 40.0, 10.0, 5.0, 1.0, 0.5)
+        @test ft1.mesh.z == ft2.mesh.z
+        @test ft1.mesh.y == ft2.mesh.y
+    end
+
 end

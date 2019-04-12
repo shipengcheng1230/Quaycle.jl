@@ -17,7 +17,7 @@ greens_function(::Val{:okada}, mesh::SimpleMesh, λ::Real, μ::Real, dip::Real, 
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
-    -((σzz - σyy)/2 * sinpi(2dip/180) + τyz * cospi(2dip/180))
+    -((σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip))
 end
 
 @inline @traitfn function shear_traction(::FT, u::AbstractVector, λ::T, μ::T, dip::T) where {T<:Real, FT<:PlaneFault; !IsOnYZPlane{FT}}
