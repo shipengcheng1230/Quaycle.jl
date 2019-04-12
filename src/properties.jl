@@ -1,13 +1,13 @@
 ## properties interface
 
 export init_friction_prop, init_fault_prop, read_properties, save_properties
-export HomoFaultProperties, FrictionalProperties
+export HomoFaultProperties, RSRSFrictionalProperties
 
 import Base.fieldnames
 
 abstract type AbstractProperties end
 
-@with_kw struct FrictionalProperties{
+@with_kw struct RSFrictionalProperties{
     U<:AbstractVecOrMat, FForm<:FrictionLawForm, SEL<:StateEvolutionLaw
     } <: AbstractProperties
     a::U # contrib from velocity
@@ -39,18 +39,18 @@ end
     @assert v0 > 0
 end
 
-fieldnames(p::FrictionalProperties) = ("a", "b", "L", "σ", "flf", "sel")
+fieldnames(p::RSFrictionalProperties) = ("a", "b", "L", "σ", "flf", "sel")
 fieldnames(p::HomoFaultProperties) = ("λ", "μ", "η", "vpl", "f0", "v0")
 
-description(p::FrictionalProperties) = "friction"
+description(p::RSFrictionalProperties) = "friction"
 description(p::HomoFaultProperties) = "faultspace"
 
 init_fault_prop(λ, μ, η, vpl, f0=0.6, v0=1e-6) = HomoFaultProperties(promote(λ, μ, η, vpl, f0, v0)...)
 
-init_friction_prop(mesh::SimpleLineGrid) = FrictionalProperties(
+init_friction_prop(mesh::SimpleLineGrid) = RSFrictionalProperties(
     [Vector{eltype(mesh.Δξ)}(undef, mesh.nξ) for _ in 1: 4]...,
     RForm(), DieterichStateLaw())
-init_friction_prop(mesh::SimpleRectGrid) = FrictionalProperties(
+init_friction_prop(mesh::SimpleRectGrid) = RSFrictionalProperties(
     [Matrix{eltype(mesh.Δx)}(undef, mesh.nx, mesh.nξ) for _ in 1: 4]...,
     RForm(), DieterichStateLaw())
 init_friction_prop(fs::CentralSymmetryFS) = init_friction_prop(fs.mesh)
@@ -68,7 +68,7 @@ function read_properties(filepath::AbstractString)
 
     if haskey(c, "friction")
         d = c["friction"]
-        props["friction"] = FrictionalProperties(
+        props["friction"] = RSFrictionalProperties(
             d["a"], d["b"], d["L"], d["σ"],
             eval(Expr(:call, Symbol(d["flf"]))),
             eval(Expr(:call, Symbol(d["sel"]))),

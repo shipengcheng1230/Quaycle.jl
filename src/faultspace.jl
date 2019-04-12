@@ -22,7 +22,6 @@ function fault(::Val{:CSFS}, ft::FT, dip::T, span::NTuple{2,T}, dxdξ::NTuple{2,
     return CentralSymmetryFS(mesh, dip, ft)
 end
 
-
 fault(fst::Val{:CSFS}, ft::FT, dip, span, dξ) where {FT<:PlaneFault} = fault(fst, ft, dip, promote(span, dξ)...)
 fault(fst::Val{:CSFS}, ft::FT, dip, span1, span2, dx, dξ) where {FT<:PlaneFault} = fault(fst, ft, promote(dip, span1, span2, dx, dξ)...)
 fault(fst::Val{:CSFS}, ft::FT, dip::T, span1::T, span2::T, dx::T, dξ::T) where {T<:Real, FT<:PlaneFault} = fault(fst, ft, dip, (span1, span2), (dx, dξ))

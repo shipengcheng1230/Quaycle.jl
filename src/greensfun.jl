@@ -70,10 +70,9 @@ function okada_gf_chunk!(st::SharedArray{T, 2}, mesh::SimpleMesh{1}, λ::T, μ::
     ud = unit_dislocation(ft)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
-    y, z = mesh.ξ .* cosd(dip), mesh.ξ .* sind(dip)
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
-        u = dc3d_okada(zero(T), y[i], z[i], α, zero(T), dip, ax, mesh.aξ[j], ud)
+        u = dc3d_okada(zero(T), mesh.y[i], mesh.z[i], α, zero(T), dip, ax, mesh.aξ[j], ud)
         st[i,j] = shear_traction(ft, u, λ, μ, dip)
     end
 end
@@ -83,11 +82,10 @@ function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
-    y, z = mesh.ξ .* cosd(dip), mesh.ξ .* sind(dip)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         # For simple rectangular mesh, `depth` here are fixed at 0.
-        okada_gf_periodic_bc!(u, mesh.x[i], y[j], z[j], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
+        okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
         st[i,j,l] = shear_traction(ft, u, λ, μ, dip)
     end
 end

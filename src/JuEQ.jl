@@ -27,4 +27,7 @@ include("gfoperator.jl")
 include("properties.jl")
 include("assemble.jl")
 
+const UTILSDIR = abspath(joinpath(@__DIR__, "utils"))
+map(x -> include(joinpath(UTILSDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(UTILSDIR)))
+
 end # module

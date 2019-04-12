@@ -3,7 +3,7 @@
 export assemble
 
 function assemble(
-    stype::Val{:okada}, fs::CentralSymmetryFS, sp::HomoFaultProperties, fp::FrictionalProperties,
+    stype::Val{:okada}, fs::CentralSymmetryFS, sp::HomoFaultProperties, fp::RSFrictionalProperties,
     u0::AbstractArray, tspan::NTuple{2};
     kwargs...)
     gf = greens_function(stype, fs.mesh, sp.λ, sp.μ, fs.dip, fs.faulttype; kwargs...)
@@ -14,7 +14,7 @@ function assemble(
 end
 
 @inline function dv_dθ_dt!(::CForm,
-    dv::T, dθ::T, dδ::T, v::T, θ::T, frp::FrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
+    dv::T, dθ::T, dδ::T, v::T, θ::T, frp::RSFrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
     @fastmath @inbounds @simd for i = 1: prod(alloc.dims)
         dδ[i] = v[i]
@@ -26,7 +26,7 @@ end
 end
 
 @inline function dv_dθ_dt!(::RForm,
-    dv::T, dθ::T, dδ::T, v::T, θ::T, frp::FrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
+    dv::T, dθ::T, dδ::T, v::T, θ::T, frp::RSFrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
     @fastmath @inbounds @simd for i = 1: prod(alloc.dims)
         dδ[i] = v[i]
@@ -40,7 +40,7 @@ end
 end
 
 function derivative_kernel!(
-    du::AbstractArray{T}, u::AbstractArray{T}, frp::FrictionalProperties, fap::HomoFaultProperties,
+    du::AbstractArray{T}, u::AbstractArray{T}, frp::RSFrictionalProperties, fap::HomoFaultProperties,
     alloc::OkadaGFAllocation{dim}, gfop!::Function,
     ) where {T<:Real, dim}
     _ndim = dim + 1

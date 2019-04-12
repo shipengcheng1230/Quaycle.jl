@@ -18,7 +18,7 @@ Features to be implemented:
 Get the latest version with Julia's package manager:
 
 ```julia
-] add https://github.com/shipengcheng1230/JuEQ.jl
+(v1.1) pkg> add https://github.com/shipengcheng1230/JuEQ.jl
 ```
 
 To load the package:
