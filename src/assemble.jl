@@ -16,7 +16,7 @@ end
 @inline function dv_dθ_dt!(::CForm,
     dv::T, dθ::T, dδ::T, v::T, θ::T, frp::RSFrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
-    @fastmath @inbounds @simd for i = 1: prod(alloc.dims)
+    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dδ[i] = v[i]
         dμ_dθ = frp.σ[i] * frp.b[i] / θ[i]
         dμ_dv = frp.σ[i] * frp.a[i] / v[i]
@@ -28,7 +28,7 @@ end
 @inline function dv_dθ_dt!(::RForm,
     dv::T, dθ::T, dδ::T, v::T, θ::T, frp::RSFrictionalProperties, fap::HomoFaultProperties, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
-    @fastmath @inbounds @simd for i = 1: prod(alloc.dims)
+    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dδ[i] = v[i]
         ψ1 = exp((fap.f0 + frp.b[i] * log(fap.v0 * θ[i] / frp.L[i])) / frp.a[i]) / 2fap.v0
         ψ2 = frp.σ[i] * ψ1 / hypot(1, v[i] * ψ1)

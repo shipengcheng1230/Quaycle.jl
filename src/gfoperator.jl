@@ -46,34 +46,34 @@ function gf_operator(::Val{:okada}, gf::AbstractArray, alloc::OkadaGFAllocation,
 end
 
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::OkadaGFAllocMatrix, vpl::T, v::AbstractVector) where T<:Number
-    @fastmath @inbounds @simd for i = 1: alloc.dims[1]
-        alloc.relv[i] = vpl - v[i]
+    @fastmath @threads for i = 1: alloc.dims[1]
+        @inbounds alloc.relv[i] = vpl - v[i]
     end
     mul!(alloc.dτ_dt, gf, alloc.relv)
 end
 
 @inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::OkadaGFAllocFFTConv, vpl::U, v::AbstractMatrix) where {T<:Complex, U<:Number}
-    @fastmath @inbounds for j = 1: alloc.dims[2]
+    @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]
-            alloc.relv[i,j] = vpl - v[i,j]
+            @inbounds alloc.relv[i,j] = vpl - v[i,j]
         end
     end
     mul!(alloc.relv_dft, alloc.pf, alloc.relv)
     fill!(alloc.dτ_dt_dft, zero(T))
 
-    @fastmath @inbounds for l = 1: alloc.dims[2]
-        for j = 1: alloc.dims[2]
-            @simd for i = 1: alloc.dims[1]
-                alloc.dτ_dt_dft[i,j] += gf[i,j,l] * alloc.relv_dft[i,l]
+    @fastmath @threads for j = 1: alloc.dims[2]
+        for i = 1: alloc.dims[1]
+            @simd for l = 1: alloc.dims[2]
+                @inbounds alloc.dτ_dt_dft[i,j] += gf[i,j,l] * alloc.relv_dft[i,l]
             end
         end
     end
 
     ldiv!(alloc.dτ_dt_buffer, alloc.pf, alloc.dτ_dt_dft)
 
-    @fastmath @inbounds for j = 1: alloc.dims[2]
+    @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]
-            alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
+            @inbounds alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
         end
     end
 end
