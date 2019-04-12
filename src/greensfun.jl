@@ -2,10 +2,7 @@
 export greens_function
 
 @traitdef IsOnYZPlane{X}
-@traitimpl IsOnYZPlane{X} <- isonyzplane(X)
-isonyzplane(DIPPING) = true
-isonyzplane(STRIKING) = false
-
+@traitimpl IsOnYZPlane{DIPPING}
 
 const KERNELDIR = joinpath(@__DIR__, "gfkernels")
 
@@ -90,7 +87,7 @@ function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         # For simple rectangular mesh, `depth` here are fixed at 0.
-        okada_gf_periodic_bc!(u, mesh.x[i], y[i], z[i], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
+        okada_gf_periodic_bc!(u, mesh.x[i], y[j], z[j], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
         st[i,j,l] = shear_traction(ft, u, λ, μ, dip)
     end
 end

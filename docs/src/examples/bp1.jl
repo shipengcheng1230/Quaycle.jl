@@ -38,34 +38,28 @@ tf = 400.0; # simulation time [yr]
 η = μ / 2(vs * 1e-3 * 365 * 86400)
 ngrid = round(Int, Wf / Δz); # number of grids
 
-# Now, we start to construct our model using parameters above. First, we create a 'fault' by specifying fault type and depth:
+# Now, we start to construct our model using parameters above. First, we create a **fault space** by specifying fault type and depth:
 # !!! tip
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
 # ### Construct Model
 
-fa = fault(StrikeSlipFault, Wf);
+fa = fault(Val(:CSFS), STRIKING(), 40.0, Δz)
 
 # Next, we generate the grid regarding the `fault` we just created by giving number of grids:
 # !!! note
 #     This package use `ξ` for denoting downdip coordinate and `x` for along-strike one. See [`discretize`](@ref).
 
-gd = discretize(fa; nξ=ngrid);
-
 # Next, we construct the required frictional parameter profile:
 
-z = -gd.ξ
+z = -fa.mesh.ξ
 az = fill(a0, size(z))
 az[z .≥ (H + h)] .= amax
 az[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz));
 
 # Then, we provide the required initial condition satisfying uniform slip distribution over the depth:
 
-τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
-τz = fill(τ0, size(z))
-θz = @. L / v0 * exp(az / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / az / σ)) - f0 / b0)
-vz = fill(vinit, size(z))
-u0 = hcat(vz, θz);
+
 
 # Let's simulate only the first 200 years:
 
@@ -74,8 +68,23 @@ tspan = (0., 200.);
 # Finally, we provide the material properties w.r.t. our 'fault', 'grid' as well as other necessary parameters predefined
 # using the same grid size & dimension:
 
-mp = properties(;fault=fa, grid=gd, parameters=[:a=>az, :b=>b0, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :μ=>μ], :vpl=>vpl, :f0=>f0, :v0=>v0]);
+faprop = init_fault_prop(λ, μ, η, vpl, f0, v0)
+frprop = init_friction_prop(fa)
+fill!(frprop.a, a0)
+frprop.a[z .≥ (H + h)] .= amax
+frprop.a[H .< z .< H + h] = a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
+fill!(frprop.b, b0)
+fill!(frprop.L, L)
+fill!(frprop.σ, σ)
 
+τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
+τz = fill(τ0, size(z))
+θz = @. L / v0 * exp(frprop.a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / frprop.a / σ)) - f0 / b0)
+vz = fill(vinit, size(z))
+δz = fill(0.0, size(z))
+u0 = hcat(vz, θz, δz);
+
+prob = assemble(Val(:okada), fa, faprop, frprop, u0, tspan)
 # !!! tip
 #     Check [`properties`](@ref) for extended options.
 
@@ -88,10 +97,15 @@ plot([mp.a, mp.b], z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
 
 prob = EarthquakeCycleProblem(gd, mp, u0, tspan; se=DieterichStateLaw(), fform=RForm());
 
+f = prob.f
+prob.p
+du = similar(u0)
+@time f(du, u0, prob.p, 1.0)
+
 # ### Solve Model
 # We then solve the ODEs:
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
 
 # !!! tip
 #     For details of solving options, see [here](http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html).

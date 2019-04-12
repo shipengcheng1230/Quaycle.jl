@@ -29,15 +29,3 @@ fault(fst::Val{:CSFS}, ft::FT, dip::T, span1::T, span2::T, dx::T, dξ::T) where 
 
 fault(fst::Val{:CSFS}, ft::STRIKING, span, dξ) = fault(fst, ft, 90.0, span, dξ)
 fault(fst::Val{:CSFS}, ft::STRIKING, span1, span2, dx, dξ) = fault(fst, ft, 90.0, span1, span2, dx, dξ)
-
-ft1 = fault(Val(:CSFS), STRIKING(), 90.0, 10.0, 1.0)
-ft2 = fault(Val(:CSFS), STRIKING(), 10, 1.0)
-
-ft3 = fault(Val(:CSFS), STRIKING(), 90.0, (10.0, 5.0), (1.0, 0.5))
-ft4 = fault(Val(:CSFS), STRIKING(), 90.0, 10.0, 5.0, 1.0, 0.5)
-ft5 = fault(Val(:CSFS), STRIKING(), 90.0, 10, 5, 1, 0.5)
-ft6 = fault(Val(:CSFS), STRIKING(), 10.0, 5.0, 1.0, 0.5)
-
-ft1 == ft2
-
-ft1.mesh.aξ == ft2.mesh.aξ

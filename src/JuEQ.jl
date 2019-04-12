@@ -25,5 +25,6 @@ include("faultspace.jl")
 include("greensfun.jl")
 include("gfoperator.jl")
 include("properties.jl")
+include("assemble.jl")
 
 end # module

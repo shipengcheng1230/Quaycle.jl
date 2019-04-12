@@ -31,11 +31,10 @@ f0 = 0.6;
 
 # Create a fault:
 
-fa = fault(StrikeSlipFault, (80., 10.));
+fa = fault(Val(:CSFS), STRIKING(), (80., 10.), (0.5, 0.5))
 
 # Generate grids:
 
-gd = discretize(fa; nx=160, nξ=20, buffer_ratio=1);
 
 # !!! tip
 #     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
@@ -47,18 +46,27 @@ gd = discretize(fa; nx=160, nξ=20, buffer_ratio=1);
 
 # Time for us to establish frictional parameters profile:
 
-a = 0.015 .* ones(gd.nx, gd.nξ)
-b = 0.0115 .* ones(gd.nx, gd.nξ)
-left_patch = @. -25. ≤ gd.x ≤ -5.
-right_patch = @. 5. ≤ gd.x ≤ 25.
-vert_patch = @. -6. ≤ gd.z ≤ -1.
-b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
-amb = a - b
+frprop = init_friction_prop(fa)
+faprop = init_fault_prop(λ, μ, η, vpl, f0, v0)
+
+fill!(frprop.a, 0.015)
+fill!(frprop.b, 0.0115)
+fill!(frprop.L, 12.0)
+
+left_patch = @. -25. ≤ fa.mesh.x ≤ -5.
+right_patch = @. 5. ≤ fa.mesh.x ≤ 25.
+vert_patch = @. -6. ≤ fa.mesh.ξ ≤ -1
+
+frprop.b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
+
 σmax = 500.
-σ = [min(σmax, 15. + 180. * z) for z in -gd.z]
-σ = Matrix(repeat(σ, 1, gd.nx)')
+σ = [min(σmax, 15. + 180. * z) for z in -fa.mesh.ξ]
+σ = Matrix(repeat(σ, 1, fa.mesh.nx)')
 L = 12.;
 
+frprop.σ .= σ
+
+frprop
 # Check our profile:
 
 p1 = heatmap(amb',
@@ -82,18 +90,23 @@ mp = properties(fa, gd, [:a=>a, :b=>b, :L=>L, :σ=>σ, :η=>η, :k=>[:λ=>λ, :�
 
 # Provide the initial condition:
 
-vinit = vpl .* ones(gd.nx, gd.nξ)
+vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
-u0 = cat(vinit, θ0, dims=3);
+u0 = cat(vinit, θ0, zeros(Float64, fa.mesh.nx, fa.mesh.nξ), dims=3);
+
+prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.))
 
 # Get our ODEs problem:
-
-prob = EarthquakeCycleProblem(gd, mp, u0, (0., 18.); se=DieterichStateLaw(), fform=CForm());
 
 # ### Solve Model
 # Solve the model:
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+@time sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+sol.t[end]
+f = prob.f
+prob.p
+du = similar(u0)
+@time f(du, u0, prob.p, 1.0)
 
 # ### Sanity Check of Results
 # Take a look at the max velocity:

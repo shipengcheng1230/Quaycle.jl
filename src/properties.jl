@@ -1,6 +1,7 @@
 ## properties interface
 
 export init_friction_prop, init_fault_prop, read_properties, save_properties
+export HomoFaultProperties, FrictionalProperties
 
 import Base.fieldnames
 
@@ -15,12 +16,16 @@ abstract type AbstractProperties end
     σ::U # effective normal stress
     flf::FForm = RForm() # frictional law format
     sel::SEL = DieterichStateLaw() # state evolution law
+
+    @assert size(a) == size(b)
+    @assert size(b) == size(L)
+    @assert size(L) == size(σ)
 end
 
 
 @with_kw struct HomoFaultProperties{T<:Number} <: AbstractProperties
-    λ::T # lame first para
-    μ::T # shear modulus
+    λ::T # Lamé first constants
+    μ::T # Lamé second constants
     η::T # radiation damping
     vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
     f0::T = 0.6 # ref. frictional coeff
@@ -34,21 +39,21 @@ end
     @assert v0 > 0
 end
 
-ff = RForm()
-ex = Expr(:call, :RForm)
-ff2 = eval(Expr(:call, Symbol("DieterichStateLaw")))
-eval((:call, :RForm))
-
-
 fieldnames(p::FrictionalProperties) = ("a", "b", "L", "σ", "flf", "sel")
 fieldnames(p::HomoFaultProperties) = ("λ", "μ", "η", "vpl", "f0", "v0")
 
 description(p::FrictionalProperties) = "friction"
 description(p::HomoFaultProperties) = "faultspace"
 
-init_fault_prop(η, vpl, f0=0.6, v0=1e-6) = HomoFaultProperties(promote(λ, μ, η, vpl, f0, v0)...)
-init_friction_prop(mesh::SimpleLineGrid) = FrictionalProperties([Vector{eltype(mesh.Δξ)}(undef, mesh.nξ) for _ in 1: 4]...)
-init_friction_prop(mesh::SimpleRectGrid) = FrictionalProperties([Matrix{eltype(mesh.Δx)}(undef, mesh.nx, mesh.nξ) for _ in 1: 4]...)
+init_fault_prop(λ, μ, η, vpl, f0=0.6, v0=1e-6) = HomoFaultProperties(promote(λ, μ, η, vpl, f0, v0)...)
+
+init_friction_prop(mesh::SimpleLineGrid) = FrictionalProperties(
+    [Vector{eltype(mesh.Δξ)}(undef, mesh.nξ) for _ in 1: 4]...,
+    RForm(), DieterichStateLaw())
+init_friction_prop(mesh::SimpleRectGrid) = FrictionalProperties(
+    [Matrix{eltype(mesh.Δx)}(undef, mesh.nx, mesh.nξ) for _ in 1: 4]...,
+    RForm(), DieterichStateLaw())
+init_friction_prop(fs::CentralSymmetryFS) = init_friction_prop(fs.mesh)
 
 function read_properties(filepath::AbstractString)
     c = h5open(filepath, "r") do f
