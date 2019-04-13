@@ -5,8 +5,17 @@ export assemble
 function assemble(
     stype::Val{:okada}, fs::CentralSymmetryFS, sp::HomoFaultProperties, fp::RSFrictionalProperties,
     u0::AbstractArray, tspan::NTuple{2};
-    kwargs...)
+    kwargs...
+    )
     gf = greens_function(stype, fs.mesh, sp.λ, sp.μ, fs.dip, fs.faulttype; kwargs...)
+    return assemble(stype, gf, fs, sp, fp, u0, tspan; kwargs...)
+end
+
+function assemble(
+    stype::Val{:okada}, gf::AbstractArray, fs::CentralSymmetryFS, sp::HomoFaultProperties, fp::RSFrictionalProperties,
+    u0::AbstractArray, tspan::NTuple{2};
+    kwargs...
+    )
     alloc = gen_alloc(stype, fs.mesh)
     gfop! = gf_operator(stype, gf, alloc, sp.vpl)
     f! = (du, u, p, t) -> derivative_kernel!(du, u, p[1], p[2], alloc, gfop!)
