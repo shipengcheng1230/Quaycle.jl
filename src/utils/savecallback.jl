@@ -64,8 +64,8 @@ macro h5save(filename, tend, nsteps, usize, nd, T)
             acctsize = ($(nsteps),)
             total = 0
             h5open($(filename), "w") do fid
-                d = d_create(fid, "u", $(T), (accusize, ntuple(_ -> -1, Val($nd+1))), "chunk", accusize)
-                d = d_create(fid, "t", $(T), (acctsize, (-1,)), "chunk", acctsize)
+                d_create(fid, "u", $(T), (accusize, ntuple(_ -> -1, Val($nd+1))), "chunk", accusize)
+                d_create(fid, "t", $(T), (acctsize, (-1,)), "chunk", acctsize)
             end
 
             function $callback(u, t, integrator)
