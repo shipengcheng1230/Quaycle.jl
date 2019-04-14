@@ -28,7 +28,7 @@ nothing
 
 # First, create a fault space.
 
-fa = fault(Val(:CSFS), STRIKING(), (80., 10.), (0.5, 0.5));
+fa = fault(Val(:CSFS), STRIKING(), (80., 10.), (0.5, 0.5))
 nothing
 
 # Next, establish frictional and fault space parameters:
@@ -51,7 +51,7 @@ frprop.b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
 σ = Matrix(repeat(σ, 1, fa.mesh.nx)')
 L = 12.
 
-frprop.σ .= σ;
+frprop.σ .= σ
 nothing
 
 # Make sure our profile match our expectation:
@@ -75,7 +75,7 @@ plot(p1, p2, layout=(2, 1))
 vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
 u0 = cat(vinit, θ0, zeros(Float64, fa.mesh.nx, fa.mesh.nξ), dims=3)
-prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.), buffer_ratio=1);
+prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.), buffer_ratio=1)
 nothing
 
 # !!! tip
@@ -88,7 +88,7 @@ nothing
 
 # Afterwards, solve ODEs problem:
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6)
 nothing
 
 # Last, take a look at the max velocity time series:

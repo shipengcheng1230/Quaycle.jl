@@ -43,13 +43,13 @@ nothing
 # !!! tip
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
-fa = fault(Val(:CSFS), STRIKING(), 40.0, Δz);
+fa = fault(Val(:CSFS), STRIKING(), 40.0, Δz)
 nothing
 
 # Then, provide the material properties w.r.t. our 'fault space'. The properties contain two part. First one is
 # **Fault Properties** which includes *elastic modulus*, *radiation damping term*, *plate rate*, *reference friction* and *reference velocity*.
 
-faprop = init_fault_prop(λ, μ, η, vpl, f0, v0);
+faprop = init_fault_prop(λ, μ, η, vpl, f0, v0)
 nothing
 
 # Second one is **Rate-and-State Friction Properties** which includes *a*, *b*, *L*, *σ*. The default friction formula is **Regularized Form**
@@ -61,7 +61,7 @@ frprop.a[-fa.mesh.z .≥ (H + h)] .= amax
 frprop.a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
 fill!(frprop.b, b0)
 fill!(frprop.L, L)
-fill!(frprop.σ, σ);
+fill!(frprop.σ, σ)
 nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.
@@ -71,7 +71,7 @@ nothing
 vz = fill(vinit, size(fa.mesh.ξ))
 δz = fill(0.0, size(fa.mesh.ξ))
 u0 = hcat(vz, θz, δz);
-prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0.0, tf));
+prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0.0, tf))
 nothing
 
 # Check our depth profile now.
@@ -80,7 +80,7 @@ plot([frprop.a, frprop.b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Dept
 
 # Afterwards, solve ODE thanks to [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6)
 nothing
 
 # !!! tip

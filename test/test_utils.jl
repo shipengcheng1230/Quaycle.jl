@@ -17,10 +17,13 @@ using DifferentialEquations
         prob = ODEProblem(lorenz, u0, tspan)
         sol = solve(prob; save_everystep=false, callback=FunctionCallingCallback(cbfun; func_everystep=true), funcat=[100.0])
         sol2 = solve(prob)
-        result1 = h5read(tmp, "u")
-        u1s = result1[2, :]
+        res_u = h5read(tmp, "u")
+        u1s = res_u[2, :]
         u2s = [x[2] for x in sol2.u]
-        @test all(u1s .== u2s)
+        all(u1s .== u2s)
+        t1 = h5read(tmp, "t")
+        t2 = sol2.t
+        @test sum(t1 .- t2) < 1e-8
     end
 
     @testset "matrix output" begin
@@ -36,9 +39,12 @@ using DifferentialEquations
         prob = ODEProblem(f, u0, tspan)
         sol = solve(prob; save_everystep=false, callback=FunctionCallingCallback(cbfun; func_everystep=true), funcat=[100.0])
         sol2 = solve(prob)
-        result1 = h5read(tmp, "u")
-        u1s = result1[2,1,:]
+        res_u = h5read(tmp, "u")
+        u1s = res_u[2,1,:]
         u2s = [x[2,1] for x in sol2.u]
         @test u1s == u2s
+        t1 = h5read(tmp, "t")
+        t2 = sol2.t
+        @test sum(t1 .- t2) < 1e-8
     end
 end
