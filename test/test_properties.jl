@@ -4,7 +4,7 @@ using Test
 
     @testset "frictional properties" begin
         tmpfile = tempname()
-        fp = FrictionalProperties([rand(5, 3) for _ in 1: 4]..., RForm(), DieterichStateLaw())
+        fp = RSFrictionalProperties([rand(5, 3) for _ in 1: 4]..., RForm(), DieterichStateLaw())
         save_properties(tmpfile, fp; option="w")
         fp_recover = read_properties(tmpfile)[description(fp)]
         for field in fieldnames(fp)
@@ -25,7 +25,7 @@ using Test
     @testset "multi-properites" begin
         tmpfile = tempname()
         sp = HomoFaultProperties(rand(6)...)
-        fp = FrictionalProperties([rand(5, 3) for _ in 1: 4]..., RForm(), DieterichStateLaw())
+        fp = RSFrictionalProperties([rand(5, 3) for _ in 1: 4]..., RForm(), DieterichStateLaw())
         save_properties(tmpfile, [sp, fp])
         p_recover = read_properties(tmpfile)
         sp_recover = p_recover[description(sp)]

@@ -2,7 +2,7 @@
 
 export CForm, RForm
 export DieterichStateLaw, RuinaStateLaw, PrzStateLaw
-export SingleDegreeSystem, assemble
+export SingleDegreeSystem, assemble, friction
 
 abstract type StateEvolutionLaw end
 

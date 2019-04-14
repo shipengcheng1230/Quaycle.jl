@@ -25,6 +25,7 @@ h = 3.0 # vw-vs changing zone [km]
 Wf = 40.0 # fault depth [km]
 Δz = 100.0e-3 # grid size interval [km]
 tf = 200.0; # simulation time [yr]
+nothing
 
 # !!! warning
 #     Make sure your units are consistent across the whole variable space.
@@ -35,6 +36,7 @@ tf = 200.0; # simulation time [yr]
 λ = μ # poisson material
 η = μ / 2(vs * 1e-3 * 365 * 86400)
 ngrid = round(Int, Wf / Δz); # number of grids
+nothing
 
 # First, create a **fault space** by specifying fault type, depth
 # and with the desired discretization interval.
@@ -42,11 +44,13 @@ ngrid = round(Int, Wf / Δz); # number of grids
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
 fa = fault(Val(:CSFS), STRIKING(), 40.0, Δz);
+nothing
 
 # Then, provide the material properties w.r.t. our 'fault space'. The properties contain two part. First one is
 # **Fault Properties** which includes *elastic modulus*, *radiation damping term*, *plate rate*, *reference friction* and *reference velocity*.
 
 faprop = init_fault_prop(λ, μ, η, vpl, f0, v0);
+nothing
 
 # Second one is **Rate-and-State Friction Properties** which includes *a*, *b*, *L*, *σ*. The default friction formula is **Regularized Form**
 # which is stored in the field `flf` and is denoted as `RForm()`. The default state evolution law is `DieterichStateLaw()`.
@@ -58,6 +62,7 @@ frprop.a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1:
 fill!(frprop.b, b0)
 fill!(frprop.L, L)
 fill!(frprop.σ, σ);
+nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.
 τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
@@ -67,6 +72,7 @@ vz = fill(vinit, size(fa.mesh.ξ))
 δz = fill(0.0, size(fa.mesh.ξ))
 u0 = hcat(vz, θz, δz);
 prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0.0, tf));
+nothing
 
 # Check our depth profile now.
 
@@ -75,6 +81,7 @@ plot([frprop.a, frprop.b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Dept
 # Afterwards, solve ODE thanks to [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 
 sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+nothing
 
 # !!! tip
 #     Raise the accuracy option or switch to other algorithms if you get instability when solving these ODEs.

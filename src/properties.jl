@@ -1,7 +1,8 @@
 ## properties interface
 
 export init_friction_prop, init_fault_prop, read_properties, save_properties
-export HomoFaultProperties, RSRSFrictionalProperties
+export HomoFaultProperties, RSFrictionalProperties
+export description
 
 import Base.fieldnames
 

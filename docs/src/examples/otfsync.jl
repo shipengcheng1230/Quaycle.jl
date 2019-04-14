@@ -24,10 +24,12 @@ f0 = 0.6;
 λ = μ # poisson material
 α = (λ + μ) / (λ + 2μ)
 η = μ / 2(cs * 1e-3 * 365 * 86400) # Bar·yr/mm
+nothing
 
 # First, create a fault space.
 
 fa = fault(Val(:CSFS), STRIKING(), (80., 10.), (0.5, 0.5));
+nothing
 
 # Next, establish frictional and fault space parameters:
 
@@ -50,6 +52,7 @@ frprop.b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
 L = 12.
 
 frprop.σ .= σ;
+nothing
 
 # Make sure our profile match our expectation:
 
@@ -73,6 +76,7 @@ vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
 u0 = cat(vinit, θ0, zeros(Float64, fa.mesh.nx, fa.mesh.nξ), dims=3)
 prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.), buffer_ratio=1);
+nothing
 
 # !!! tip
 #     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
@@ -85,6 +89,7 @@ prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.), buffer_ratio=1);
 # Afterwards, solve ODEs problem:
 
 sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6);
+nothing
 
 # Last, take a look at the max velocity time series:
 
