@@ -1,5 +1,5 @@
 # greens function ϵ vs u
-using FastClosures
+export sbarbot_disp_quad4!
 
 @doc raw"""
 ## copyright:
