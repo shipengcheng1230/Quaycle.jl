@@ -1,5 +1,5 @@
 # greens function ϵ vs u
-export sbarbot_disp_quad4!
+export sbarbot_disp_quad4
 
 @doc raw"""
 ## copyright:
@@ -25,7 +25,7 @@ export sbarbot_disp_quad4!
                    Z (x3)
 
 """
-function sbarbot_disp_quad4!(
+function sbarbot_disp_quad4(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
