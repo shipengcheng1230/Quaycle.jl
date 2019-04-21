@@ -1,6 +1,18 @@
 # greens function ϵ vs u
 export sbarbot_disp_quad4
 
+function sbarbot_disp_quad4(
+    x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
+    L::R, T::R, W::R, theta::R,
+    epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
+    G::R, nu::R,
+    ) where R
+
+    u = Vector{R}(undef, 3)
+    sbarbot_disp_quad4!(u, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
+    return u
+end
+
 @doc raw"""
 ## copyright:
     https://bitbucket.org/sbarbot
@@ -25,7 +37,7 @@ export sbarbot_disp_quad4
                    Z (x3)
 
 """
-function sbarbot_disp_quad4(
+function sbarbot_disp_quad4!(u::AbstractVector{<:R},
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -404,21 +416,21 @@ function sbarbot_disp_quad4(
             +(lambda * epsvkk + 2 * G * epsv33p) * J3312(y1, y2, y3))
         end
 
-        u1 =
+        u[1] =
             (IU1(L, T / 2, q3 + W) - IU1(L, -T / 2, q3 + W) + IU1(L, -T / 2, q3) - IU1(L, T / 2, q3)
             -IU1(zero(R), T / 2, q3 + W) + IU1(zero(R), -T / 2, q3 + W) - IU1(zero(R), -T / 2, q3) + IU1(zero(R), T / 2, q3))
-        u2 =
+        u[2] =
             (IU2(L, T / 2, q3 + W) - IU2(L, -T / 2, q3 + W) + IU2(L, -T / 2, q3) - IU2(L, T / 2, q3)
             -IU2(zero(R), T / 2, q3 + W) + IU2(zero(R), -T / 2, q3 + W) - IU2(zero(R), -T / 2, q3) + IU2(zero(R), T / 2, q3))
-        u3 =
+        u[3] =
             (IU3(L, T / 2, q3 + W) - IU3(L, -T / 2, q3 + W) + IU3(L, -T / 2, q3) - IU3(L, T / 2, q3)
             -IU3(zero(R), T / 2, q3 + W) + IU3(zero(R), -T / 2, q3 + W) - IU3(zero(R), -T / 2, q3) + IU3(zero(R), T / 2, q3))
 
-        t1 = u1 * cosd(theta) - u2 * sind(theta)
-        u2 = u1 * sind(theta) + u2 * cosd(theta)
-        u1 = t1
+        t1 = u[1] * cosd(theta) - u[2] * sind(theta)
+        u[2] = u[1] * sind(theta) + u[2] * cosd(theta)
+        u[1] = t1
 
-        return u1, u2, u3
+        return nothing
     end
 end
 

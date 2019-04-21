@@ -15,7 +15,6 @@ using Distributed
 using Base.Threads
 using LinearAlgebra
 using SharedArrays
-using StatsFuns
 
 include("config.jl")
 include("rsf.jl")
