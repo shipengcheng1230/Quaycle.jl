@@ -86,7 +86,7 @@ function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::SimpleMesh{2}, λ::T, μ::
         i, j, l = sub[1], sub[2], sub[3]
         # For simple rectangular mesh, `depth` here are fixed at 0.
         okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, zero(T), dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
-        st[i,j,l] = shear_traction(ft, u, λ, μ, dip)
+        @inbounds t[i,j,l] = shear_traction(ft, u, λ, μ, dip)
     end
 end
 
