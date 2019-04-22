@@ -35,7 +35,7 @@ function sbarbot_stress_quad4!(σ::AbstractVector,
     ) where R
 
     lambda = G * 2 * nu / (1 - 2 * nu)
-    sbarbot_strain_quad4!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
+    sbarbot_strain_quad4!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
     ekk = σ[1] + σ[4] + σ[6]
     σ[1] = lambda * ekk + 2G * σ[1]
     σ[2] *= 2G
