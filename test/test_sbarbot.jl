@@ -26,7 +26,7 @@ using Base.Iterators
     x3s = range(-30.0, stop=-20.0, step=5.0)
     xxs = product(x1s, x2s, x3s)
 
-    @testset "displacement" begin
+    @testset "Displacement" begin
         u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_disp.dat"), ' ', Float64)
         fu = (x) -> sbarbot_disp_quad4(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
@@ -34,7 +34,7 @@ using Base.Iterators
         @test map(ftest, 1: length(u_cal)) |> all
     end
 
-    @testset "Stress" begin
+    @testset "Stress as well as Singularity" begin
         fu = (x) -> sbarbot_stress_quad4(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
         function funtest(i::Integer)
