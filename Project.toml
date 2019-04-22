@@ -18,3 +18,6 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 [extras]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test", "DelimitedFiles"]
