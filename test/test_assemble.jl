@@ -20,7 +20,6 @@ using InteractiveUtils
         u0 = rand(fa.mesh.nx, fa.mesh.nξ, 3)
         prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 1.0), buffer_ratio=1)
         du = similar(u0)
-        ret = @code_typed prob.f(du, u0, prob.p, 1.0)
         @inferred prob.f(du, u0, prob.p, 1.0)
     end
 
