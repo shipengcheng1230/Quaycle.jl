@@ -1,15 +1,16 @@
 using DelimitedFiles
+using Test
+using Base.Iterators
 
+# Those corresponding verifiable data are obtained from orginal fortran subroutines
 @testset "Test Okada's displacement" begin
     @testset "Normal computations" begin
         u_truth = readdlm(joinpath(@__DIR__, "data/test_okada.dat"), ',', Float64)
-        count = 1
-        for x = 10.: 15., y = 20.: 30., z = -40.: -30.
-            u = dc3d_okada(x, y, z, 2. /3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])
-            @test isapprox(u_truth[count, :], u, rtol=1e-8)
-            count += 1
-        end
-
+        pos = product(-40.: -30., 20.: 30., 10.: 15.)
+        fu = (x) -> dc3d_okada(reverse(x)..., 2. /3, 50., 70., [-80., 120.], [-30., 25.], [200., -150., 100.])
+        u_cal = map(fu, pos) |> vec
+        ftest = (i) -> u_truth[i,:] ≈ u_cal[i]
+        map(ftest, 1: length(u_cal)) |> all
     end
 
     @testset "Negative depth" begin

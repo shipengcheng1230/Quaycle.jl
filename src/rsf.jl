@@ -1,3 +1,9 @@
+## rate-and-state friction
+
+export CForm, RForm
+export DieterichStateLaw, RuinaStateLaw, PrzStateLaw
+export SingleDegreeSystem, assemble, friction
+
 abstract type StateEvolutionLaw end
 
 "``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{V θ}{L}``"
@@ -67,9 +73,7 @@ function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, 
     return dv_dt(dτdt, dμdv, dμdθ, dθdt, η), dθdt
 end
 
-abstract type AbstractMaterialProperties{DIMS} end
-
-@with_kw mutable struct MaterialProperties{dim, T<:Number} <: AbstractMaterialProperties{0}
+@with_kw mutable struct SingleDegreeSystem{T<:Number}
     a::T # contrib from velocity
     b::T # contrib from state
     L::T # critical distance
@@ -79,27 +83,23 @@ abstract type AbstractMaterialProperties{DIMS} end
     vpl::T # plate rate
     f0::T = 0.6 # ref. frictional coeff
     v0::T = 1e-6 # ref. velocity
-
-    function MaterialProperties(a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T) where {T<:Number}
-        new{0, T}(a, b, L, k, σ, η, vpl, f0, v0)
-    end
 end
 
-function dv_dθ_dt(p::MaterialProperties{0}, v, θ, se, fform)
+function dv_dθ_dt(p::SingleDegreeSystem, v, θ, se, fform)
     dv_dθ_dt(fform, se, v, θ, p.a, p.b, p.L, p.k, p.σ, p.η, p.vpl, p.f0, p.v0)
 end
 
-friction(p::MaterialProperties{0}, v, θ; fform=CForm()) = friction(fform, v, θ, p.L, p.a, p.b, p.f0, p.v0)
+friction(p::SingleDegreeSystem, v, θ; fform=CForm()) = friction(fform, v, θ, p.L, p.a, p.b, p.f0, p.v0)
 
-friction(p::MaterialProperties{0}, vθ::AbstractVecOrMat{T}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
+friction(p::SingleDegreeSystem, vθ::AbstractVecOrMat{T}; kwargs...) where {T<:Number} = friction(p, vθ[1], vθ[2]; kwargs...)
 
-friction(p::MaterialProperties{0}, vθ::AbstractArray{T}; kwargs...) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ; kwargs...)
+friction(p::SingleDegreeSystem, vθ::AbstractArray{T}; kwargs...) where {T<:AbstractVecOrMat} = friction.(Ref(p), vθ; kwargs...)
 
-function derivations!(du, u, p::MaterialProperties{0}, t, se::StateEvolutionLaw, fform::FrictionLawForm)
+function derivations!(du, u, p::SingleDegreeSystem, t, se::StateEvolutionLaw, fform::FrictionLawForm)
     du[1], du[2] = dv_dθ_dt(p, u[1], u[2], se, fform)
 end
 
-function EarthquakeCycleProblem(p::MaterialProperties{0}, u0, tspan; se=DieterichStateLaw(), fform=CForm())
+function assemble(p::SingleDegreeSystem, u0, tspan; se=DieterichStateLaw(), fform=CForm())
     (fform == RForm() && p.η ≈ 0.0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     f! = (du, u, p, t) -> derivations!(du, u, p, t, se, fform)
     ODEProblem(f!, u0, tspan, p)

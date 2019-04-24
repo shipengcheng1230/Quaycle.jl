@@ -3,6 +3,8 @@ module JuEQ
 using Reexport
 
 @reexport using DifferentialEquations
+@reexport using Sundials
+@reexport using HDF5
 
 using SimpleTraits
 using Parameters
@@ -14,27 +16,18 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 
-include("rsf.jl")
-include("fault.jl")
-include("bem.jl")
-include("constructor.jl")
-include("utils.jl")
-include("dc3d.jl")
 include("config.jl")
+include("rsf.jl")
+include("faulttype.jl")
+include("geometry.jl")
 
-export NormalFault, ThrustFault, StrikeSlipFault
-export PlaneFaultDomain
-export fault
+include("faultspace.jl")
+include("greensfun.jl")
+include("gfoperator.jl")
+include("properties.jl")
+include("assemble.jl")
 
-export DieterichStateLaw, RuinaStateLaw, PrzStateLaw
-export CForm, RForm
-export friction
-export MaterialProperties
+const UTILSDIR = abspath(joinpath(@__DIR__, "utils"))
+map(x -> include(joinpath(UTILSDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(UTILSDIR)))
 
-export discretize, properties, stiffness_tensor
-export EarthquakeCycleProblem
-export dc3d_okada
-
-export max_velocity, moment_magnitude, DECallbackSaveToFile
-
-end
+end # module
