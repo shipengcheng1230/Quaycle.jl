@@ -1,5 +1,5 @@
 ## static green's function
-export greens_tensor
+export greens_function
 
 const KERNELDIR = joinpath(@__DIR__, "gfkernels")
 
@@ -8,7 +8,7 @@ for f in filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR))
 end
 
 ## okada
-greens_tensor(::Val{:okada}, fault::BasicFaultSpace, λ::Real, μ::Real; kwargs...) where {FT<:PlaneFault} = okada_greens_tensor(fault, promote(λ, μ)...; kwargs...)
+greens_function(::Val{:okada}, mesh::TopCenterPlaneMesh, λ::Real, μ::Real, ft::FT; kwargs...) where {FT<:PlaneFault} = okada_greens_function(mesh, promote(λ, μ)..., ft; kwargs...)
 
 @inline function shear_traction(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
@@ -22,22 +22,22 @@ end
     μ * (u[5] + u[7])
 end
 
-function okada_greens_tensor(fault::BasicFaultSpace{1}, λ::T, μ::T; kwargs...) where T
-    st = SharedArray{T}(fault.mesh.nξ, fault.mesh.nξ)
-    okada_greens_tensor!(st, fault, λ, μ; kwargs...)
+function okada_greens_function(mesh::LineTopCenterMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
+    st = SharedArray{T}(mesh.nξ, mesh.nξ)
+    okada_greens_function!(st, mesh, λ, μ, ft; kwargs...)
     return sdata(st)
 end
 
-function okada_greens_tensor(fault::BasicFaultSpace{2}, λ::T, μ::T; fourier_domain=true, kwargs...) where T
-    st = SharedArray{T}(fault.mesh.nx, fault.mesh.nξ, fault.mesh.nξ)
-    okada_greens_tensor!(st, fault, λ, μ; kwargs...)
+function okada_greens_function(mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
+    st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
+    okada_greens_function!(st, mesh, λ, μ, ft; kwargs...)
 
     function __convert_to_fourier_domain__()
         FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
-        x1 = zeros(T, 2 * fault.mesh.nx - 1)
+        x1 = zeros(T, 2 * mesh.nx - 1)
         p1 = plan_rfft(x1, flags=parameters["FFT"]["FLAG"])
-        st_dft = Array{Complex{T}}(undef, fault.mesh.nx, fault.mesh.nξ, fault.mesh.nξ)
-        @inbounds for l = 1: fault.mesh.nξ, j = 1: fault.mesh.nξ
+        st_dft = Array{Complex{T}}(undef, mesh.nx, mesh.nξ, mesh.nξ)
+        @inbounds for l = 1: mesh.nξ, j = 1: mesh.nξ
             # The most tricky part to ensure correct FFT
             # Ref -> (https://github.com/JuliaMatrices/ToeplitzMatrices.jl/blob/cbe29c344be8363f33eb17090121f8cff600b72e/src/ToeplitzMatrices.jl#L627)
             st_dft[:,j,l] .= p1 * [st[:,j,l]; reverse(st[2:end,j,l])]
@@ -48,42 +48,42 @@ function okada_greens_tensor(fault::BasicFaultSpace{2}, λ::T, μ::T; fourier_do
     fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
-function okada_greens_tensor!(st::SharedArray, fault::BasicFaultSpace, λ::T, μ::T; kwargs...) where T
+function okada_greens_function!(st::SharedArray, mesh::TopCenterPlaneMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     @sync begin
         for p in procs(st)
-            @async remotecall_wait(okada_gf_shared_chunk!, WorkerPool(workers()), st, fault, λ, μ; kwargs...)
+            @async remotecall_wait(okada_gf_shared_chunk!, WorkerPool(workers()), st, mesh, λ, μ, ft; kwargs...)
         end
     end
 end
 
-function okada_gf_shared_chunk!(st::SharedArray, fault::BasicFaultSpace, λ::T, μ::T; kwargs...) where T
+function okada_gf_shared_chunk!(st::SharedArray, mesh::TopCenterPlaneMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     i2s = CartesianIndices(st)
     inds = localindices(st)
     subs = i2s[inds]
-    okada_gf_chunk!(st, fault, λ, μ, subs; kwargs...)
+    okada_gf_chunk!(st, mesh, λ, μ, ft, subs; kwargs...)
 end
 
-function okada_gf_chunk!(st::SharedArray{T, 2}, fault::BasicFaultSpace{1}, λ::T, μ::T, subs::AbstractArray; ax_ratio::Real=12.5) where T
-    ud = unit_dislocation(fault.ft)
-    ax = fault.mesh.nξ * fault.mesh.Δξ * ax_ratio .* [-one(T), one(T)]
+function okada_gf_chunk!(st::SharedArray{T, 2}, mesh::LineTopCenterMesh, λ::T, μ::T, ft::PlaneFault, subs::AbstractArray; ax_ratio::Real=12.5) where T
+    ud = unit_dislocation(ft)
+    ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
-        u = dc3d_okada(fault.mesh.x, fault.mesh.y[i], fault.mesh.z[i], α, fault.mesh.dep, fault.mesh.dip, ax, fault.mesh.aξ[j], ud)
-        st[i,j] = shear_traction(fault.ft, u, λ, μ, fault.mesh.dip)
+        u = dc3d_okada(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
+        st[i,j] = shear_traction(ft, u, λ, μ, mesh.dip)
     end
 end
 
-function okada_gf_chunk!(st::SharedArray{T, 3}, fault::BasicFaultSpace{2}, λ::T, μ::T, subs::AbstractArray; nrept::Integer=2, buffer_ratio::Integer=1) where T
-    ud = unit_dislocation(fault.ft)
-    lrept = (buffer_ratio + one(T)) * (fault.mesh.Δx * fault.mesh.nx)
+function okada_gf_chunk!(st::SharedArray{T, 3}, mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFault, subs::AbstractArray; nrept::Integer=2, buffer_ratio::Integer=1) where T
+    ud = unit_dislocation(ft)
+    lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         # For simple rectangular mesh, `depth` here are fixed at 0.
-        okada_gf_periodic_bc!(u, fault.mesh.x[i], fault.mesh.y[j], fault.mesh.z[j], α, fault.mesh.dep, fault.mesh.dip, fault.mesh.ax[1], fault.mesh.aξ[l], ud, nrept, lrept)
-        @inbounds st[i,j,l] = shear_traction(fault.ft, u, λ, μ, fault.mesh.dip)
+        okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
+        @inbounds st[i,j,l] = shear_traction(ft, u, λ, μ, mesh.dip)
     end
 end
 
