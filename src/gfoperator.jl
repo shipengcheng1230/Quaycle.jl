@@ -2,8 +2,8 @@
 
 export gf_operator, gen_alloc
 
-abstract type Allocation{dim} end
-abstract type OkadaGFAllocation{dim} <: Allocation{dim} end
+abstract type AbstractAllocation{dim} end
+abstract type OkadaGFAllocation{dim} <: AbstractAllocation{dim} end
 
 struct OkadaGFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaGFAllocation{1}
     dims::Dims{1}
@@ -21,9 +21,6 @@ struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}
     pf::P # fft operator
 end
 
-
-gen_alloc(gtype::Val{:okada}, mesh::SimpleLineGrid) = gen_alloc(gtype, mesh.nξ; T=typeof(mesh.Δξ))
-gen_alloc(gtype::Val{:okada}, mesh::SimpleRectGrid) = gen_alloc(gtype, mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
 gen_alloc(gtype::Val{:okada}, nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
 
 function gen_alloc(::Val{:okada}, nx::I, nξ::I; T=Float64) where {I <: Integer}
