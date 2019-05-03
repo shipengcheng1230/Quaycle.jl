@@ -12,7 +12,6 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SharedArrays = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
-SimpleTraits = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
 Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 
 [extras]

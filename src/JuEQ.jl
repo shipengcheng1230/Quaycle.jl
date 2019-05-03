@@ -6,7 +6,6 @@ using Reexport
 @reexport using Sundials
 @reexport using HDF5
 
-using SimpleTraits
 using Parameters
 using FFTW
 using FFTW: Plan
@@ -20,8 +19,8 @@ include("config.jl")
 include("rsf.jl")
 include("mesh.jl")
 include("fault.jl")
-include("greensfun.jl")
-# include("gfoperator.jl")
+include("greensfunction.jl")
+
 # include("properties.jl")
 # include("assemble.jl")
 

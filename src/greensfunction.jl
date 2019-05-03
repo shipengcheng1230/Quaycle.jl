@@ -1,8 +1,27 @@
 abstract type AbstracGreensFunction end
-abstract type OkadaGreensFunction end
+abstract type AbstractAllocation{dim} end
 
-struct OkadaSelfieGreensFunction{T, F, A} <: OkadaGreensFunction
-    tensor::T
-    op::F
-    alloc::A
+macro gen_shared_chunk_call(name::Symbol)
+    namestr = String(name) * "!"
+    chunkstr = Symbol(namestr[1:end-1] * "_chunk!")
+    esc(quote
+        function (namestr)(st::SharedArray, args...; kwargs...) where T
+            @sync begin
+                for p in procs(st)
+                    @async remotecall_wait($(chunkstr), WorkerPool(workers()), st, args...; kwargs...)
+                end
+            end
+        end
+
+        function $(chunkstr)(st::SharedArray, args...; kwargs...) where T
+            i2s = CartesianIndices(st)
+            inds = localindices(st)
+            subs = i2s[inds]
+            $(chunkstr)(st, subs, args...; kwargs...)
+        end
+    end)
 end
+
+@gen_shared_chunk_call okada_disp_gf_tensor
+
+include("gf_okada.jl")
