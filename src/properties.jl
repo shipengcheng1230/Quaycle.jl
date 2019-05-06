@@ -1,22 +1,44 @@
 ## properties interface
 
-export init_friction_prop, init_fault_prop, read_properties, save_properties
-export PlateProperties, RSFrictionalProperties
-export description
+export @read_prop, @save_prop
+export SingleDegreeSystem, ElasticRSFProperties
 
 import Base.fieldnames
+import Base.==
 
 abstract type AbstractProperties end
 
-@with_kw struct RSFrictionalProperties{
-    T<:Real, U<:AbstractVecOrMat, FForm<:FrictionLawForm, SEL<:StateEvolutionLaw
-    } <: AbstractProperties
+@with_kw struct SingleDofRSFProperties{T<:Real} <: AbstractProperties
+    a::T # contrib from velocity
+    b::T # contrib from state
+    L::T # critical distance
+    k::T # stiffness tensor
+    σ::T # effective normal stress
+    η::T # radiation damping
+    vpl::T # plate rate
+    f0::T = 0.6 # ref. frictional coeff
+    v0::T = 1e-6 # ref. velocity
+
+    @assert a > 0
+    @assert b > 0
+    @assert L > 0
+    @assert k > 0
+    @assert σ > 0
+    @assert η > 0
+    @assert vpl > 0
+    @assert f0 > 0
+    @assert v0 > 0
+end
+
+@with_kw struct ElasticRSFProperties{T<:Real, U<:AbstractVecOrMat} <: AbstractProperties
     a::U # contrib from velocity
     b::U # contrib from state
     L::U # critical distance
     σ::U # effective normal stress
-    flf::FForm = RForm() # frictional law format
-    sel::SEL = DieterichStateLaw() # state evolution law
+    λ::T # Lamé first constants
+    μ::T # Lamé second constants
+    η::T # radiation damping
+    vpl::T # plate rate
     f0::T = 0.6 # ref. frictional coeff
     v0::T = 1e-6 # ref. velocity
 
@@ -25,62 +47,41 @@ abstract type AbstractProperties end
     @assert size(L) == size(σ)
     @assert f0 > 0
     @assert v0 > 0
-end
-
-
-@with_kw struct PlateProperties{T<:Number} <: AbstractProperties
-    λ::T # Lamé first constants
-    μ::T # Lamé second constants
-    η::T # radiation damping
-    vpl::T # plate rate, unlike pure Rate-State Friction simulation, here is restrained to be constant
-
     @assert λ > 0
     @assert μ > 0
     @assert η > 0
     @assert vpl > 0
 end
 
-fieldnames(p::RSFrictionalProperties) = ("a", "b", "L", "σ", "flf", "sel", "f0", "v0")
-fieldnames(p::PlateProperties) = ("λ", "μ", "η", "vpl")
+fieldnames(::Val{:SingleDofRSFProperties}) = ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0")
+fieldnames(::Val{:ElasticRSFProperties}) = ("a", "b", "L", "σ", "λ", "μ", "η", "vpl", "f0", "v0")
 
-description(p::RSFrictionalProperties) = "friction"
-description(p::PlateProperties) = "plate"
+const __prop_names__ = (:SingleDofRSFProperties, :ElasticRSFProperties)
 
-init_fault_prop(λ, μ, η, vpl) = PlateProperties(promote(λ, μ, η, vpl)...)
-
-init_friction_prop(mesh::LineTopCenterMesh) = RSFrictionalProperties(
-    [Vector{eltype(mesh.Δξ)}(undef, mesh.nξ) for _ in 1: 4]...,
-    RForm(), DieterichStateLaw(), 0.6, 1e-6)
-init_friction_prop(mesh::RectTopCenterMesh) = RSFrictionalProperties(
-    [Matrix{eltype(mesh.Δx)}(undef, mesh.nx, mesh.nξ) for _ in 1: 4]...,
-    RForm(), DieterichStateLaw(), 0.6, 1e-6)
-init_friction_prop(fs::BasicFaultSpace) = init_friction_prop(fs.mesh)
-
-function read_properties(filepath::AbstractString)
-    c = h5open(filepath, "r") do f
-        read(f)
-    end
-    props = Dict()
-
-    if haskey(c, "plate")
-        d = c["plate"]
-        props["plate"] = PlateProperties(d["λ"], d["μ"], d["η"], d["vpl"])
-    end
-
-    if haskey(c, "friction")
-        d = c["friction"]
-        props["friction"] = RSFrictionalProperties(
-            d["a"], d["b"], d["L"], d["σ"],
-            eval(Expr(:call, Symbol(d["flf"]))),
-            eval(Expr(:call, Symbol(d["sel"]))),
-            d["f0"], d["v0"],)
-    end
-
-    return props
+for nn in __prop_names__
+    eval(
+        quote
+            fieldnames(p::$(nn)) = fieldnames(Val($(QuoteNode(nn))))
+            description(p::$(nn)) = String($(QuoteNode(nn)))
+        end
+    )
 end
 
-function save_properties(filename::AbstractString, p::AbstractProperties; option="cw")
-    h5open(filename, option) do f
+macro read_prop(filename)
+    esc(quote
+        h5open($(filename), "r") do f
+            c = read(f)
+            ## only one property
+            key = collect(keys(c))[1]
+            d = c[key]
+            args = [d[x] for x in fieldnames(Val(Symbol(key)))]
+            eval(Expr(:call, Symbol(key), args...))
+        end
+    end)
+end
+
+function save_prop(filename::AbstractString, p::AbstractProperties)
+    h5open(filename, "w") do f
         c = read(f)
         if haskey(c, description(p))
             g = c[description(p)]
@@ -88,18 +89,17 @@ function save_properties(filename::AbstractString, p::AbstractProperties; option
             g = g_create(f, description(p))
         end
         for field in fieldnames(p)
-            g[field] = getfield(p, Symbol(field)) |> __h5_compatible_converter__
+            g[field] = getfield(p, Symbol(field))
         end
     end
 end
 
-__h5_compatible_converter__(x) = x
-# h5 cannot write substring
-__h5_compatible_converter__(x::FrictionLawForm) = split(string(typeof(x)), '.')[end] |> string
-__h5_compatible_converter__(x::StateEvolutionLaw) = split(string(typeof(x)), '.')[end] |> string
+macro save_prop(filename, p)
+    esc(quote
+        save_prop($(filename), $(p))
+    end)
+end
 
-function save_properties(filename::AbstractString, ps::Vector{AbstractProperties})
-    for p in ps
-        save_properties(filename, p)
-    end
+function Base.:(==)(p1::P, p2::P) where P<:AbstractProperties
+    reduce(&, [getfield(p1, Symbol(name)) == getfield(p2, Symbol(name)) for name in fieldnames(p1)])
 end
