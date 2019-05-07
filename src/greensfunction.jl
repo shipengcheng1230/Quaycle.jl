@@ -23,4 +23,10 @@ macro gen_shared_chunk_call(name::Symbol)
     end)
 end
 
+const KERNELDIR = joinpath(@__DIR__, "gfkernels")
+
+for f in filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR))
+    include(abspath(joinpath(KERNELDIR, f)))
+end
+
 include("gf_okada.jl")

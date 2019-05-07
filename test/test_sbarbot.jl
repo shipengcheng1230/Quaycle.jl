@@ -28,7 +28,7 @@ using Base.Iterators
 
     @testset "Displacement" begin
         u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_disp.dat"), ' ', Float64)
-        fu = (x) -> sbarbot_disp_quad4(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
+        fu = (x) -> sbarbot_disp_quad8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
         ftest = (i) -> u_cal[i] ≈ u_truth[i,:]
         @test map(ftest, 1: length(u_cal)) |> all
@@ -37,7 +37,7 @@ using Base.Iterators
     @testset "Stress as well as Singularity" begin
         epsv11 = 11e-6
         u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_stress.dat"), ' ', Float64)
-        fu = (x) -> sbarbot_stress_quad4(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
+        fu = (x) -> sbarbot_stress_quad8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
         function funtest(i::Integer)
             if all(map(isnan, u_cal[i])) && all(map(isnan, u_truth[i,:]))

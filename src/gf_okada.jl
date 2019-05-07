@@ -1,6 +1,5 @@
 ## static green's function
 export okada_disp_gf_tensor, gen_alloc
-include("gfkernels/dc3d.jl")
 
 ## okada
 @gen_shared_chunk_call okada_disp_gf_tensor

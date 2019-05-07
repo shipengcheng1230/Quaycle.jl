@@ -1,6 +1,6 @@
 ## properties interface
 
-export @read_prop, @save_prop
+export @read_prop, @save_prop, save_prop
 export SingleDofRSFProperties, ElasticRSFProperties
 
 import Base.fieldnames
