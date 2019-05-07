@@ -4,8 +4,9 @@ abstract type AbstractAllocation{dim} end
 macro gen_shared_chunk_call(name::Symbol)
     namestr = String(name) * "!"
     chunkstr = Symbol(namestr[1:end-1] * "_chunk!")
+    namestr = Symbol(namestr)
     esc(quote
-        function (namestr)(st::SharedArray, args...; kwargs...) where T
+        function $(namestr)(st::SharedArray, args...; kwargs...) where T
             @sync begin
                 for p in procs(st)
                     @async remotecall_wait($(chunkstr), WorkerPool(workers()), st, args...; kwargs...)
@@ -21,7 +22,5 @@ macro gen_shared_chunk_call(name::Symbol)
         end
     end)
 end
-
-@gen_shared_chunk_call okada_disp_gf_tensor
 
 include("gf_okada.jl")

@@ -1,5 +1,5 @@
 ## static green's function
-export greens_tensor
+export okada_disp_gf_tensor
 include("gfkernels/dc3d.jl")
 
 ## okada
