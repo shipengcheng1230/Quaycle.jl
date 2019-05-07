@@ -1,13 +1,14 @@
 ## properties interface
 
 export @read_prop, @save_prop
-export SingleDegreeSystem, ElasticRSFProperties
+export SingleDofRSFProperties, ElasticRSFProperties
 
 import Base.fieldnames
 import Base.==
 
 abstract type AbstractProperties end
 
+# https://github.com/jw3126/Setfield.jl
 @with_kw mutable struct SingleDofRSFProperties{T<:Real} <: AbstractProperties
     a::T # contrib from velocity
     b::T # contrib from state

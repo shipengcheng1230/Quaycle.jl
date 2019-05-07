@@ -2,7 +2,7 @@
 
 export CForm, RForm
 export DieterichStateLaw, RuinaStateLaw, PrzStateLaw
-export SingleDegreeSystem, assemble, friction
+export friction
 
 abstract type StateEvolutionLaw end
 
@@ -41,11 +41,11 @@ f(V, θ) = f_0 + a \\ln{\\frac{V}{V_0}} + b \\ln{\\left(\\frac{V_0 θ}{L}\\right
 f(V, θ) = a \\sinh ^{-1}{\\left[\\frac{V}{2V_0} \\exp{\\frac{f_0 + b \\ln{\\left(V_0 θ/L\\right)}}{a}}\\right]}
 ```
 """
-function friction(::CForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where {T<:Number}
+function friction(::CForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
     f0 + a * log(v / v0) + b * log(v0 * θ / L)
 end
 
-function friction(::RForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where {T<:Number}
+function friction(::RForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
     a * asinh(v / 2v0 * exp((f0 + b * log(v0 * θ / L)) / a))
 end
 

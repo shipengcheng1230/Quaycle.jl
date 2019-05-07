@@ -1,5 +1,5 @@
 ## static green's function
-export okada_disp_gf_tensor
+export okada_disp_gf_tensor, gen_alloc
 include("gfkernels/dc3d.jl")
 
 ## okada
@@ -96,11 +96,11 @@ struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}
     pf::P # fft operator
 end
 
-gen_alloc(gtype::Val{:okada}, mesh::LineTopCenterMesh) = gen_alloc(gtype, mesh.nξ; T=typeof(mesh.Δξ))
-gen_alloc(gtype::Val{:okada}, mesh::RectTopCenterMesh) = gen_alloc(gtype, mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
-gen_alloc(gtype::Val{:okada}, nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
+gen_alloc(mesh::LineTopCenterMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
+gen_alloc(mesh::RectTopCenterMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
+gen_alloc(nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
 
-function gen_alloc(::Val{:okada}, nx::I, nξ::I; T=Float64) where {I <: Integer}
+function gen_alloc(nx::I, nξ::I; T=Float64) where {I <: Integer}
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])

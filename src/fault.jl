@@ -21,17 +21,17 @@ end
 BasicFaultSpace(mesh::LineTopCenterMesh, ft::PlaneFault) = BasicFaultSpace(mesh, ft, 1)
 BasicFaultSpace(mesh::RectTopCenterMesh, ft::PlaneFault) = BasicFaultSpace(mesh, ft, 2)
 
-fault(::Val{:tc}, ft::FT, mesh::M) where {FT<:PlaneFault, M<:TopCenterPlaneMesh} = BasicFaultSpace(mesh, ft)
+fault(::Val{:topcenter}, ft::FT, mesh::M) where {FT<:PlaneFault, M<:TopCenterPlaneMesh} = BasicFaultSpace(mesh, ft)
 
-function fault(::Val{:tc}, ft::FT, ξ::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
-    mesh = gen_mesh(Val(:topcenter), ξ, Δξ, dip)
+function fault(ftype::Val{:topcenter}, ft::FT, ξ::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
+    mesh = gen_mesh(ftype, ξ, Δξ, dip)
     return BasicFaultSpace(mesh, ft)
 end
 
-function fault(::Val{:tc}, ft::FT, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
-    mesh = gen_mesh(Val(:topcenter), x, ξ, Δx, Δξ, dip)
+function fault(ftype::Val{:topcenter}, ft::FT, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
+    mesh = gen_mesh(ftype, x, ξ, Δx, Δξ, dip)
     return BasicFaultSpace(mesh, ft)
 end
 
-fault(fty::Val{:tc}, ft::STRIKING, ξ::T, Δξ::T) where T = fault(fty, ft, ξ, Δξ, 90*one(T))
-fault(fty::Val{:tc}, ft::STRIKING, x::T, ξ::T, Δx::T, Δξ::T) where T = fault(fty, ft, x, ξ, Δx, Δξ, 90*one(T))
+fault(fty::Val{:topcenter}, ft::STRIKING, ξ::T, Δξ::T) where T = fault(fty, ft, ξ, Δξ, 90*one(T))
+fault(fty::Val{:topcenter}, ft::STRIKING, x::T, ξ::T, Δx::T, Δξ::T) where T = fault(fty, ft, x, ξ, Δx, Δξ, 90*one(T))

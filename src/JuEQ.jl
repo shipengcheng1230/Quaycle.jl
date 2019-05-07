@@ -16,15 +16,14 @@ using LinearAlgebra
 using SharedArrays
 
 include("config.jl")
+include("properties.jl")
 include("rsf.jl")
 include("mesh.jl")
 include("fault.jl")
 include("greensfunction.jl")
+include("assemble.jl")
 
-# include("properties.jl")
-# include("assemble.jl")
-
-const UTILSDIR = abspath(joinpath(@__DIR__, "tools"))
-map(x -> include(joinpath(UTILSDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(UTILSDIR)))
+const TOOLS = abspath(joinpath(@__DIR__, "tools"))
+map(x -> include(joinpath(TOOLS, x)), filter!(x -> endswith(x, ".jl"), readdir(TOOLS)))
 
 end # module
