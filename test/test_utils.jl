@@ -1,5 +1,4 @@
 using Test
-using DifferentialEquations
 
 @testset "h5save" begin
     @testset "vector output" begin
@@ -10,12 +9,12 @@ using DifferentialEquations
         end
 
         tmp = tempname()
-        cbfun = @h5save(tmp, 100.0, 10, (3,), 1, Float64)
+        cbfun = @h5save(tmp, 100.0, 10, (3,), Float64)
 
         u0 = [1.0; 0.0; 0.0]
         tspan = (0.0, 100.0)
         prob = ODEProblem(lorenz, u0, tspan)
-        sol = solve(prob; save_everystep=false, callback=FunctionCallingCallback(cbfun; func_everystep=true), funcat=[100.0])
+        sol = solve(prob; save_everystep=false, callback=cbfun)
         sol2 = solve(prob)
         res_u = h5read(tmp, "u")
         u1s = res_u[2, :]
@@ -24,6 +23,7 @@ using DifferentialEquations
         t1 = h5read(tmp, "t")
         t2 = sol2.t
         @test sum(t1 .- t2) < 1e-8
+        rm(tmp)
     end
 
     @testset "matrix output" begin
@@ -32,12 +32,12 @@ using DifferentialEquations
              -4  0  0  1
               5 -2  2  3]
         tmp = tempname()
-        cbfun = @h5save(tmp, 100.0, 25, (4, 2), 2, Float64)
+        cbfun = @h5save(tmp, 100.0, 25, (4, 2), Float64)
         u0 = rand(4, 2)
         tspan = (0.0,100.0)
         f(u, p, t) = A * u
         prob = ODEProblem(f, u0, tspan)
-        sol = solve(prob; save_everystep=false, callback=FunctionCallingCallback(cbfun; func_everystep=true), funcat=[100.0])
+        sol = solve(prob; save_everystep=false, callback=cbfun)
         sol2 = solve(prob)
         res_u = h5read(tmp, "u")
         u1s = res_u[2,1,:]
@@ -46,5 +46,6 @@ using DifferentialEquations
         t1 = h5read(tmp, "t")
         t2 = sol2.t
         @test sum(t1 .- t2) < 1e-8
+        rm(tmp)
     end
 end

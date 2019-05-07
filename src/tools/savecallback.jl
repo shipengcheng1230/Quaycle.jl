@@ -37,8 +37,9 @@ function mmapsave(iot::IOStream, iou::IOStream, thrd::Number; dts=0.1, dta=3.153
     FunctionCallingCallback(__save; func_everystep=true)
 end
 
-macro h5save(filename, tend, nsteps, usize, nd, T)
+macro h5save(filename, tend, nsteps, usize, T)
     callback = gensym(:callback)
+    nd = eval(:(length($(usize))))
     esc(quote
         let count = 1
             global $(callback)
@@ -52,7 +53,7 @@ macro h5save(filename, tend, nsteps, usize, nd, T)
                 d = d_create(fid, "t", $(T), (acctsize, (-1,)), "chunk", acctsize)
             end
 
-            function $callback(u, t, integrator)
+            function $(callback)(u, t, integrator)
                 if t == $(tend)
                     rest = total % $(nsteps)
                     selectdim(accu, $(nd+1), count) .= u
@@ -87,6 +88,8 @@ macro h5save(filename, tend, nsteps, usize, nd, T)
                     total += 1
                 end
             end
+
+            FunctionCallingCallback($(callback); func_everystep=true)
         end
     end)
 end
