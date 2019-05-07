@@ -36,7 +36,7 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray,
     α = (λ + μ) / (λ + 2μ)
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
-        u = dc3d_okada(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
+        u = dc3d(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
         st[i,j] = shear_traction(ft, u, λ, μ, mesh.dip)
     end
 end
@@ -57,7 +57,7 @@ function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, de
     nrept::Integer, lrept::T) where {T<:Real}
     fill!(u, zero(T))
     @fastmath @simd for i = -nrept: nrept
-        u .+= dc3d_okada(x, y, z, α, depth, dip, al .+ i * lrept, aw, disl)
+        u .+= dc3d(x, y, z, α, depth, dip, al .+ i * lrept, aw, disl)
     end
 end
 

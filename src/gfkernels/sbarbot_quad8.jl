@@ -1,4 +1,4 @@
-# greens function ϵ vs u
+# greens function ϵ vs u for quad8 element
 export sbarbot_disp_quad8, sbarbot_disp_quad8!
 export sbarbot_strain_quad8, sbarbot_strain_quad8!
 export sbarbot_stress_quad8, sbarbot_stress_quad8!

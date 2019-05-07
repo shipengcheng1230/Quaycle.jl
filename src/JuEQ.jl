@@ -5,6 +5,7 @@ using Reexport
 @reexport using DifferentialEquations
 @reexport using Sundials
 @reexport using HDF5
+@reexport using FastGaussQuadrature
 
 using Parameters
 using FFTW
