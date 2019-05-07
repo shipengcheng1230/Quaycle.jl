@@ -8,7 +8,7 @@ import Base.==
 
 abstract type AbstractProperties end
 
-@with_kw struct SingleDofRSFProperties{T<:Real} <: AbstractProperties
+@with_kw mutable struct SingleDofRSFProperties{T<:Real} <: AbstractProperties
     a::T # contrib from velocity
     b::T # contrib from state
     L::T # critical distance
@@ -24,7 +24,7 @@ abstract type AbstractProperties end
     @assert L > 0
     @assert k > 0
     @assert σ > 0
-    @assert η > 0
+    @assert η ≥ 0
     @assert vpl > 0
     @assert f0 > 0
     @assert v0 > 0
