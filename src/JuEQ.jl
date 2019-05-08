@@ -3,7 +3,6 @@ module JuEQ
 using Reexport
 
 @reexport using OrdinaryDiffEq
-@reexport using Sundials
 @reexport using DiffEqCallbacks
 
 using Parameters
