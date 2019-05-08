@@ -9,7 +9,7 @@ macro gen_shared_chunk_call(name::Symbol)
         function $(namestr)(st::SharedArray, args...; kwargs...) where T
             @sync begin
                 for p in procs(st)
-                    @async remotecall_wait($(chunkstr), WorkerPool(workers()), st, args...; kwargs...)
+                    @async remotecall_wait($(chunkstr), p, st, args...; kwargs...)
                 end
             end
         end
