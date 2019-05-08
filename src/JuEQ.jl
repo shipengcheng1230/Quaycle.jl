@@ -15,6 +15,7 @@ using Distributed
 using Base.Threads
 using LinearAlgebra
 using SharedArrays
+using ProgressMeter
 
 include("config.jl")
 include("properties.jl")
