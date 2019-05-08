@@ -76,11 +76,10 @@ end
 
 function assemble(
     fs::BasicFaultSpace, p::ElasticRSFProperties, u0::AbstractArray, tspan::NTuple{2};
-    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), savefilename=false, varname="gf"::AbstractString, kwargs...
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...
     )
     gf = okada_disp_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
-    typeof(savefilename) <: AbstractString && matwrite(savefilename, Dict(varname => gf))
-    return assemble(gf, fs, p, u0, tspan; flf=flf, se=se)
+    return assemble(gf, fs, p, u0, tspan; flf=flf, se=se), gf
 end
 
 function assemble(

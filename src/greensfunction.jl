@@ -28,10 +28,7 @@ heaviside(x::T) where T = x ≤ zero(T) ? zero(T) : one(T)
 
 ## kernel function
 const KERNELDIR = joinpath(@__DIR__, "gfkernels")
-
-for f in filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR))
-    include(abspath(joinpath(KERNELDIR, f)))
-end
+foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR)))
 
 ## concrete greens function
 include("gf_okada.jl")

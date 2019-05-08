@@ -1,6 +1,7 @@
 using Test
+using HDF5
 
-@testset "h5save" begin
+@testset "h5savecallback" begin
     @testset "vector output" begin
         function lorenz(du, u, p, t)
             du[1] = 10.0 * (u[2] - u[1])
@@ -9,7 +10,7 @@ using Test
         end
 
         tmp = tempname()
-        cbfun = @h5save(tmp, 100.0, 10, (3,), Float64)
+        cbfun = @h5savecallback(tmp, 100.0, 10, (3,), Float64)
 
         u0 = [1.0; 0.0; 0.0]
         tspan = (0.0, 100.0)
@@ -32,7 +33,7 @@ using Test
              -4  0  0  1
               5 -2  2  3]
         tmp = tempname()
-        cbfun = @h5save(tmp, 100.0, 25, (4, 2), Float64)
+        cbfun = @h5savecallback(tmp, 100.0, 25, (4, 2), Float64)
         u0 = rand(4, 2)
         tspan = (0.0,100.0)
         f(u, p, t) = A * u

@@ -1,4 +1,5 @@
 using Test
+using HDF5
 
 @testset "properties" begin
 
