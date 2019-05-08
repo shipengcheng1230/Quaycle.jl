@@ -1,4 +1,5 @@
 using Test
+using Sundials
 
 @testset "without damping" begin
     mp = SingleDofRSFProperties(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)

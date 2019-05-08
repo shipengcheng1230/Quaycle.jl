@@ -62,7 +62,7 @@ nothing
 θz = @. L / v0 * exp(a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / a / σ)) - f0 / b0)
 vz = fill(vinit, size(fa.mesh.ξ))
 u0 = hcat(vz, θz);
-prob = assemble(fa, prop,  u0, (0.0, tf))
+prob, = assemble(fa, prop,  u0, (0.0, tf))
 nothing
 
 # Check our depth profile now.

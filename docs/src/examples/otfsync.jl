@@ -69,7 +69,7 @@ plot(p1, p2, layout=(2, 1))
 vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
 u0 = cat(vinit, θ0, dims=3)
-prob = assemble(fa, prop, u0, (0., 18.); buffer_ratio=1)
+prob, = assemble(fa, prop, u0, (0., 18.); buffer_ratio=1)
 nothing
 
 # !!! tip

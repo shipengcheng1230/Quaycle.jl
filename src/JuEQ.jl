@@ -2,9 +2,9 @@ module JuEQ
 
 using Reexport
 
-@reexport using DifferentialEquations
+@reexport using OrdinaryDiffEq
 @reexport using Sundials
-@reexport using FastGaussQuadrature
+@reexport using DiffEqCallbacks
 
 using Parameters
 using Requires
@@ -29,7 +29,6 @@ include("tools/maxvelocity.jl")
 include("tools/mmapsave.jl")
 
 function __init__()
-
     @require HDF5="f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f" begin
         using .HDF5
         include("tools/h5savecallback.jl")

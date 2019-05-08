@@ -15,8 +15,8 @@ using HDF5
         u0 = [1.0; 0.0; 0.0]
         tspan = (0.0, 100.0)
         prob = ODEProblem(lorenz, u0, tspan)
-        sol = solve(prob; save_everystep=false, callback=cbfun)
-        sol2 = solve(prob)
+        sol = solve(prob, Tsit5(); save_everystep=false, callback=cbfun)
+        sol2 = solve(prob, Tsit5())
         res_u = h5read(tmp, "u")
         u1s = res_u[2, :]
         u2s = [x[2] for x in sol2.u]
@@ -38,8 +38,8 @@ using HDF5
         tspan = (0.0,100.0)
         f(u, p, t) = A * u
         prob = ODEProblem(f, u0, tspan)
-        sol = solve(prob; save_everystep=false, callback=cbfun)
-        sol2 = solve(prob)
+        sol = solve(prob, Tsit5(); save_everystep=false, callback=cbfun)
+        sol2 = solve(prob, Tsit5())
         res_u = h5read(tmp, "u")
         u1s = res_u[2,1,:]
         u2s = [x[2,1] for x in sol2.u]

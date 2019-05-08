@@ -34,7 +34,7 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray,
     ud = unit_dislocation(ft)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
-    pm = Progress(length(subs); dt=1.0, desc="Computing green's function ...", color=:light_cyan)
+    pm = Progress(length(subs); dt=0.5, desc="Computing green's function ...", color=:light_cyan)
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
         u = dc3d(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
@@ -48,7 +48,7 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray,
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
-    pm = Progress(length(subs); dt=1.0, desc="Computing green's function ...", color=:light_cyan)
+    pm = Progress(length(subs); dt=0.5, desc="Computing green's function ...", color=:light_cyan)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
