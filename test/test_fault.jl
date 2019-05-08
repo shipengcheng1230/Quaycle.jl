@@ -2,27 +2,25 @@ using Test
 
 @testset "Fault Space" begin
 
-    @testset "Line Fault" begin
-        ft1 = fault(Val(:CSFS), STRIKING(), 90.0, 10.0, 1.0)
-        ft2 = fault(Val(:CSFS), STRIKING(), 10, 1.0)
-        @test ft1.mesh.aξ == ft2.mesh.aξ
+    @testset "Top Center Line Fault" begin
+        ft = fault(Val(:topcenter), DIPPING(), 100.0, 2.0, 33.0)
+        @test ft.ft == DIPPING()
+        @test ft.mesh.nξ == 50
     end
 
-    @testset "Rect Fault" begin
-        ft3 = fault(Val(:CSFS), STRIKING(), 90.0, (10.0, 5.0), (1.0, 0.5))
-        ft4 = fault(Val(:CSFS), STRIKING(), 90.0, 10.0, 5.0, 1.0, 0.5)
-        ft5 = fault(Val(:CSFS), STRIKING(), 90.0, 10, 5, 1, 0.5)
-        ft6 = fault(Val(:CSFS), STRIKING(), 10.0, 5.0, 1.0, 0.5)
-        @test ft3.mesh.aξ == ft4.mesh.aξ
-        @test ft4.mesh.aξ == ft5.mesh.aξ
-        @test ft5.mesh.aξ == ft6.mesh.aξ
+    @testset "Top Center Rect Fault" begin
+        ft = fault(Val(:topcenter), DIPPING(), 100.0, 50.0, 2.0, 2.0, 33.0)
+        @test ft.ft == DIPPING()
+        @test ft.mesh.nx == 50
+        @test ft.mesh.nξ == 25
     end
 
-    @testset "Dipping Fault Projection" begin
-        ft1 = fault(Val(:CSFS), DIPPING(), 40.0, (10.0, 5.0), (1.0, 0.5))
-        ft2 = fault(Val(:CSFS), STRIKING(), 40.0, 10.0, 5.0, 1.0, 0.5)
-        @test ft1.mesh.z == ft2.mesh.z
-        @test ft1.mesh.y == ft2.mesh.y
+    @testset "Top Center Striking Fault" begin
+        ft = fault(Val(:topcenter), STRIKING(), 100.0, 2.0)
+        @test ft.mesh.dip == 90.0
+
+        ft = fault(Val(:topcenter), STRIKING(), 100.0, 50.0, 2.0, 2.0)
+        @test ft.mesh.dip == 90.0
     end
 
 end

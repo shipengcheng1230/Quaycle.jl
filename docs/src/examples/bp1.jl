@@ -11,11 +11,11 @@ using Plots
 ms2mmyr = 365 * 86400 * 1e3 # convert velocity from m/s to mm/yr
 ρ = 2670.0 # density [kg/m³]
 vs = 3464.0 # shear wave velocity [m/s]
-σ = 500.0 # effective normal stress [bar]
+σ0 = 500.0 # effective normal stress [bar]
 a0 = 0.010 # frictional paramter `a` in vw zone
 amax = 0.025 # frictional paramter `a` in vs zone
 b0 = 0.015 # frictional paramter `b`
-L = 8.0 # critical distance [mm]
+L0 = 8.0 # critical distance [mm]
 vpl = 1e-9 * ms2mmyr # plate rate [mm/yr]
 vinit = 1e-9 * ms2mmyr # initial velocity [mm/yr]
 v0 = 1e-6 * ms2mmyr # reference velocity [mm/yr]
@@ -43,40 +43,31 @@ nothing
 # !!! tip
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
-fa = fault(Val(:CSFS), STRIKING(), 40.0, Δz)
+fa = fault(Val(:topcenter), STRIKING(), 40.0, Δz)
 nothing
 
-# Then, provide the material properties w.r.t. our 'fault space'. The properties contain two part. First one is
-# **Fault Properties** which includes *elastic modulus*, *radiation damping term*, *plate rate*, *reference friction* and *reference velocity*.
-
-faprop = init_fault_prop(λ, μ, η, vpl, f0, v0)
-nothing
-
-# Second one is **Rate-and-State Friction Properties** which includes *a*, *b*, *L*, *σ*. The default friction formula is **Regularized Form**
-# which is stored in the field `flf` and is denoted as `RForm()`. The default state evolution law is `DieterichStateLaw()`.
-
-frprop = init_friction_prop(fa)
-fill!(frprop.a, a0)
-frprop.a[-fa.mesh.z .≥ (H + h)] .= amax
-frprop.a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
-fill!(frprop.b, b0)
-fill!(frprop.L, L)
-fill!(frprop.σ, σ)
+# Then, provide the material properties w.r.t. our 'fault space'.
+a = a0 .* ones(fa.mesh.nξ)
+a[-fa.mesh.z .≥ (H + h)] .= amax
+a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
+b = b0 .* ones(fa.mesh.nξ)
+L = L0 .* ones(fa.mesh.nξ)
+σ = σ0 .* ones(fa.mesh.nξ)
+prop = ElasticRSFProperties(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
 nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.
-τ0 = σ * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
+τ0 = σ0 * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
 τz = fill(τ0, size(fa.mesh.z))
-θz = @. L / v0 * exp(frprop.a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / frprop.a / σ)) - f0 / b0)
+θz = @. L / v0 * exp(a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / a / σ)) - f0 / b0)
 vz = fill(vinit, size(fa.mesh.ξ))
-δz = fill(0.0, size(fa.mesh.ξ))
-u0 = hcat(vz, θz, δz);
-prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0.0, tf))
+u0 = hcat(vz, θz);
+prob, = assemble(fa, prop,  u0, (0.0, tf))
 nothing
 
 # Check our depth profile now.
 
-plot([frprop.a, frprop.b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
+plot([a, b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
 
 # Afterwards, solve ODE thanks to [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 
@@ -88,7 +79,7 @@ nothing
 
 # Finally, check the results. The first event happens at around 196 year:
 
-maxv = JuEQ.max_velocity(sol);
+maxv = JuEQ.max_velocity(sol)
 plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (log10 (m/s))", xlims=(190, 200), label="")
 
 # !!! note

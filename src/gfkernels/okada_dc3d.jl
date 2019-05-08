@@ -1,4 +1,4 @@
-export dc3d_okada
+export dc3d
 
 """
 Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace.
@@ -131,7 +131,7 @@ TARGET = dc3d.so
     \$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
 ```
 """
-function dc3d_okada(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractVecOrMat{T}}
+function dc3d(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractVecOrMat{T}}
 
     z > zero(T) && return zeros(T, 12)
 
