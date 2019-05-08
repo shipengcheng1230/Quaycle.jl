@@ -28,35 +28,29 @@ nothing
 
 # First, create a fault space.
 
-fa = fault(Val(:CSFS), STRIKING(), (80., 10.), (0.5, 0.5))
+fa = fault(Val(:topcenter), STRIKING(), 80., 10., 0.5, 0.5)
 nothing
 
 # Next, establish frictional and fault space parameters:
-
-frprop = init_friction_prop(fa)
-faprop = init_fault_prop(λ, μ, η, vpl, f0, v0)
-
-fill!(frprop.a, 0.015)
-fill!(frprop.b, 0.0115)
-fill!(frprop.L, 12.0)
+a = ones(fa.mesh.nx, fa.mesh.nξ) .* 0.015
+b = ones(fa.mesh.nx, fa.mesh.nξ) .* 0.0115
+L = ones(fa.mesh.nx, fa.mesh.nξ) .* 12.0
 
 left_patch = @. -25. ≤ fa.mesh.x ≤ -5.
 right_patch = @. 5. ≤ fa.mesh.x ≤ 25.
 vert_patch = @. -6. ≤ fa.mesh.z ≤ -1
 
-frprop.b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
+b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
 
 σmax = 500.
 σ = [min(σmax, 15. + 180. * z) for z in -fa.mesh.ξ]
 σ = Matrix(repeat(σ, 1, fa.mesh.nx)')
-L = 12.
-
-frprop.σ .= σ
+prop = ElasticRSFProperties(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
 nothing
 
 # Make sure our profile match our expectation:
 
-p1 = plot((frprop.a .- frprop.b)', seriestype=:heatmap,
+p1 = plot((a .- b)', seriestype=:heatmap,
     xticks=(collect(1: 40: fa.mesh.nx+1), [-40, -20, 0, 20, 40]),
     yticks=(collect(1: 5: fa.mesh.nξ+1), [0, 5, 10, 15, 20]),
     yflip=true, color=:isolum, aspect_ratio=2, title="a-b",
@@ -74,8 +68,8 @@ plot(p1, p2, layout=(2, 1))
 
 vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
-u0 = cat(vinit, θ0, zeros(Float64, fa.mesh.nx, fa.mesh.nξ), dims=3)
-prob = assemble(Val(:okada), fa, faprop, frprop, u0, (0., 18.), buffer_ratio=1)
+u0 = cat(vinit, θ0, dims=3)
+prob, = assemble(fa, prop, u0, (0., 18.); buffer_ratio=1)
 nothing
 
 # !!! tip
@@ -103,5 +97,5 @@ myplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)',
     xticks=(collect(1: 40: fa.mesh.nx+1), [-40, -20, 0, 20, 40]),
     yticks=(collect(1: 5: fa.mesh.nξ+1), [0, 5, 10, 15, 20]),
     yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")
-snaps = myplot(ind)
+snaps = myplot(ind+300)
 plot(snaps)
