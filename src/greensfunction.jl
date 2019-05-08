@@ -23,10 +23,15 @@ macro gen_shared_chunk_call(name::Symbol)
     end)
 end
 
+## helper function
+heaviside(x::T) where T = x ≤ zero(T) ? zero(T) : one(T)
+
+## kernel function
 const KERNELDIR = joinpath(@__DIR__, "gfkernels")
 
 for f in filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR))
     include(abspath(joinpath(KERNELDIR, f)))
 end
 
+## concrete greens function
 include("gf_okada.jl")

@@ -3020,8 +3020,6 @@ function sbarbot_strain_quad8!(ϵ::AbstractVector,
 
 end
 
-heaviside(x::T) where T = x ≤ zero(T) ? zero(T) : one(T)
-
 xlogy(x::T, y::T) where T = isapprox(x, zero(T)) ? zero(T) : x * log(y)
 
 xlogy(x, y) = xlogy(promote(x, y)...)
