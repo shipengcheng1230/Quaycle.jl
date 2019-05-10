@@ -6,7 +6,7 @@ using FastGaussQuadrature
 # Those corresponding verifiable data are obtained from orginal matlab functions at
 # https://bitbucket.org/sbarbot/bssa-2016237/src/master/
 # https://bitbucket.org/sbarbot/bssa-2018058/src/default/
-@testset "SBarbot Quad8" begin
+@testset "SBarbot hex8" begin
     epsv11 = 11e-6
     epsv12 = 5e-6
     epsv13 = 6e-6
@@ -29,8 +29,8 @@ using FastGaussQuadrature
     xxs = product(x1s, x2s, x3s)
 
     @testset "Displacement" begin
-        u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_disp_quad8.dat"), ' ', Float64)
-        fu = (x) -> sbarbot_disp_quad8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
+        u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_disp_hex8.dat"), ' ', Float64)
+        fu = (x) -> sbarbot_disp_hex8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
         ftest = (i) -> u_cal[i] ≈ u_truth[i,:]
         @test map(ftest, 1: length(u_cal)) |> all
@@ -38,8 +38,8 @@ using FastGaussQuadrature
 
     @testset "Stress as well as Singularity" begin
         epsv11 = 11e-6
-        u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_stress_quad8.dat"), ' ', Float64)
-        fu = (x) -> sbarbot_stress_quad8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
+        u_truth = readdlm(joinpath(@__DIR__, "data/test_sbarbot_stress_hex8.dat"), ' ', Float64)
+        fu = (x) -> sbarbot_stress_hex8(x..., q1, q2, q3, L, T, W, theta, epsv11, epsv12, epsv13, epsv22, epsv23, epsv33, G, nu)
         u_cal = map(fu, xxs) |> vec
         function funtest(i::Integer)
             if all(map(isnan, u_cal[i])) && all(map(isnan, u_truth[i,:]))
