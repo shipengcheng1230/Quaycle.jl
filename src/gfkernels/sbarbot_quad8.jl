@@ -1,9 +1,12 @@
-# greens function ϵ vs u for quad8 element
-export sbarbot_disp_quad8, sbarbot_disp_quad8!
-export sbarbot_strain_quad8, sbarbot_strain_quad8!
-export sbarbot_stress_quad8, sbarbot_stress_quad8!
+# Author: Sylvain Barbot (sbarbot@ntu.edu.sg) - May 19, 2018, Los Angeles.
+# Translated by Pengcheng Shi (shipengcheng1230@gmail.com)
 
-function sbarbot_disp_quad8(
+# greens function ϵ vs u for hex8 element
+export sbarbot_disp_hex8, sbarbot_disp_hex8!
+export sbarbot_strain_hex8, sbarbot_strain_hex8!
+export sbarbot_stress_hex8, sbarbot_stress_hex8!
+
+function sbarbot_disp_hex8(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -11,11 +14,11 @@ function sbarbot_disp_quad8(
     ) where R
 
     u = Vector{R}(undef, 3)
-    sbarbot_disp_quad8!(u, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
+    sbarbot_disp_hex8!(u, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
     return u
 end
 
-function sbarbot_strain_quad8(
+function sbarbot_strain_hex8(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -23,11 +26,11 @@ function sbarbot_strain_quad8(
     ) where R
 
     ϵ = Vector{R}(undef, 6)
-    sbarbot_strain_quad8!(ϵ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
+    sbarbot_strain_hex8!(ϵ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
     return ϵ
 end
 
-function sbarbot_stress_quad8!(σ::AbstractVector,
+function sbarbot_stress_hex8!(σ::AbstractVector,
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -35,7 +38,7 @@ function sbarbot_stress_quad8!(σ::AbstractVector,
     ) where R
 
     lambda = G * 2 * nu / (1 - 2 * nu)
-    sbarbot_strain_quad8!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
+    sbarbot_strain_hex8!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
     ekk = σ[1] + σ[4] + σ[6]
     σ[1] = lambda * ekk + 2G * σ[1]
     σ[2] *= 2G
@@ -46,7 +49,7 @@ function sbarbot_stress_quad8!(σ::AbstractVector,
     return nothing
 end
 
-function sbarbot_stress_quad8(
+function sbarbot_stress_hex8(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -54,7 +57,7 @@ function sbarbot_stress_quad8(
     ) where R
 
     σ = Vector{R}(undef, 6)
-    sbarbot_stress_quad8!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
+    sbarbot_stress_hex8!(σ, x1, x2, x3, q1, q2, q3, L, T, W, theta, epsv11p, epsv12p, epsv13p, epsv22p, epsv23p, epsv33p, G, nu)
     return σ
 end
 
@@ -82,7 +85,7 @@ end
                    Z (x3)
 
 """
-function sbarbot_disp_quad8!(u::AbstractVector{<:R},
+function sbarbot_disp_hex8!(u::AbstractVector{<:R},
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
@@ -479,7 +482,7 @@ function sbarbot_disp_quad8!(u::AbstractVector{<:R},
     end
 end
 
-function sbarbot_strain_quad8!(ϵ::AbstractVector,
+function sbarbot_strain_hex8!(ϵ::AbstractVector,
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
     epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,

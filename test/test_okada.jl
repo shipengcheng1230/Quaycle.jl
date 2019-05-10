@@ -2,7 +2,8 @@ using DelimitedFiles
 using Test
 using Base.Iterators
 
-# Those corresponding verifiable data are obtained from orginal fortran subroutines
+# Those corresponding verifiable data are obtained from orginal fortran subroutines at
+# http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html
 @testset "Test Okada's displacement" begin
     @testset "Normal computations" begin
         u_truth = readdlm(joinpath(@__DIR__, "data/test_okada.dat"), ',', Float64)

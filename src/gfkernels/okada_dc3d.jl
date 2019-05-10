@@ -1,3 +1,6 @@
+# Author: Yoshimitsu Okada (https://www.researchgate.net/profile/Yoshimitsu_Okada)
+# Translated by Pengcheng Shi (shipengcheng1230@gmail.com)
+
 export dc3d
 
 """

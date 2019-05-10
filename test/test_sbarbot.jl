@@ -3,7 +3,9 @@ using DelimitedFiles
 using Base.Iterators
 using FastGaussQuadrature
 
-# Those corresponding verifiable data are obtained from orginal matlab functions
+# Those corresponding verifiable data are obtained from orginal matlab functions at
+# https://bitbucket.org/sbarbot/bssa-2016237/src/master/
+# https://bitbucket.org/sbarbot/bssa-2018058/src/default/
 @testset "SBarbot Quad8" begin
     epsv11 = 11e-6
     epsv12 = 5e-6
