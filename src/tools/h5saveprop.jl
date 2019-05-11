@@ -1,5 +1,6 @@
 export @read_prop, @save_prop, save_prop
 
+"Read property stored in HDF5."
 macro read_prop(filename)
     esc(quote
         h5open($(filename), "r") do f
@@ -13,7 +14,8 @@ macro read_prop(filename)
     end)
 end
 
-function save_prop(filename::AbstractString, p::AbstractProperties)
+"Store property in HDF5."
+function save_prop(filename::AbstractString, p::AbstractProperty)
     h5open(filename, "w") do f
         c = read(f)
         if haskey(c, description(p))
@@ -27,6 +29,7 @@ function save_prop(filename::AbstractString, p::AbstractProperties)
     end
 end
 
+"Store property in HDF5."
 macro save_prop(filename, p)
     esc(quote
         save_prop($(filename), $(p))

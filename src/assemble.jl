@@ -4,10 +4,17 @@ export assemble
 
 ## single degree of freedom
 
+"Just Hook's law."
 @inline dτ_dt(K::T, v::T, vpl::T) where {T<:Number} = K * (vpl - v)
 
+"Derivative of velocity in quai-dynamic rate-and-state governing equation."
 @inline dv_dt(dτdt::T, dμdv::T, dμdθ::T, dθdt::T, η::T) where {T<:Number} = (dτdt - dμdθ * dθdt) / (dμdv + η)
 
+"""
+Out-place version of derivative of *velocity* (or you may call it slip rate)
+and *state* (the *state* in rate-and-state friction) for single degree of freedom system.
+This for now only support single *state* variable, which is most-widely used.
+"""
 @inline function dv_dθ_dt(::CForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, ::Vararg{T},
     ) where {T<:Number, SE<:StateEvolutionLaw}
     dμdθ = σ * b / θ
@@ -28,7 +35,19 @@ end
     return dv_dt(dτdt, dμdv, dμdθ, dθdt, η), dθdt
 end
 
-function assemble(p::SingleDofRSFProperties, u0::AbstractArray, tspan::NTuple;
+"""
+    assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple; flf::FrictionLawForm=CForm(), se::StateEvolutionLaw=DieterichStateLaw())
+
+Assemble the `ODEProblem` for single degree of freedom system.
+
+## Arguments
+- `p::SingleDofRSFProperty`: all system properties
+- `u0::AbstractArray`: initial condition
+- `tspan::NTuple`: time span for simulation
+- `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
+- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`][@ref]
+"""
+function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
     flf::FrictionLawForm=CForm(), se::StateEvolutionLaw=DieterichStateLaw()) where T<:Real
     (typeof(flf) == RForm && p.η ≈ 0) && @warn "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt."
     op! = (du, u, p, t) -> du .= dv_dθ_dt(flf, se, u[1], u[2], p.a, p.b, p.L, p.k, p.σ, p.η, p.vpl, p.f0, p.v0)
@@ -36,9 +55,12 @@ function assemble(p::SingleDofRSFProperties, u0::AbstractArray, tspan::NTuple;
 end
 
 ## elastic okada system
-
+"""
+In-place version of derivative of *velocity* and *state* for a block of fault
+patches. This only supports single *state* variable.
+"""
 @inline function dv_dθ_dt!(::CForm, se::StateEvolutionLaw,
-    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperties, alloc::OkadaGFAllocation
+    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dμ_dθ = p.σ[i] * p.b[i] / θ[i]
@@ -49,7 +71,7 @@ end
 end
 
 @inline function dv_dθ_dt!(::RForm, se::StateEvolutionLaw,
-    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperties, alloc::OkadaGFAllocation
+    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaGFAllocation
     ) where {T<:AbstractVecOrMat}
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
@@ -61,7 +83,7 @@ end
     end
 end
 
-@generated function (∂u∂t)(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperties, alloc::OkadaGFAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
+@generated function (∂u∂t)(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::OkadaGFAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
     ) where {T, N}
     quote
         v = selectdim(u, $(N+1), 1)
@@ -73,17 +95,30 @@ end
         dv_dθ_dt!(flf, se, dv, dθ, v, θ, p, alloc)
     end
 end
+"""
+    assemble(fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2}; flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
 
+Assemble the `ODEProblem` for elastic fault using okada's green's function.
+
+## Arguments
+- `fs::BasicFaultSpace`: fault space containing fault plane mesh and fault type
+- `p::ElasticRSFProperty`: all system properties
+- `u0::AbstractArray`: initial condition
+- `tspan::NTuple`: time span for simulation
+- `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
+- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`][@ref]
+"""
 function assemble(
-    fs::BasicFaultSpace, p::ElasticRSFProperties, u0::AbstractArray, tspan::NTuple{2};
+    fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...
     )
     gf = okada_disp_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
     return assemble(gf, fs, p, u0, tspan; flf=flf, se=se), gf
 end
 
+"""Assemble the homogeneous elastic system, given green's function `gf::AbstractArray` without recomputing."""
 function assemble(
-    gf::AbstractArray, fs::BasicFaultSpace, p::ElasticRSFProperties, u0::AbstractArray, tspan::NTuple{2};
+    gf::AbstractArray, fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
     alloc = gen_alloc(fs.mesh)

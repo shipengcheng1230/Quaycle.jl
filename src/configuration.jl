@@ -1,5 +1,6 @@
 ## Global Performace Settings
 
+"""Global settings."""
 parameters = Dict(
     "FFT" => Dict(
         # threads for fft

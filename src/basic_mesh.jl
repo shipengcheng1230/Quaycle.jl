@@ -6,6 +6,10 @@ abstract type AbstractMesh{dim} end
 abstract type BasicMesh{dim} <: AbstractMesh{dim} end
 abstract type TopCenterPlaneMesh{dim} <: BasicMesh{dim} end
 
+"""
+Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
+at y-z plane, started from (0, 0, 0) and extended into negative half space.
+"""
 struct LineTopCenterMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} <: TopCenterPlaneMesh{1}
     ξ::T # along downdip
     Δξ::U
@@ -18,6 +22,11 @@ struct LineTopCenterMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVect
     dip::U # fault dipping angle
 end
 
+"""
+Generate a uniform rectangular mesh in accordance with [`dc3d`](@ref) usage, i.e the rectangular sits
+parallel to x-axis, top edge starts from z = 0 and centered at x = 0.
+The geometry extends into negative half space and rotate around the pivot of (y=0, z=0).
+"""
 struct RectTopCenterMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <: TopCenterPlaneMesh{2}
     x::T # along strike
     Δx::U
@@ -33,11 +42,33 @@ struct RectTopCenterMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray
     dip::U # fault dipping angle
 end
 
+"""
+    gen_mesh(::Val{:topcenter}, ξ::T, Δξ::T, dip::T)
+
+Generate [`LineTopCenterMesh`](@ref)
+
+## Arguments
+- `ξ`: downdip length
+- `Δξ`: downdip interval
+- `dip`: dipping angle
+"""
 function gen_mesh(::Val{:topcenter}, ξ::T, Δξ::T, dip::T) where T
     ξ, nξ, aξ, y, z = mesh_downdip(ξ, Δξ, dip)
     return LineTopCenterMesh(ξ, Δξ, nξ, aξ, zero(T), y, z, zero(T), dip)
 end
 
+"""
+    gen_mesh(::Val{:topcenter}, x::T, ξ::T, Δx::T, Δξ::T, dip::T)
+
+Generate [`RectTopCenterMesh`](@ref)
+
+## Arguments
+- `x`: along strike length
+- `ξ`: downdip length
+- `Δx`: along strike interval
+- `Δξ`: downdip interval
+- `dip`: dipping angle
+"""
 function gen_mesh(::Val{:topcenter}, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where T
     ξ, nξ, aξ, y, z = mesh_downdip(ξ, Δξ, dip)
     x, nx, ax = mesh_strike(x, Δx)

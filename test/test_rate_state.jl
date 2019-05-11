@@ -2,7 +2,7 @@ using Test
 using Sundials
 
 @testset "without damping" begin
-    mp = SingleDofRSFProperties(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
+    mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 100.,); se=DieterichStateLaw(), flf=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=5.0)
     μ = friction(CForm(), sol.u, mp)
@@ -17,7 +17,7 @@ using Sundials
 end
 
 @testset "with damping" begin
-    mp = SingleDofRSFProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
+    mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
     μ = friction(CForm(), sol.u, mp)
@@ -37,7 +37,7 @@ end
     cb = ContinuousCallback(condition, affect!, nothing, save_positions=(false, false))
 
     @testset "Ruina" begin
-        mp = SingleDofRSFProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
         prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=RuinaStateLaw(), flf=CForm())
         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
         μ = friction(CForm(), sol.u, mp)
@@ -56,7 +56,7 @@ end
     end
 
     @testset "PRZ" begin
-        mp = SingleDofRSFProperties(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
         prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=PrzStateLaw(), flf=CForm())
         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
         μ = friction(CForm(), sol.u, mp)
@@ -76,7 +76,7 @@ end
 end
 
 @testset "variational form" begin
-    mp = SingleDofRSFProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
+    mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=RForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
     μ = friction(CForm(), sol.u, mp)
@@ -91,6 +91,6 @@ end
 end
 
 @testset "info display" begin
-    mp = SingleDofRSFProperties(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
+    mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     @test_logs (:warn, "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt.") assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=RForm())
 end

@@ -45,7 +45,7 @@ b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
 σmax = 500.
 σ = [min(σmax, 15. + 180. * z) for z in -fa.mesh.ξ]
 σ = Matrix(repeat(σ, 1, fa.mesh.nx)')
-prop = ElasticRSFProperties(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
+prop = ElasticRSFProperty(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
 nothing
 
 # Make sure our profile match our expectation:

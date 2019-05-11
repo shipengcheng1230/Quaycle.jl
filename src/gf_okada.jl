@@ -4,12 +4,14 @@ export okada_disp_gf_tensor, gen_alloc
 ## okada
 @gen_shared_chunk_call okada_disp_gf_tensor
 
+"Okada green's function in 1-D elastic fault in [`LineTopCenterMesh`](@ref)."
 function okada_disp_gf_tensor(mesh::LineTopCenterMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
     okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
     return sdata(st)
 end
 
+"Okada green's function in 2-D elastic fault in [`RectTopCenterMesh`](@ref). Translational symmetry is considered."
 function okada_disp_gf_tensor(mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
     okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
@@ -57,6 +59,11 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray,
     end
 end
 
+"""
+Periodic summation of green's function.
+- `lrept` represents jumping periodic block for simulating locked region at along-strike edge.
+- `nrept` represents number of blocks to be summed.
+"""
 function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
     nrept::Integer, lrept::T) where {T<:Real}
     fill!(u, zero(T))
@@ -83,12 +90,14 @@ end
 ##
 abstract type OkadaGFAllocation{dim} <: AbstractAllocation{dim} end
 
+"Allocation for computing stress rate in 1-D elastic fault."
 struct OkadaGFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaGFAllocation{1}
     dims::Dims{1}
     dτ_dt::T # stress rate
     relv::T # relative velocity
 end
 
+"Allocation for computing stress rate in 2-D elastic fault."
 struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: OkadaGFAllocation{2}
     dims::Dims{2}
     dτ_dt::T # stress rate of interest
@@ -101,8 +110,11 @@ end
 
 gen_alloc(mesh::LineTopCenterMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
 gen_alloc(mesh::RectTopCenterMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
+
+"Generate 1-D computation allocation for computing stress rate."
 gen_alloc(nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)
 
+"Generate 2-D computation allocation for computing stress rate."
 function gen_alloc(nx::I, nξ::I; T=Float64) where {I <: Integer}
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
@@ -117,6 +129,7 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where {I <: Integer}
         p1)
 end
 
+"Stress rate in 1-D elastic plane."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::OkadaGFAllocMatrix, vpl::T, v::AbstractVector) where T<:Number
     @fastmath @threads for i = 1: alloc.dims[1]
         @inbounds alloc.relv[i] = vpl - v[i]
@@ -124,6 +137,7 @@ end
     mul!(alloc.dτ_dt, gf, alloc.relv)
 end
 
+"Stress rate in 2-D elastic plane. Using FFT to convolving translational symmetric tensor."
 @inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::OkadaGFAllocFFTConv, vpl::U, v::AbstractMatrix) where {T<:Complex, U<:Number}
     @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]

@@ -1,5 +1,16 @@
 export @h5savecallback
 
+"""
+    @h5savecallback(filename, tend, nsteps, usize, T)
+
+Construct a `FunctionCallingCallback` for incrementally stored output into HDF5 file.
+
+## Arguments
+- `filename`: file name to be stored
+- `tend`: end time of simulation
+- `nsteps`: after `nsteps` steps, a saving operation is performed otherwise caching them
+- `T`: type of stored data
+"""
 macro h5savecallback(filename, tend, nsteps, usize, T)
     callback = gensym(:callback)
     nd = eval(:(length($(usize))))
