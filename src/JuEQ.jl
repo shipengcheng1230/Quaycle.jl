@@ -16,12 +16,12 @@ using LinearAlgebra
 using SharedArrays
 using ProgressMeter
 
-include("config.jl")
-include("properties.jl")
-include("rsf.jl")
-include("mesh.jl")
+include("configuration.jl")
+include("property.jl")
+include("rate_state.jl")
+include("basic_mesh.jl")
 include("fault.jl")
-include("greensfunction.jl")
+include("gf.jl")
 include("assemble.jl")
 
 include("tools/maxvelocity.jl")

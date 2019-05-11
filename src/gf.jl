@@ -27,7 +27,7 @@ end
 heaviside(x::T) where T = x ≤ zero(T) ? zero(T) : one(T)
 
 ## kernel function
-const KERNELDIR = joinpath(@__DIR__, "gfkernels")
+const KERNELDIR = joinpath(@__DIR__, "gf")
 foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR)))
 
 ## concrete greens function
