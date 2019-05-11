@@ -33,6 +33,16 @@ function __init__()
         include("tools/h5savecallback.jl")
         include("tools/h5saveprop.jl")
     end
+
+    @require GmshTools="82e2f556-b1bd-5f1a-9576-f93c0da5f0ee" begin
+        using .GmshTools
+        include("tools/gmshtools.jl")
+    end
+
+    @require PyPlot="d330b81b-6aea-500a-939a-2ce795aea3ee" begin
+        using .PyPlot
+        include("tools/pyplottools.jl")
+    end
 end
 
 end # module
