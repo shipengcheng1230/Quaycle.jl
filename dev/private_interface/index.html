@@ -487,8 +487,79 @@
 <h1 id="private-interface">Private Interface<a class="headerlink" href="#private-interface" title="Permanent link">&para;</a></h1>
 <p><a id='Index-1'></a></p>
 <h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="./#JuEQ.parameters"><code>JuEQ.parameters</code></a></li>
+<li><a href="./#JuEQ.BasicFaultSpace"><code>JuEQ.BasicFaultSpace</code></a></li>
+<li><a href="./#JuEQ.LineTopCenterMesh"><code>JuEQ.LineTopCenterMesh</code></a></li>
+<li><a href="./#JuEQ.OkadaGFAllocFFTConv"><code>JuEQ.OkadaGFAllocFFTConv</code></a></li>
+<li><a href="./#JuEQ.OkadaGFAllocMatrix"><code>JuEQ.OkadaGFAllocMatrix</code></a></li>
+<li><a href="./#JuEQ.RectTopCenterMesh"><code>JuEQ.RectTopCenterMesh</code></a></li>
+<li><a href="./#JuEQ.StateEvolutionLaw"><code>JuEQ.StateEvolutionLaw</code></a></li>
+<li><a href="./#JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T&lt;:Number"><code>JuEQ.dv_dt</code></a></li>
+<li><a href="./#JuEQ.dv_dθ_dt-Union{Tuple{SE}, Tuple{T}, Tuple{CForm,SE,T,T,T,T,T,T,T,T,T,Vararg{T,N} where N}} where SE&lt;:JuEQ.StateEvolutionLaw where T&lt;:Number"><code>JuEQ.dv_dθ_dt</code></a></li>
+<li><a href="./#JuEQ.dv_dθ_dt!-Union{Tuple{T}, Tuple{CForm,StateEvolutionLaw,T,T,T,T,ElasticRSFProperty,OkadaGFAllocation}} where T&lt;:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T)"><code>JuEQ.dv_dθ_dt!</code></a></li>
+<li><a href="./#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T&lt;:Number"><code>JuEQ.dτ_dt</code></a></li>
+<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
+<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},OkadaGFAllocMatrix,T,AbstractArray{T,1} where T}} where T&lt;:Number"><code>JuEQ.dτ_dt!</code></a></li>
+<li><a href="./#JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T&lt;:Real"><code>JuEQ.okada_gf_periodic_bc!</code></a></li>
+<li><a href="./#JuEQ.@gen_shared_chunk_call-Tuple{Symbol}"><code>JuEQ.@gen_shared_chunk_call</code></a></li>
+</ul>
 <p><a id='Interfaces-1'></a></p>
 <h2 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h2>
+<p><a id='JuEQ.BasicFaultSpace' href='#JuEQ.BasicFaultSpace'>#</a>
+<strong><code>JuEQ.BasicFaultSpace</code></strong> &mdash; <em>Type</em>.</p>
+<p>Basic fault space encapsulating mesh and fault type</p>
+<p><a id='JuEQ.LineTopCenterMesh' href='#JuEQ.LineTopCenterMesh'>#</a>
+<strong><code>JuEQ.LineTopCenterMesh</code></strong> &mdash; <em>Type</em>.</p>
+<p>Generate a uniform line mesh in accordance with <a href="../public_interface/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> usage, i.e the line sits at y-z plane, started from (0, 0, 0) and extended into negative half space.</p>
+<p><a id='JuEQ.OkadaGFAllocFFTConv' href='#JuEQ.OkadaGFAllocFFTConv'>#</a>
+<strong><code>JuEQ.OkadaGFAllocFFTConv</code></strong> &mdash; <em>Type</em>.</p>
+<p>Allocation for computing stress rate in 2-D elastic fault.</p>
+<p><a id='JuEQ.OkadaGFAllocMatrix' href='#JuEQ.OkadaGFAllocMatrix'>#</a>
+<strong><code>JuEQ.OkadaGFAllocMatrix</code></strong> &mdash; <em>Type</em>.</p>
+<p>Allocation for computing stress rate in 1-D elastic fault.</p>
+<p><a id='JuEQ.RectTopCenterMesh' href='#JuEQ.RectTopCenterMesh'>#</a>
+<strong><code>JuEQ.RectTopCenterMesh</code></strong> &mdash; <em>Type</em>.</p>
+<p>Generate a uniform rectangular mesh in accordance with <a href="../public_interface/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> usage, i.e the rectangular sits parallel to x-axis, top edge starts from z = 0 and centered at x = 0. The geometry extends into negative half space and rotate around the pivot of (y=0, z=0).</p>
+<p><a id='JuEQ.StateEvolutionLaw' href='#JuEQ.StateEvolutionLaw'>#</a>
+<strong><code>JuEQ.StateEvolutionLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p>Currently support:</p>
+<ul>
+<li><a href="../public_interface/#JuEQ.DieterichStateLaw"><code>DieterichStateLaw</code></a></li>
+<li><a href="../public_interface/#JuEQ.RuinaStateLaw"><code>RuinaStateLaw</code></a></li>
+<li><a href="../public_interface/#JuEQ.PrzStateLaw"><code>PrzStateLaw</code></a></li>
+</ul>
+<p><a id='JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T<:Number' href='#JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T<:Number'>#</a>
+<strong><code>JuEQ.dv_dt</code></strong> &mdash; <em>Method</em>.</p>
+<p>Derivative of velocity in quai-dynamic rate-and-state governing equation.</p>
+<p><a id='JuEQ.dv_dθ_dt!-Union{Tuple{T}, Tuple{CForm,StateEvolutionLaw,T,T,T,T,ElasticRSFProperty,OkadaGFAllocation}} where T<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T)' href='#JuEQ.dv_dθ_dt!-Union{Tuple{T}, Tuple{CForm,StateEvolutionLaw,T,T,T,T,ElasticRSFProperty,OkadaGFAllocation}} where T<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T)'>#</a>
+<strong><code>JuEQ.dv_dθ_dt!</code></strong> &mdash; <em>Method</em>.</p>
+<p>In-place version of derivative of <em>velocity</em> and <em>state</em> for a block of fault patches. This only supports single <em>state</em> variable.</p>
+<p><a id='JuEQ.dv_dθ_dt-Union{Tuple{SE}, Tuple{T}, Tuple{CForm,SE,T,T,T,T,T,T,T,T,T,Vararg{T,N} where N}} where SE<:JuEQ.StateEvolutionLaw where T<:Number' href='#JuEQ.dv_dθ_dt-Union{Tuple{SE}, Tuple{T}, Tuple{CForm,SE,T,T,T,T,T,T,T,T,T,Vararg{T,N} where N}} where SE<:JuEQ.StateEvolutionLaw where T<:Number'>#</a>
+<strong><code>JuEQ.dv_dθ_dt</code></strong> &mdash; <em>Method</em>.</p>
+<p>Out-place version of derivative of <em>velocity</em> (or you may call it slip rate) and <em>state</em> (the <em>state</em> in rate-and-state friction) for single degree of freedom system. This for now only support single <em>state</em> variable, which is most-widely used.</p>
+<p><a id='JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},OkadaGFAllocMatrix,T,AbstractArray{T,1} where T}} where T<:Number' href='#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},OkadaGFAllocMatrix,T,AbstractArray{T,1} where T}} where T<:Number'>#</a>
+<strong><code>JuEQ.dτ_dt!</code></strong> &mdash; <em>Method</em>.</p>
+<p>Stress rate in 1-D elastic plane.</p>
+<p><a id='JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U<:Number where T<:Complex' href='#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U<:Number where T<:Complex'>#</a>
+<strong><code>JuEQ.dτ_dt!</code></strong> &mdash; <em>Method</em>.</p>
+<p>Stress rate in 2-D elastic plane. Using FFT to convolving translational symmetric tensor.</p>
+<p><a id='JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T<:Number' href='#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T<:Number'>#</a>
+<strong><code>JuEQ.dτ_dt</code></strong> &mdash; <em>Method</em>.</p>
+<p>Just Hook's law.</p>
+<p><a id='JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Real' href='#JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Real'>#</a>
+<strong><code>JuEQ.okada_gf_periodic_bc!</code></strong> &mdash; <em>Method</em>.</p>
+<p>Periodic summation of green's function.</p>
+<ul>
+<li><code>lrept</code> represents jumping periodic block for simulating locked region at along-strike edge.</li>
+<li><code>nrept</code> represents number of blocks to be summed.</li>
+</ul>
+<p><a id='JuEQ.parameters' href='#JuEQ.parameters'>#</a>
+<strong><code>JuEQ.parameters</code></strong> &mdash; <em>Constant</em>.</p>
+<p>Global settings.</p>
+<p><a id='JuEQ.@gen_shared_chunk_call-Tuple{Symbol}' href='#JuEQ.@gen_shared_chunk_call-Tuple{Symbol}'>#</a>
+<strong><code>JuEQ.@gen_shared_chunk_call</code></strong> &mdash; <em>Macro</em>.</p>
+<p>A general pattern parallel SharedArray computation. See <a href="https://docs.julialang.org/en/v1/manual/parallel-computing/#man-shared-arrays-1">here</a> for an example.</p>
                 
                   
                 

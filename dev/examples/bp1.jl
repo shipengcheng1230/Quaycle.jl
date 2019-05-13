@@ -53,7 +53,7 @@ a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h 
 b = b0 .* ones(fa.mesh.nξ)
 L = L0 .* ones(fa.mesh.nξ)
 σ = σ0 .* ones(fa.mesh.nξ)
-prop = ElasticRSFProperties(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
+prop = ElasticRSFProperty(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
 nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.

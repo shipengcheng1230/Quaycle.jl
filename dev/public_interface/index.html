@@ -488,27 +488,121 @@
 <p><a id='Index-1'></a></p>
 <h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
 <ul>
+<li><a href="./#JuEQ.CForm"><code>JuEQ.CForm</code></a></li>
+<li><a href="./#JuEQ.DIPPING"><code>JuEQ.DIPPING</code></a></li>
 <li><a href="./#JuEQ.DieterichStateLaw"><code>JuEQ.DieterichStateLaw</code></a></li>
+<li><a href="./#JuEQ.ElasticRSFProperty"><code>JuEQ.ElasticRSFProperty</code></a></li>
 <li><a href="./#JuEQ.PrzStateLaw"><code>JuEQ.PrzStateLaw</code></a></li>
+<li><a href="./#JuEQ.RForm"><code>JuEQ.RForm</code></a></li>
 <li><a href="./#JuEQ.RuinaStateLaw"><code>JuEQ.RuinaStateLaw</code></a></li>
+<li><a href="./#JuEQ.STRIKING"><code>JuEQ.STRIKING</code></a></li>
+<li><a href="./#JuEQ.SingleDofRSFProperty"><code>JuEQ.SingleDofRSFProperty</code></a></li>
+<li><a href="./#JuEQ.assemble-Tuple{JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}"><code>JuEQ.assemble</code></a></li>
+<li><a href="./#JuEQ.assemble-Tuple{AbstractArray,JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}"><code>JuEQ.assemble</code></a></li>
+<li><a href="./#JuEQ.assemble-Union{Tuple{T}, Tuple{SingleDofRSFProperty,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where T&lt;:Real"><code>JuEQ.assemble</code></a></li>
 <li><a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>JuEQ.dc3d</code></a></li>
+<li><a href="./#JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T,T,T}} where FT&lt;:JuEQ.PlaneFault where T&lt;:Real"><code>JuEQ.fault</code></a></li>
+<li><a href="./#JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T}} where FT&lt;:JuEQ.PlaneFault where T&lt;:Real"><code>JuEQ.fault</code></a></li>
 <li><a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>JuEQ.friction</code></a></li>
+<li><a href="./#JuEQ.gen_alloc-Union{Tuple{I}, Tuple{I,I}} where I&lt;:Integer"><code>JuEQ.gen_alloc</code></a></li>
+<li><a href="./#JuEQ.gen_alloc-Tuple{Integer}"><code>JuEQ.gen_alloc</code></a></li>
+<li><a href="./#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T,T,T}} where T"><code>JuEQ.gen_mesh</code></a></li>
+<li><a href="./#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T}} where T"><code>JuEQ.gen_mesh</code></a></li>
 <li><a href="./#JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}"><code>JuEQ.max_velocity</code></a></li>
 <li><a href="./#JuEQ.mmapsave-Tuple{IOStream,IOStream}"><code>JuEQ.mmapsave</code></a></li>
-<li><a href="./#JuEQ.sbarbot_disp_quad8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35&lt;:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R"><code>JuEQ.sbarbot_disp_quad8!</code></a></li>
+<li><a href="./#JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{LineTopCenterMesh,T,T,PlaneFault}} where T"><code>JuEQ.okada_disp_gf_tensor</code></a></li>
+<li><a href="./#JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{RectTopCenterMesh,T,T,PlaneFault}} where T"><code>JuEQ.okada_disp_gf_tensor</code></a></li>
+<li><a href="./#JuEQ.sbarbot_disp_hex8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35&lt;:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R"><code>JuEQ.sbarbot_disp_hex8!</code></a></li>
 <li><a href="./#JuEQ.sbarbot_disp_tet4!-Union{Tuple{W}, Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{W,Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R}} where W where Q where U where R"><code>JuEQ.sbarbot_disp_tet4!</code></a></li>
 </ul>
 <p><a id='Interfaces-1'></a></p>
 <h2 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h2>
+<p><a id='JuEQ.CForm' href='#JuEQ.CForm'>#</a>
+<strong><code>JuEQ.CForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Conventional form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
+<p><a id='JuEQ.DIPPING' href='#JuEQ.DIPPING'>#</a>
+<strong><code>JuEQ.DIPPING</code></strong> &mdash; <em>Type</em>.</p>
+<p>Dipping, indicate dislocation occurs at y-z plane in <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> use.</p>
 <p><a id='JuEQ.DieterichStateLaw' href='#JuEQ.DieterichStateLaw'>#</a>
 <strong><code>JuEQ.DieterichStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <p>$\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}$</p>
+<p><a id='JuEQ.ElasticRSFProperty' href='#JuEQ.ElasticRSFProperty'>#</a>
+<strong><code>JuEQ.ElasticRSFProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System property for multiple fault patches under rate-state friction.</p>
+<ul>
+<li><code>a</code>: contrib from velocity</li>
+<li><code>b</code>: contrib from state</li>
+<li><code>L</code>: critical distance</li>
+<li><code>σ</code>: effective normal stress</li>
+<li><code>λ</code>: Lamé first constants</li>
+<li><code>μ</code>: Lamé second constants</li>
+<li><code>η</code>: radiation damping</li>
+<li><code>vpl</code>: plate rate</li>
+<li><code>f0</code> = 0.6: ref. frictional coeff</li>
+<li><code>v0</code> = 1e-6: ref. velocity</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/80516ca20297a67b996caa08c38786332379b6a5/base/#L0-L13' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.PrzStateLaw' href='#JuEQ.PrzStateLaw'>#</a>
 <strong><code>JuEQ.PrzStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <p>$\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - (\frac{V θ}{2L})^2$</p>
+<p><a id='JuEQ.RForm' href='#JuEQ.RForm'>#</a>
+<strong><code>JuEQ.RForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Regularized form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
 <p><a id='JuEQ.RuinaStateLaw' href='#JuEQ.RuinaStateLaw'>#</a>
 <strong><code>JuEQ.RuinaStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <p>$\frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\frac{V θ}{L}}$</p>
+<p><a id='JuEQ.STRIKING' href='#JuEQ.STRIKING'>#</a>
+<strong><code>JuEQ.STRIKING</code></strong> &mdash; <em>Type</em>.</p>
+<p>Striking, indicate dislocation occurs at x-direction in <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> use.</p>
+<p><a id='JuEQ.SingleDofRSFProperty' href='#JuEQ.SingleDofRSFProperty'>#</a>
+<strong><code>JuEQ.SingleDofRSFProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System property for single degree of freedom under rate-state friction.</p>
+<ul>
+<li><code>a</code>: contrib from velocity</li>
+<li><code>b</code>: contrib from state</li>
+<li><code>L</code>: critical distance</li>
+<li><code>k</code>: spring stiffness</li>
+<li><code>σ</code>: effective normal stress</li>
+<li><code>η</code>: radiation damping</li>
+<li><code>vpl</code>: plate rate</li>
+<li><code>f0</code> = 0.6: ref. frictional coeff</li>
+<li><code>v0</code> = 1e-6: ref. velocity</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/80516ca20297a67b996caa08c38786332379b6a5/base/#L0-L12' class='documenter-source'>source</a><br></p>
+<p><a id='JuEQ.assemble-Tuple{AbstractArray,JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}' href='#JuEQ.assemble-Tuple{AbstractArray,JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}'>#</a>
+<strong><code>JuEQ.assemble</code></strong> &mdash; <em>Method</em>.</p>
+<p>Assemble the homogeneous elastic system, given green's function <code>gf::AbstractArray</code> without recomputing.</p>
+<p><a id='JuEQ.assemble-Tuple{JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}' href='#JuEQ.assemble-Tuple{JuEQ.BasicFaultSpace,ElasticRSFProperty,AbstractArray,Tuple{T,T} where T}'>#</a>
+<strong><code>JuEQ.assemble</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">assemble</span><span class="p">(</span><span class="n">fs</span><span class="o">::</span><span class="n">BasicFaultSpace</span><span class="p">,</span> <span class="n">p</span><span class="o">::</span><span class="n">ElasticRSFProperty</span><span class="p">,</span> <span class="n">u0</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span> <span class="n">tspan</span><span class="o">::</span><span class="kt">NTuple</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span> <span class="n">flf</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="o">=</span><span class="n">RForm</span><span class="p">(),</span> <span class="n">se</span><span class="o">::</span><span class="n">StateEvolutionLaw</span><span class="o">=</span><span class="n">DieterichStateLaw</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Assemble the <code>ODEProblem</code> for elastic fault using okada's green's function.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>fs::BasicFaultSpace</code>: fault space containing fault plane mesh and fault type</li>
+<li><code>p::ElasticRSFProperty</code>: all system properties</li>
+<li><code>u0::AbstractArray</code>: initial condition</li>
+<li><code>tspan::NTuple</code>: time span for simulation</li>
+<li><code>flf::FrictionLawForm</code>: form of friction law, either <a href="./#JuEQ.CForm"><code>CForm</code></a> or <a href="./#JuEQ.RForm"><code>RForm</code></a></li>
+<li><code>se::StateEvolutionLaw</code>: state evolutional law, see [<code>StateEvolutionLaw</code>][@ref]</li>
+</ul>
+<p><a id='JuEQ.assemble-Union{Tuple{T}, Tuple{SingleDofRSFProperty,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where T<:Real' href='#JuEQ.assemble-Union{Tuple{T}, Tuple{SingleDofRSFProperty,AbstractArray,Tuple{Vararg{T,N}} where T where N}} where T<:Real'>#</a>
+<strong><code>JuEQ.assemble</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">assemble</span><span class="p">(</span><span class="n">p</span><span class="o">::</span><span class="n">SingleDofRSFProperty</span><span class="p">,</span> <span class="n">u0</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span> <span class="n">tspan</span><span class="o">::</span><span class="kt">NTuple</span><span class="p">;</span> <span class="n">flf</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="o">=</span><span class="n">CForm</span><span class="p">(),</span> <span class="n">se</span><span class="o">::</span><span class="n">StateEvolutionLaw</span><span class="o">=</span><span class="n">DieterichStateLaw</span><span class="p">())</span>
+</pre></div>
+</td></tr></table>
+
+<p>Assemble the <code>ODEProblem</code> for single degree of freedom system.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>p::SingleDofRSFProperty</code>: all system properties</li>
+<li><code>u0::AbstractArray</code>: initial condition</li>
+<li><code>tspan::NTuple</code>: time span for simulation</li>
+<li><code>flf::FrictionLawForm</code>: form of friction law, either <a href="./#JuEQ.CForm"><code>CForm</code></a> or <a href="./#JuEQ.RForm"><code>RForm</code></a></li>
+<li><code>se::StateEvolutionLaw</code>: state evolutional law, see [<code>StateEvolutionLaw</code>][@ref]</li>
+</ul>
 <p><a id='JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number' href='#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number'>#</a>
 <strong><code>JuEQ.dc3d</code></strong> &mdash; <em>Method</em>.</p>
 <p>Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace. See <a href="http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html">dc3d</a> for details.</p>
@@ -740,6 +834,12 @@
 </pre></div>
 </td></tr></table>
 
+<p><a id='JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T,T,T}} where FT<:JuEQ.PlaneFault where T<:Real' href='#JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T,T,T}} where FT<:JuEQ.PlaneFault where T<:Real'>#</a>
+<strong><code>JuEQ.fault</code></strong> &mdash; <em>Method</em>.</p>
+<p>Generate fault space encapsulating basic topcenter mesh <a href="../private_interface/#JuEQ.RectTopCenterMesh"><code>RectTopCenterMesh</code></a> and fault type <code>ft</code>.</p>
+<p><a id='JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T}} where FT<:JuEQ.PlaneFault where T<:Real' href='#JuEQ.fault-Union{Tuple{FT}, Tuple{T}, Tuple{Val{:topcenter},FT,T,T,T}} where FT<:JuEQ.PlaneFault where T<:Real'>#</a>
+<strong><code>JuEQ.fault</code></strong> &mdash; <em>Method</em>.</p>
+<p>Generate fault space encapsulating basic topcenter mesh <a href="../private_interface/#JuEQ.LineTopCenterMesh"><code>LineTopCenterMesh</code></a> and fault type <code>ft</code>.</p>
 <p><a id='JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T' href='#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T'>#</a>
 <strong><code>JuEQ.friction</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">friction</span><span class="p">(</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="p">,</span> <span class="n">v</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">θ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">L</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">a</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">b</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">f0</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">v0</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="o">&lt;:</span><span class="kt">Number</span><span class="p">}</span>
@@ -763,6 +863,40 @@ f(V, θ) = f_0 + a \ln{\frac{V}{V_0}} + b \ln{\left(\frac{V_0 θ}{L}\right)}
 f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 θ/L\right)}}{a}}\right]}
 </script>
 </p>
+<p><a id='JuEQ.gen_alloc-Tuple{Integer}' href='#JuEQ.gen_alloc-Tuple{Integer}'>#</a>
+<strong><code>JuEQ.gen_alloc</code></strong> &mdash; <em>Method</em>.</p>
+<p>Generate 1-D computation allocation for computing stress rate.</p>
+<p><a id='JuEQ.gen_alloc-Union{Tuple{I}, Tuple{I,I}} where I<:Integer' href='#JuEQ.gen_alloc-Union{Tuple{I}, Tuple{I,I}} where I<:Integer'>#</a>
+<strong><code>JuEQ.gen_alloc</code></strong> &mdash; <em>Method</em>.</p>
+<p>Generate 2-D computation allocation for computing stress rate.</p>
+<p><a id='JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T,T,T}} where T' href='#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T,T,T}} where T'>#</a>
+<strong><code>JuEQ.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">topcenter</span><span class="p">},</span> <span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δx</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Generate <a href="../private_interface/#JuEQ.RectTopCenterMesh"><code>RectTopCenterMesh</code></a></p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>x</code>: along strike length</li>
+<li><code>ξ</code>: downdip length</li>
+<li><code>Δx</code>: along strike interval</li>
+<li><code>Δξ</code>: downdip interval</li>
+<li><code>dip</code>: dipping angle</li>
+</ul>
+<p><a id='JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T}} where T' href='#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:topcenter},T,T,T}} where T'>#</a>
+<strong><code>JuEQ.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">topcenter</span><span class="p">},</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Generate <a href="../private_interface/#JuEQ.LineTopCenterMesh"><code>LineTopCenterMesh</code></a></p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>ξ</code>: downdip length</li>
+<li><code>Δξ</code>: downdip interval</li>
+<li><code>dip</code>: dipping angle</li>
+</ul>
 <p><a id='JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}' href='#JuEQ.max_velocity-Tuple{AbstractArray{T,1} where T,AbstractArray,Function}'>#</a>
 <strong><code>JuEQ.max_velocity</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">max_velocity</span><span class="p">(</span><span class="n">t</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">u</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span> <span class="n">getu</span><span class="o">::</span><span class="kt">Function</span><span class="p">)</span>
@@ -789,8 +923,14 @@ f(V, θ) = a \sinh ^{-1}{\left[\frac{V}{2V_0} \exp{\frac{f_0 + b \ln{\left(V_0 �
 <li><code>iou::IOStream</code>: stream pointing to solution of domain</li>
 </ul>
 <p><strong>Note</strong> It is strongly not recommended to use "skipping" scheme (by defining <code>thrd</code> and <code>dts(a)</code> for each case) when solution is too oscillated.</p>
-<p><a id='JuEQ.sbarbot_disp_quad8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35<:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R' href='#JuEQ.sbarbot_disp_quad8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35<:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R'>#</a>
-<strong><code>JuEQ.sbarbot_disp_quad8!</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{LineTopCenterMesh,T,T,PlaneFault}} where T' href='#JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{LineTopCenterMesh,T,T,PlaneFault}} where T'>#</a>
+<strong><code>JuEQ.okada_disp_gf_tensor</code></strong> &mdash; <em>Method</em>.</p>
+<p>Okada green's function in 1-D elastic fault in <a href="../private_interface/#JuEQ.LineTopCenterMesh"><code>LineTopCenterMesh</code></a>.</p>
+<p><a id='JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{RectTopCenterMesh,T,T,PlaneFault}} where T' href='#JuEQ.okada_disp_gf_tensor-Union{Tuple{T}, Tuple{RectTopCenterMesh,T,T,PlaneFault}} where T'>#</a>
+<strong><code>JuEQ.okada_disp_gf_tensor</code></strong> &mdash; <em>Method</em>.</p>
+<p>Okada green's function in 2-D elastic fault in <a href="../private_interface/#JuEQ.RectTopCenterMesh"><code>RectTopCenterMesh</code></a>. Translational symmetry is considered.</p>
+<p><a id='JuEQ.sbarbot_disp_hex8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35<:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R' href='#JuEQ.sbarbot_disp_hex8!-Union{Tuple{R}, Tuple{AbstractArray{#s35,1} where #s35<:R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R}} where R'>#</a>
+<strong><code>JuEQ.sbarbot_disp_hex8!</code></strong> &mdash; <em>Method</em>.</p>
 <p><strong>copyright:</strong></p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
  2
