@@ -3,8 +3,8 @@
 export gen_mesh
 
 abstract type AbstractMesh{dim} end
-abstract type BasicMesh{dim} <: AbstractMesh{dim} end
-abstract type TopCenterPlaneMesh{dim} <: BasicMesh{dim} end
+abstract type BasicTransfiniteMesh{dim} <: AbstractMesh{dim} end
+abstract type TopCenterPlaneMesh{dim} <: BasicTransfiniteMesh{dim} end
 
 """
 Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
