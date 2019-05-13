@@ -17,8 +17,8 @@ macro h5savecallback(filename, tend, nsteps, usize, T)
     esc(quote
         let count = 1
             global $(callback)
-            accu = Array{$T}(undef, $(usize)..., $(nsteps))
-            accusize = tuple($(usize)..., $(nsteps))
+            accu = Array{$T}(undef, $(usize.args...), $(nsteps))
+            accusize = tuple($(usize.args...), $(nsteps))
             acct = Vector{$T}(undef, $(nsteps))
             acctsize = ($(nsteps),)
             total = 0
@@ -35,7 +35,7 @@ macro h5savecallback(filename, tend, nsteps, usize, T)
                     h5open($filename, "r+") do f
                         d = d_open(f, "u")
                         d[$((:(:) for _ in 1: nd)...), total-rest+1: total+1] = selectdim(accu, $(nd+1), 1: rest+1)
-                        set_dims!(d, ($(usize)..., total+1))
+                        set_dims!(d, ($(usize.args...), total+1))
 
                         ht = d_open(f, "t")
                         ht[total-rest+1: total+1] = selectdim(acct, 1, 1: rest+1)
@@ -45,7 +45,7 @@ macro h5savecallback(filename, tend, nsteps, usize, T)
                     h5open($filename, "r+") do f
                         d = d_open(f, "u")
                         d[$((:(:) for _ in 1: nd)...), total-$(nsteps-1): total] = accu
-                        set_dims!(d, ($(usize)..., total+$(nsteps)))
+                        set_dims!(d, ($(usize.args...), total+$(nsteps)))
 
                         ht = d_open(f, "t")
                         ht[total-$(nsteps-1): total] = acct
