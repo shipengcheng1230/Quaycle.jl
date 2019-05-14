@@ -3,8 +3,6 @@ using GmshTools
 
 # This file currently isn't included in `runtests.jl`
 
-gen_gmsh_mesh(Val(:topcenter), 100.0, 50.0, 13.0, 7.0, 45.0)
-
 @testset "Gmsh Top Center Line" begin
     filename = tempname() * ".msh"
     gen_gmsh_mesh(Val(:topcenter), 100.0, 20.0, 45.0; filename=filename)
