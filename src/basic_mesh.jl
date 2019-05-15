@@ -4,13 +4,13 @@ export gen_mesh
 
 abstract type AbstractMesh{dim} end
 abstract type BasicTransfiniteMesh{dim} <: AbstractMesh{dim} end
-abstract type TopCenterPlaneMesh{dim} <: BasicTransfiniteMesh{dim} end
+abstract type OkadaMesh{dim} <: BasicTransfiniteMesh{dim} end
 
 """
 Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
 at y-z plane, started from (0, 0, 0) and extended into negative half space.
 """
-struct LineTopCenterMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} <: TopCenterPlaneMesh{1}
+struct LineOkadaMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} <: OkadaMesh{1}
     ξ::T # along downdip
     Δξ::U
     nξ::I
@@ -27,7 +27,7 @@ Generate a uniform rectangular mesh in accordance with [`dc3d`](@ref) usage, i.e
 parallel to x-axis, top edge starts from z = 0 and centered at x = 0.
 The geometry extends into negative half space and rotate around the pivot of (y=0, z=0).
 """
-struct RectTopCenterMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <: TopCenterPlaneMesh{2}
+struct RectOkadaMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <: OkadaMesh{2}
     x::T # along strike
     Δx::U
     nx::I
@@ -43,24 +43,24 @@ struct RectTopCenterMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray
 end
 
 """
-    gen_mesh(::Val{:topcenter}, ξ::T, Δξ::T, dip::T)
+    gen_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T)
 
-Generate [`LineTopCenterMesh`](@ref)
+Generate [`LineOkadaMesh`](@ref)
 
 ## Arguments
 - `ξ`: downdip length
 - `Δξ`: downdip interval
 - `dip`: dipping angle
 """
-function gen_mesh(::Val{:topcenter}, ξ::T, Δξ::T, dip::T) where T
+function gen_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T) where T
     ξ, nξ, aξ, y, z = mesh_downdip(ξ, Δξ, dip)
-    return LineTopCenterMesh(ξ, Δξ, nξ, aξ, zero(T), y, z, zero(T), dip)
+    return LineOkadaMesh(ξ, Δξ, nξ, aξ, zero(T), y, z, zero(T), dip)
 end
 
 """
-    gen_mesh(::Val{:topcenter}, x::T, ξ::T, Δx::T, Δξ::T, dip::T)
+    gen_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T)
 
-Generate [`RectTopCenterMesh`](@ref)
+Generate [`RectOkadaMesh`](@ref)
 
 ## Arguments
 - `x`: along strike length
@@ -69,10 +69,10 @@ Generate [`RectTopCenterMesh`](@ref)
 - `Δξ`: downdip interval
 - `dip`: dipping angle
 """
-function gen_mesh(::Val{:topcenter}, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where T
+function gen_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where T
     ξ, nξ, aξ, y, z = mesh_downdip(ξ, Δξ, dip)
     x, nx, ax = mesh_strike(x, Δx)
-    return RectTopCenterMesh(x, Δx, nx, ax, ξ, Δξ, nξ, aξ, y, z, zero(T), dip)
+    return RectOkadaMesh(x, Δx, nx, ax, ξ, Δξ, nξ, aξ, y, z, zero(T), dip)
 end
 
 function mesh_downdip(ξ::T, Δξ::T, dip::T) where T

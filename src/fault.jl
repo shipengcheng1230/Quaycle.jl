@@ -9,34 +9,34 @@ struct DIPPING <: PlaneFault end
 "Striking, indicate dislocation occurs at x-direction in [`dc3d`](@ref) use."
 struct STRIKING <: PlaneFault end
 
-abstract type FaultSpace end
+abstract type AbstractFaultSpace end
 
-"Basic fault space encapsulating mesh and fault type"
-struct BasicFaultSpace{dim, FT, M} <: FaultSpace
+"Okada fault space encapsulating mesh and fault type"
+struct OkadaFaultSpace{dim, FT, M} <: AbstractFaultSpace
     mesh::M
     ft::FT
 
-    function BasicFaultSpace(mesh::M, ft::FT, dim::Integer) where {M<:TopCenterPlaneMesh, FT<:PlaneFault}
+    function OkadaFaultSpace(mesh::M, ft::FT, dim::Integer) where {M<:OkadaMesh, FT<:PlaneFault}
         new{dim, FT, M}(mesh, ft)
     end
 end
 
-BasicFaultSpace(mesh::LineTopCenterMesh, ft::PlaneFault) = BasicFaultSpace(mesh, ft, 1)
-BasicFaultSpace(mesh::RectTopCenterMesh, ft::PlaneFault) = BasicFaultSpace(mesh, ft, 2)
+OkadaFaultSpace(mesh::OkadaMesh{1}, ft::PlaneFault) = OkadaFaultSpace(mesh, ft, 1)
+OkadaFaultSpace(mesh::OkadaMesh{2}, ft::PlaneFault) = OkadaFaultSpace(mesh, ft, 2)
 
-fault(::Val{:topcenter}, ft::FT, mesh::M) where {FT<:PlaneFault, M<:TopCenterPlaneMesh} = BasicFaultSpace(mesh, ft)
+fault(::Val{:Okada}, ft::FT, mesh::M) where {FT<:PlaneFault, M<:OkadaMesh} = OkadaFaultSpace(mesh, ft)
 
-"Generate fault space encapsulating basic topcenter mesh [`LineTopCenterMesh`](@ref) and fault type `ft`."
-function fault(ftype::Val{:topcenter}, ft::FT, ξ::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
+"Generate fault space encapsulating [`LineOkadaMesh`](@ref) and fault type `ft`."
+function fault(ftype::Val{:LineOkada}, ft::FT, ξ::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
     mesh = gen_mesh(ftype, ξ, Δξ, dip)
-    return BasicFaultSpace(mesh, ft)
+    return OkadaFaultSpace(mesh, ft)
 end
 
-"Generate fault space encapsulating basic topcenter mesh [`RectTopCenterMesh`](@ref) and fault type `ft`."
-function fault(ftype::Val{:topcenter}, ft::FT, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
+"Generate fault space encapsulating [`RectOkadaMesh`](@ref) and fault type `ft`."
+function fault(ftype::Val{:RectOkada}, ft::FT, x::T, ξ::T, Δx::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
     mesh = gen_mesh(ftype, x, ξ, Δx, Δξ, dip)
-    return BasicFaultSpace(mesh, ft)
+    return OkadaFaultSpace(mesh, ft)
 end
 
-fault(fty::Val{:topcenter}, ft::STRIKING, ξ::T, Δξ::T) where T = fault(fty, ft, ξ, Δξ, 90*one(T))
-fault(fty::Val{:topcenter}, ft::STRIKING, x::T, ξ::T, Δx::T, Δξ::T) where T = fault(fty, ft, x, ξ, Δx, Δξ, 90*one(T))
+fault(fty::Val{:LineOkada}, ft::STRIKING, ξ::T, Δξ::T) where T = fault(fty, ft, ξ, Δξ, 90*one(T))
+fault(fty::Val{:RectOkada}, ft::STRIKING, x::T, ξ::T, Δx::T, Δξ::T) where T = fault(fty, ft, x, ξ, Δx, Δξ, 90*one(T))

@@ -96,12 +96,12 @@ end
     end
 end
 """
-    assemble(fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2}; flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
+    assemble(fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2}; flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
 
 Assemble the `ODEProblem` for elastic fault using okada's green's function.
 
 ## Arguments
-- `fs::BasicFaultSpace`: fault space containing fault plane mesh and fault type
+- `fs::OkadaFaultSpace`: fault space containing fault plane mesh and fault type
 - `p::ElasticRSFProperty`: all system properties
 - `u0::AbstractArray`: initial condition
 - `tspan::NTuple`: time span for simulation
@@ -109,7 +109,7 @@ Assemble the `ODEProblem` for elastic fault using okada's green's function.
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`][@ref]
 """
 function assemble(
-    fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
+    fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...
     )
     gf = okada_disp_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
@@ -118,7 +118,7 @@ end
 
 """Assemble the homogeneous elastic system, given green's function `gf::AbstractArray` without recomputing."""
 function assemble(
-    gf::AbstractArray, fs::BasicFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
+    gf::AbstractArray, fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
     alloc = gen_alloc(fs.mesh)

@@ -4,15 +4,15 @@ export okada_disp_gf_tensor, gen_alloc
 ## okada
 @gen_shared_chunk_call okada_disp_gf_tensor
 
-"Okada green's function in 1-D elastic fault in [`LineTopCenterMesh`](@ref)."
-function okada_disp_gf_tensor(mesh::LineTopCenterMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
+"Okada green's function in 1-D elastic fault in [`LineOkadaMesh`](@ref)."
+function okada_disp_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
     okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
     return sdata(st)
 end
 
-"Okada green's function in 2-D elastic fault in [`RectTopCenterMesh`](@ref). Translational symmetry is considered."
-function okada_disp_gf_tensor(mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
+"Okada green's function in 2-D elastic fault in [`RectOkadaMesh`](@ref). Translational symmetry is considered."
+function okada_disp_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
     okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
 
@@ -32,7 +32,7 @@ function okada_disp_gf_tensor(mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFa
     fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
-function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineTopCenterMesh, λ::T, μ::T, ft::PlaneFault; ax_ratio::Real=12.5) where T
+function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; ax_ratio::Real=12.5) where T
     ud = unit_dislocation(ft)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
@@ -45,7 +45,7 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray,
     end
 end
 
-function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectTopCenterMesh, λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0) where T
+function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0) where T
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
@@ -108,8 +108,8 @@ struct OkadaGFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}
     pf::P # fft operator
 end
 
-gen_alloc(mesh::LineTopCenterMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
-gen_alloc(mesh::RectTopCenterMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
+gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
+gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
 
 "Generate 1-D computation allocation for computing stress rate."
 gen_alloc(nξ::Integer; T=Float64) = OkadaGFAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 2]...)

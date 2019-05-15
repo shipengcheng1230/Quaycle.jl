@@ -43,7 +43,7 @@ nothing
 # !!! tip
 #     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
 
-fa = fault(Val(:topcenter), STRIKING(), 40.0, Δz)
+fa = fault(Val(:LineOkada), STRIKING(), 40.0, Δz)
 nothing
 
 # Then, provide the material properties w.r.t. our 'fault space'.
