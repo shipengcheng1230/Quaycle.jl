@@ -2,8 +2,8 @@ export @read_prop, @save_prop, save_prop
 
 "Read property stored in HDF5."
 macro read_prop(filename)
-    quote
-        h5open($(esc(filename)), "r") do f
+    esc(quote
+        h5open($(filename), "r") do f
             c = read(f)
             ## only one property
             key = collect(keys(c))[1]
@@ -11,7 +11,7 @@ macro read_prop(filename)
             args = [d[x] for x in fieldnames(Val(Symbol(key)))]
             eval(Expr(:call, Symbol(key), args...))
         end
-    end
+    end)
 end
 
 "Store property in HDF5."
@@ -32,6 +32,7 @@ end
 "Store property in HDF5."
 macro save_prop(filename, p)
     quote
+        # do not `esc` the whole expr here because we need to refer `save_prop` in this package
         save_prop($(esc(filename)), $(esc(p)))
     end
 end

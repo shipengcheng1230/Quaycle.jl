@@ -14,9 +14,11 @@ Construct a `FunctionCallingCallback` for incrementally stored output into HDF5 
 macro h5savecallback(filename, tend, nsteps, usize, T)
     callback = gensym(:callback)
     nd = eval(:(length($(usize))))
-    
-    # `esc` the whole expr might be a bad idea (https://discourse.julialang.org/t/macros-and-modules/5859/2)
-    # but it really easy to write in this case and `macroexpand` returns crystal clear readable code
+
+    # Well, `esc` the whole expr might be a bad idea (https://discourse.julialang.org/t/macros-and-modules/5859/2)
+    # but all the function called here are reexport from "HDF5", "DiffEqCallbacks" and "Base"
+    # so no cross module mess
+    # Besides, the whole `esc` returns crystal clear readable code by `@macroexpand` if you would like to probe.
     esc(quote
         let count = 1
             global $(callback)
