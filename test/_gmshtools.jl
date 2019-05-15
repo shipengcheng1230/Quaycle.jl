@@ -2,7 +2,7 @@ using Test
 using GmshTools
 using LinearAlgebra
 
-## This file currently isn't included in `runtests.jl`
+# This file currently isn't included in `runtests.jl`
 
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
@@ -26,7 +26,7 @@ end
     rm(filename)
 end
 
-@testset "Gmsh Box by Extrude" begin
+@testset "Gmsh Box by Extrude" begin # may fail due to empty mesh, rerun it
     rfzn = ones(Float64, 10)
     rfzh = accumulate((x, y) -> x * y, fill(2.0, size(rfzn))) |> cumsum
     normalize!(rfzh, Inf)
