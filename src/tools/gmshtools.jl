@@ -64,8 +64,21 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
 end
 
 """
+    gen_gmsh_mesh(::Val{:BoxHexByExtrude},
+        llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
+        rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
+        filename::AbstractString="temp.msh") where {T, I}
+
 Gernate a box for [Asthenosphere](https://en.wikipedia.org/wiki/Asthenosphere) using 8-node hexahedron
     elements (via setting transfinite curve).
+
+## Arguments
+- `llx`, `lly`, `llz`: coordinates of low-left corner on the top surface
+- `dx`, `dy`, `dz`: x-, y-, z-extension
+- `nx`, `ny`: number of cells along x-, y-axis
+- `rfx`, `rfy`: refinement coefficients along x-, y-axis using ["Bump"] algorithm, please refer `gmsh.model.geo.mesh.setTransfiniteCurve`
+- `rfzn`: number of cells along z-axis, please refer `numElements` in `gmsh.model.geo.extrude`
+- `rfzh`: accumulated height of cells along z-axis, please refer `heights` in `gmsh.model.geo.extrude`
 """
 function gen_gmsh_mesh(::Val{:BoxHexByExtrude},
     llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
