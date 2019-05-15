@@ -45,7 +45,7 @@ Assemble the `ODEProblem` for single degree of freedom system.
 - `u0::AbstractArray`: initial condition
 - `tspan::NTuple`: time span for simulation
 - `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
-- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`][@ref]
+- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
     flf::FrictionLawForm=CForm(), se::StateEvolutionLaw=DieterichStateLaw()) where T<:Real
@@ -106,7 +106,7 @@ Assemble the `ODEProblem` for elastic fault using okada's green's function.
 - `u0::AbstractArray`: initial condition
 - `tspan::NTuple`: time span for simulation
 - `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
-- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`][@ref]
+- `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(
     fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};

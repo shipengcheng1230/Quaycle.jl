@@ -6,6 +6,9 @@ end
 using Documenter, DocumenterMarkdown, JuEQ
 using Plots # to not capture precompilation output
 
+using HDF5
+using GmshTools
+
 ENV["GKSwstype"] = "100"
 
 include("generate.jl")

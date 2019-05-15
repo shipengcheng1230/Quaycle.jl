@@ -15,3 +15,4 @@ deps/deps.jl
 docs/build/
 docs/site/
 docs/src/examples/generated
+!docs/Manifest.toml
