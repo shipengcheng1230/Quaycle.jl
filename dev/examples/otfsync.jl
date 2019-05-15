@@ -28,7 +28,7 @@ nothing
 
 # First, create a fault space.
 
-fa = fault(Val(:topcenter), STRIKING(), 80., 10., 0.5, 0.5)
+fa = fault(Val(:RectOkada), STRIKING(), 80., 10., 0.5, 0.5)
 nothing
 
 # Next, establish frictional and fault space parameters:
