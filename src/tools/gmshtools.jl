@@ -9,8 +9,8 @@ function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::Abst
         # same as counting length of `range` in `mesh_downdip`
         nξ = ceil(Int, ξ / Δξ)
         @addPoint begin
-            0.0, 0.0, 0.0, 1
-            0.0, y, z, 2
+            0.0, 0.0, 0.0, 0.0, 1
+            0.0, y, z, 0.0, 2
         end
         @addLine begin
             1, 2, 1
@@ -35,10 +35,10 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
         # same as counting length of `range` in `mesh_strike`
         nx = round(Int, x / Δx)
         @addPoint begin
-            -x/2, 0.0, 0.0, 1
-            x/2, 0.0, 0.0, 2
-            x/2, y, z, 3
-            -x/2, y, z, 4
+            -x/2, 0.0, 0.0, 0.0, 1
+            x/2, 0.0, 0.0, 0.0, 2
+            x/2, y, z, 0.0, 3
+            -x/2, y, z, 0.0, 4
         end
         @addLine begin
             # top left -> top right -> bottom right (reverse) -> bottom left (reverse) -> top left
@@ -88,10 +88,10 @@ function gen_gmsh_mesh(::Val{:BoxHexByExtrude},
     @gmsh_do begin
         factory = gmsh.model.geo
         @addPoint begin
-            llx, lly, llz, 1
-            llx + dx, lly, llz, 2
-            llx + dx, lly + dy, llz, 3
-            llx, lly + dy, llz, 4
+            llx, lly, llz, 0.0, 1
+            llx + dx, lly, llz, 0.0, 2
+            llx + dx, lly + dy, llz, 0.0, 3
+            llx, lly + dy, llz, 0.0, 4
         end
         @addLine begin
             1, 2, 1

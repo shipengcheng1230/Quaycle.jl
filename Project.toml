@@ -1,7 +1,7 @@
 name = "JuEQ"
 uuid = "70fec03b-432a-5687-8a7d-e45297f2e4e6"
 authors = ["Pengcheng Shi"]
-version = "0.2.0"
+version = "0.2.2"
 
 [deps]
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
