@@ -15,6 +15,9 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 SharedArrays = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 
+[compat]
+julia = "1"
+
 [extras]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
