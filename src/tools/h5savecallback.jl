@@ -4,6 +4,7 @@ export @h5savecallback
     @h5savecallback(filename, tend, nsteps, usize, T)
 
 Construct a `FunctionCallingCallback` for incrementally stored output into HDF5 file.
+It is suggested to use this macro at top-level scope since it contains `eval`.
 
 ## Arguments
 - `filename`: file name to be stored
