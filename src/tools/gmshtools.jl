@@ -80,7 +80,7 @@ Gernate a box for [Asthenosphere](https://en.wikipedia.org/wiki/Asthenosphere) u
 - `rfzn`: number of cells along z-axis, please refer `numElements` in `gmsh.model.geo.extrude`
 - `rfzh`: accumulated height of cells along z-axis, please refer `heights` in `gmsh.model.geo.extrude`
 """
-function gen_gmsh_mesh(::Val{:BoxHexByExtrude},
+function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
     rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
     filename::AbstractString="temp.msh") where {T, I}
@@ -111,6 +111,9 @@ function gen_gmsh_mesh(::Val{:BoxHexByExtrude},
         factory.extrude(2, 0.0, 0.0, -dz, rfzn, rfzh, true)
         factory.mesh.setRecombine(2, 1)
         factory.synchronize()
+        @addOption begin
+            "Mesh.Algorithm3D", 10
+        end
         gmsh.model.mesh.generate(3)
         gmsh.write(filename)
     end

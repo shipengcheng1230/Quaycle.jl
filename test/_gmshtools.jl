@@ -2,7 +2,7 @@ using Test
 using GmshTools
 using LinearAlgebra
 
-# This file currently isn't included in `runtests.jl`
+# This file currently isn't included in `runtests.jl` but tested locally on MacOS
 
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
@@ -32,7 +32,7 @@ end
     normalize!(rfzh, Inf)
 
     filename = tempname() * ".msh"
-    gen_gmsh_mesh(Val(:BoxHexByExtrude), -100.0, -100.0, 0.0, 200.0, 200.0, 100.0, 10, 10, 1.1, 5.0, rfzn, rfzh; filename=filename)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -100.0, -100.0, 0.0, 200.0, 200.0, 100.0, 10, 10, 1.1, 5.0, rfzn, rfzh; filename=filename)
     el3d = @gmsh_open filename begin
         gmsh.model.mesh.getElements(3)
     end
