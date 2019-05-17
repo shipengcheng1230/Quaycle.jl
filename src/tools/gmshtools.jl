@@ -7,7 +7,7 @@ function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::Abst
         factory = model.geo
         y, z = -ξ * cosd(dip), -ξ * sind(dip)
         # same as counting length of `range` in `mesh_downdip`
-        nξ = ceil(Int, ξ / Δξ)
+        nξ = round(Int, ξ / Δξ)
         @addPoint begin
             0.0, 0.0, 0.0, 0.0, 1
             0.0, y, z, 0.0, 2
