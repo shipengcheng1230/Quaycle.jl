@@ -36,6 +36,7 @@ end
     el3d = @gmsh_open filename begin
         gmsh.model.mesh.getElements(3)
     end
+    isempty(el3d[2]) && @info "Test \"Gmsh Box by Extrude\" skipped due to failure of `extrude`."
     @test el3d[1][1] == 5 # 8-node hexahedron
     @test length(el3d[2][1]) == 10 * 10 * 10
     rm(filename)
