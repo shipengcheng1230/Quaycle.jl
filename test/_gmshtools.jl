@@ -40,3 +40,26 @@ end
     @test length(el3d[2][1]) == 10 * 10 * 10
     rm(filename)
 end
+
+@testset "indice to tag" begin
+    @testset "LineOkada" begin
+        fname = tempname() * ".msh"
+        gen_gmsh_mesh(Val(:LineOkada), 100.0, 10.0, 90.0; filename=fname)
+        mesh = gen_mesh(Val(:LineOkada), 100.0, 10.0, 90.0)
+        i2t = indice2tag(mesh, fname)
+        @gmsh_open fname begin
+            i = rand(1: mesh.nξ)
+            @test gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[i], mesh.z[i], 1)[1] == i2t[i]
+        end
+    end
+    @testset "RectOkada" begin
+        fname = tempname() * ".msh"
+        gen_gmsh_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0; filename=fname)
+        mesh = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0)
+        i2t = indice2tag(mesh, fname)
+        @gmsh_open fname begin
+            i, j = rand(1: mesh.nx), rand(1: mesh.nξ)
+            @test gmsh.model.mesh.getElementByCoordinates(mesh.x[i], mesh.y[j], mesh.z[j], 2)[1] == i2t[i,j]
+        end
+    end
+end

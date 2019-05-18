@@ -1,5 +1,7 @@
 export gen_gmsh_mesh
 
+## mesh generator
+
 "Generate equivalent [`LineTopCenterMesh`](@ref) via [Gmsh](http://gmsh.info/)."
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh") where T
     @gmsh_do begin
@@ -119,3 +121,21 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     end
     return nothing
 end
+
+"Compute `[i,j] => tag` from RectOkadaMesh to unstructured mesh file."
+function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
+    @gmsh_open file begin
+        pos = Iterators.product(1: mesh.nx, 1: mesh.nξ)
+        map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]], 2)[1] |> Int, pos)
+    end
+end
+
+"Compute `[i] => tag` from LineOkadaMesh to unstructured mesh file."
+function indice2tag(mesh::LineOkadaMesh, file::AbstractString)
+    @gmsh_open file begin
+        pos = 1: mesh.nξ
+        map(p -> gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[p], mesh.z[p], 1)[1] |> Int, pos)
+    end
+end
+
+## mesh IO

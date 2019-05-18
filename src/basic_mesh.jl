@@ -87,3 +87,20 @@ function mesh_strike(x::T, Δx::T) where T
     ax = [[w - Δx/2, w + Δx/2] for w in xi]
     return xi, length(xi), ax
 end
+
+## unstructured mesh entities
+abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
+
+"Mesh entities (nodes & elements) of single element type."
+struct UniElementTypeMeshEntity{dim, ecode, I, T, U} <: UnstructuredMesh{dim}
+    ntag::I
+    nx::T
+    ny::T
+    nz::T
+    etag::I
+    enode::U
+
+    function UniElementTypeMeshEntity(ntag::I, nx::T, ny::T, nz::T, etag::I, enode::U, dim::Integer, ecode::Integer) where {I, T, U}
+        new{dim, ecode, I, T, U}(ntag, nx, ny, nz, etag, enode)
+    end
+end
