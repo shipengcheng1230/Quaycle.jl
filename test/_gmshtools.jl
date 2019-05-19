@@ -26,7 +26,7 @@ end
     rm(filename)
 end
 
-@testset "Gmsh Box by Extrude" begin # may fail due to empty mesh, rerun it
+@testset "Gmsh Box by Extrude" begin
     rfzn = ones(Float64, 10)
     rfzh = accumulate((x, y) -> x * y, fill(2.0, size(rfzn))) |> cumsum
     normalize!(rfzh, Inf)
@@ -36,7 +36,6 @@ end
     el3d = @gmsh_open filename begin
         gmsh.model.mesh.getElements(3)
     end
-    isempty(el3d[2]) && @info "Test \"Gmsh Box by Extrude\" skipped due to failure of `extrude`."
     @test el3d[1][1] == 5 # 8-node hexahedron
     @test length(el3d[2][1]) == 10 * 10 * 10
     rm(filename)
