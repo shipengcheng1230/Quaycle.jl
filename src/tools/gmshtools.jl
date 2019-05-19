@@ -1,4 +1,4 @@
-## most of the macro are expected to use at top-level scope
+# most of the macro are expected to use at top-level scope
 
 export gen_gmsh_mesh
 
@@ -58,6 +58,21 @@ function geo_okada_rect(x::T, y::T, z::T, nx::I, nξ::I, reg::I) where {T<:Real,
     return _reg
 end
 
+"Code snippet for adding box extruded from surface (x-y ↑ z)."
+function geo_box_extruded_from_surfaceXY(llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I, rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector, reg::I=1) where {T<:Real, I<:Integer}
+    _reg = geo_rect_x(llx, lly, llz, dx, dy, 0.0, reg)
+    gmsh.model.geo.mesh.setTransfiniteSurface(_reg-1, "Left", [_reg-10, _reg-9, _reg-8, _reg-7])
+    @setTransfiniteCurve begin
+        _reg-6, nx+1, "Bump", rfx
+        _reg-5, ny+1, "Bump", rfy
+        _reg-4, nx+1, "Bump", rfx
+        _reg-3, ny+1, "Bump", rfy
+    end
+    gmsh.model.geo.mesh.setRecombine(2, _reg-1)
+    gmsh.model.geo.extrude([(2, _reg-1)], 0.0, 0.0, -dz, rfzn, rfzh, true)
+    return _reg
+end
+
 "Generate equivalent [`LineTopCenterMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
@@ -109,16 +124,7 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     filename::AbstractString="temp.msh", reg::Integer=1) where {T, I}
 
     @gmsh_do begin
-        _reg = geo_rect_x(llx, lly, llz, dx, dy, 0.0, reg)
-        gmsh.model.geo.mesh.setTransfiniteSurface(_reg-1, "Left", [_reg-10, _reg-9, _reg-8, _reg-7])
-        @setTransfiniteCurve begin
-            _reg-6, nx+1, "Bump", rfx
-            _reg-5, ny+1, "Bump", rfy
-            _reg-4, nx+1, "Bump", rfx
-            _reg-3, ny+1, "Bump", rfy
-        end
-        gmsh.model.geo.mesh.setRecombine(2, _reg-1)
-        gmsh.model.geo.extrude([(2, _reg-1)], 0.0, 0.0, -dz, rfzn, rfzh, true)
+        _reg = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, reg)
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(3)
         gmsh.write(filename)
@@ -126,7 +132,26 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     end
 end
 
-"Compute `[i,j] => tag` from RectOkadaMesh to unstructured mesh file."
+"Adding a combination of [`RectOkadaMesh`](@ref) and `BoxHexExtrudeFromSurface` mesh"
+function gen_gmsh_mesh(
+    mtype1::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T,
+    mtype2::Val{:BoxHexExtrudeFromSurface}, llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I, rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
+    filename="temp.msh", reg::Integer=1)
+
+    y, z = -ξ * cosd(dip), -ξ * sind(dip)
+    nξ = round(Int, ξ / Δξ) # same as counting length of `range` in `mesh_downdip`
+    nx = round(Int, x / Δx) # same as counting length of `range` in `mesh_strike`
+    _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
+    _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
+    gmsh.model.geo.synchronize()
+    gmsh.model.mesh.generate(3)
+    gmsh.write(filename)
+    return _reg2
+end
+
+## elements tag mapping
+
+"Compute `[i,j] => tag` from [`RectOkadaMesh`](@ref) to unstructured mesh file."
 function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
     @gmsh_open file begin
         pos = Iterators.product(1: mesh.nx, 1: mesh.nξ)
@@ -134,7 +159,7 @@ function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
     end
 end
 
-"Compute `[i] => tag` from LineOkadaMesh to unstructured mesh file."
+"Compute `[i] => tag` from [`LineOkadaMesh`](@ref) to unstructured mesh file."
 function indice2tag(mesh::LineOkadaMesh, file::AbstractString)
     @gmsh_open file begin
         pos = 1: mesh.nξ
