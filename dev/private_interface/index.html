@@ -16,12 +16,11 @@
 <li><a href="./#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T&lt;:Number"><code>JuEQ.dτ_dt</code></a></li>
 <li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
 <li><a href="./#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},OkadaGFAllocMatrix,T,AbstractArray{T,1} where T}} where T&lt;:Number"><code>JuEQ.dτ_dt!</code></a></li>
+<li><a href="./#JuEQ.geo_box_extruded_from_surfaceXY-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_box_extruded_from_surfaceXY</code></a></li>
 <li><a href="./#JuEQ.geo_line-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T&lt;:Real"><code>JuEQ.geo_line</code></a></li>
 <li><a href="./#JuEQ.geo_okada_line-Union{Tuple{I}, Tuple{T}, Tuple{T,T,I,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_okada_line</code></a></li>
 <li><a href="./#JuEQ.geo_okada_rect-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,I,I,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_okada_rect</code></a></li>
 <li><a href="./#JuEQ.geo_rect_x-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T&lt;:Real"><code>JuEQ.geo_rect_x</code></a></li>
-<li><a href="./#JuEQ.indice2tag-Tuple{JuEQ.LineOkadaMesh,AbstractString}"><code>JuEQ.indice2tag</code></a></li>
-<li><a href="./#JuEQ.indice2tag-Tuple{JuEQ.RectOkadaMesh,AbstractString}"><code>JuEQ.indice2tag</code></a></li>
 <li><a href="./#JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T&lt;:Real"><code>JuEQ.okada_gf_periodic_bc!</code></a></li>
 <li><a href="./#JuEQ.@gen_shared_chunk_call-Tuple{Symbol}"><code>JuEQ.@gen_shared_chunk_call</code></a></li>
 </ul>
@@ -63,6 +62,9 @@
 <p><a id='JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T<:Number' href='#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T<:Number'>#</a>
 <strong><code>JuEQ.dτ_dt</code></strong> &mdash; <em>Method</em>.</p>
 <p>Just Hook's law.</p>
+<p><a id='JuEQ.geo_box_extruded_from_surfaceXY-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T,I}} where I<:Integer where T<:Real' href='#JuEQ.geo_box_extruded_from_surfaceXY-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T,I}} where I<:Integer where T<:Real'>#</a>
+<strong><code>JuEQ.geo_box_extruded_from_surfaceXY</code></strong> &mdash; <em>Method</em>.</p>
+<p>Code snippet for adding box extruded from surface (x-y ↑ z).</p>
 <p><a id='JuEQ.geo_line-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T<:Real' href='#JuEQ.geo_line-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T<:Real'>#</a>
 <strong><code>JuEQ.geo_line</code></strong> &mdash; <em>Method</em>.</p>
 <p>Code snippet for adding a line from (x, y, z) -&gt; (x+dx, y+dy, z+dz).</p>
@@ -75,12 +77,6 @@
 <p><a id='JuEQ.geo_rect_x-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T<:Real' href='#JuEQ.geo_rect_x-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T<:Real'>#</a>
 <strong><code>JuEQ.geo_rect_x</code></strong> &mdash; <em>Method</em>.</p>
 <p>Code snippet for adding a rectangular parallel to x-axis with topleft at (x, y, z), length of <code>dx</code> and width of <code>hypot(dy, dz)</code>.</p>
-<p><a id='JuEQ.indice2tag-Tuple{JuEQ.LineOkadaMesh,AbstractString}' href='#JuEQ.indice2tag-Tuple{JuEQ.LineOkadaMesh,AbstractString}'>#</a>
-<strong><code>JuEQ.indice2tag</code></strong> &mdash; <em>Method</em>.</p>
-<p>Compute <code>[i] =&gt; tag</code> from LineOkadaMesh to unstructured mesh file.</p>
-<p><a id='JuEQ.indice2tag-Tuple{JuEQ.RectOkadaMesh,AbstractString}' href='#JuEQ.indice2tag-Tuple{JuEQ.RectOkadaMesh,AbstractString}'>#</a>
-<strong><code>JuEQ.indice2tag</code></strong> &mdash; <em>Method</em>.</p>
-<p>Compute <code>[i,j] =&gt; tag</code> from RectOkadaMesh to unstructured mesh file.</p>
 <p><a id='JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Real' href='#JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T<:Real'>#</a>
 <strong><code>JuEQ.okada_gf_periodic_bc!</code></strong> &mdash; <em>Method</em>.</p>
 <p>Periodic summation of green's function.</p>
