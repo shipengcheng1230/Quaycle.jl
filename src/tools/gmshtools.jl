@@ -63,10 +63,11 @@ function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::Abst
     @gmsh_do begin
         dy, dz = -ξ * cosd(dip), -ξ * sind(dip)
         nξ = round(Int, ξ / Δξ) # same as counting length of `range` in `mesh_downdip`
-        geo_okada_line(dy, dz, nξ, reg)
+        _reg = geo_okada_line(dy, dz, nξ, reg)
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(1)
         gmsh.write(filename)
+        return _reg
     end
 end
 
@@ -81,6 +82,7 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(2)
         gmsh.write(filename)
+        return _reg
     end
 end
 
@@ -120,8 +122,8 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(3)
         gmsh.write(filename)
+        return _reg
     end
-    return nothing
 end
 
 "Compute `[i,j] => tag` from RectOkadaMesh to unstructured mesh file."
