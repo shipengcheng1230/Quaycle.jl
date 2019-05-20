@@ -2,8 +2,6 @@ using Test
 using GmshTools
 using LinearAlgebra
 
-# This file currently isn't included in `runtests.jl` but tested locally on MacOS
-
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
     gen_gmsh_mesh(Val(:LineOkada), 100.0, 20.0, 45.0; filename=filename)
