@@ -1,6 +1,6 @@
 # most of the macro are expected to use at top-level scope
 
-export gen_gmsh_mesh
+export gen_gmsh_mesh, indice2tag
 
 ## mesh generator
 
@@ -55,6 +55,7 @@ function geo_okada_rect(x::T, y::T, z::T, nx::I, nξ::I, reg::I) where {T<:Real,
         _reg-4, nx+1, "Progression", 1.0
         _reg-3, nξ+1, "Progression", 1.0
     end
+    gmsh.model.geo.mesh.setRecombine(2, _reg-1)
     return _reg
 end
 
@@ -93,7 +94,6 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
         nξ = round(Int, ξ / Δξ) # same as counting length of `range` in `mesh_downdip`
         nx = round(Int, x / Δx) # same as counting length of `range` in `mesh_strike`
         _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
-        gmsh.model.geo.mesh.setRecombine(2, _reg-1)
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(2)
         gmsh.write(filename)
@@ -136,17 +136,24 @@ end
 function gen_gmsh_mesh(
     mtype1::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T,
     mtype2::Val{:BoxHexExtrudeFromSurface}, llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I, rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
-    filename="temp.msh", reg::Integer=1)
+    filename="temp.msh", reg::Integer=1,
+    faulttag=(1, "fault"), asthenospheretag=(2, "asthenosphere")) where {T, I}
 
     y, z = -ξ * cosd(dip), -ξ * sind(dip)
     nξ = round(Int, ξ / Δξ) # same as counting length of `range` in `mesh_downdip`
     nx = round(Int, x / Δx) # same as counting length of `range` in `mesh_strike`
-    _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
-    _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
-    gmsh.model.geo.synchronize()
-    gmsh.model.mesh.generate(3)
-    gmsh.write(filename)
-    return _reg2
+    @gmsh_do begin
+        _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
+        gmsh.model.addPhysicalGroup(2, [_reg-1], faulttag[1])
+        gmsh.model.setPhysicalName(2, faulttag...)
+        _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
+        gmsh.model.addPhysicalGroup(3, [_reg2-1], asthenospheretag[1])
+        gmsh.model.setPhysicalName(3, asthenospheretag...)
+        gmsh.model.geo.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(filename)
+        return _reg2
+    end
 end
 
 ## elements tag mapping
