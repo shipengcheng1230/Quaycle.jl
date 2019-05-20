@@ -2,7 +2,7 @@
 
 export gen_gmsh_mesh, indice2tag
 
-## mesh generator
+## code snippet for mesh generator
 
 "Code snippet for adding a line from (x, y, z) -> (x+dx, y+dy, z+dz)."
 function geo_line(x::T, y::T, z::T, dx::T, dy::T, dz::T, reg::Integer) where T<:Real
@@ -70,9 +70,11 @@ function geo_box_extruded_from_surfaceXY(llx::T, lly::T, llz::T, dx::T, dy::T, d
         _reg-3, ny+1, "Bump", rfy
     end
     gmsh.model.geo.mesh.setRecombine(2, _reg-1)
-    gmsh.model.geo.extrude([(2, _reg-1)], 0.0, 0.0, -dz, rfzn, rfzh, true)
-    return _reg
+    outDimTags = gmsh.model.geo.extrude([(2, _reg-1)], 0.0, 0.0, -dz, rfzn, rfzh, true)
+    return outDimTags
 end
+
+## concrete mesh generator
 
 "Generate equivalent [`LineTopCenterMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
@@ -144,11 +146,7 @@ function gen_gmsh_mesh(
     nx = round(Int, x / Δx) # same as counting length of `range` in `mesh_strike`
     @gmsh_do begin
         _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
-        gmsh.model.addPhysicalGroup(2, [_reg-1], faulttag[1])
-        gmsh.model.setPhysicalName(2, faulttag...)
         _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
-        gmsh.model.addPhysicalGroup(3, [_reg2-1], asthenospheretag[1])
-        gmsh.model.setPhysicalName(3, asthenospheretag...)
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(3)
         gmsh.write(filename)
