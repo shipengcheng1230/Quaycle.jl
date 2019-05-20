@@ -61,3 +61,23 @@ end
         end
     end
 end
+
+@testset "Combined Okada Rect and Box" begin
+    fname = tempname() * ".msh"
+    gen_gmsh_mesh(
+        Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0,
+        Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, 10, 10, 4.0, 1.0, rfzn, rfzh;
+        filename=fname)
+    els = @gmsh_open fname begin
+        gmsh.model.mesh.getElements(2)
+    end
+    @gmsh_open fname begin
+        entag = gmsh.model.getEntitiesForPhysicalGroup(2, 1)
+        @test gmsh.model.mesh.getElements(2, entag[1])[2][1] |> length == 5 * 10
+    end
+    @gmsh_open fname begin
+        entag = gmsh.model.getEntitiesForPhysicalGroup(3, 1)
+        @test gmsh.model.mesh.getElements(3, entag[1])[2][1] |> length == 10^3
+    end
+    rm(fname)
+end

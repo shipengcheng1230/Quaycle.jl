@@ -134,19 +134,28 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     end
 end
 
-"Adding a combination of [`RectOkadaMesh`](@ref) and `BoxHexExtrudeFromSurface` mesh"
+"Adding a combination of [`RectOkadaMesh`](@ref) and `BoxHexExtrudeFromSurface` mesh for asthenosphere."
 function gen_gmsh_mesh(
     mtype1::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T,
     mtype2::Val{:BoxHexExtrudeFromSurface}, llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I, rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
     filename="temp.msh", reg::Integer=1,
-    faulttag=(1, "fault"), asthenospheretag=(2, "asthenosphere")) where {T, I}
+    faulttag=(1, "fault"), asthenospheretag=(1, "asthenosphere")) where {T, I}
 
     y, z = -ξ * cosd(dip), -ξ * sind(dip)
     nξ = round(Int, ξ / Δξ) # same as counting length of `range` in `mesh_downdip`
     nx = round(Int, x / Δx) # same as counting length of `range` in `mesh_strike`
     @gmsh_do begin
         _reg = geo_okada_rect(x, y, z, nx, nξ, reg)
+        gmsh.model.addPhysicalGroup(2, [_reg-1], faulttag[1])
+        gmsh.model.setPhysicalName(2, faulttag...)
+        # type of `_reg2` is tuple, each is `(dim, tag)`
         _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
+        # it is assumed that the box is the first added volume entity
+        volumetag = _reg2[findfirst(x -> x[1] == 3, _reg2)][2]
+        gmsh.model.addPhysicalGroup(3, [volumetag], asthenospheretag[1])
+        @addOption begin
+            "Mesh.SaveAll", 1 # without it, the mesh is incorrect
+        end
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(3)
         gmsh.write(filename)
