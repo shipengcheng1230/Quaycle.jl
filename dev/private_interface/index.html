@@ -9,13 +9,14 @@
 <li><a href="./#JuEQ.OkadaGFAllocFFTConv"><code>JuEQ.OkadaGFAllocFFTConv</code></a></li>
 <li><a href="./#JuEQ.OkadaGFAllocMatrix"><code>JuEQ.OkadaGFAllocMatrix</code></a></li>
 <li><a href="./#JuEQ.RectOkadaMesh"><code>JuEQ.RectOkadaMesh</code></a></li>
-<li><a href="./#JuEQ.UniElementTypeMeshEntity"><code>JuEQ.UniElementTypeMeshEntity</code></a></li>
+<li><a href="./#JuEQ.SBarbotHex8MeshEntity"><code>JuEQ.SBarbotHex8MeshEntity</code></a></li>
+<li><a href="./#JuEQ.SBarbotTet4MeshEntity"><code>JuEQ.SBarbotTet4MeshEntity</code></a></li>
 <li><a href="./#JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T&lt;:Number"><code>JuEQ.dv_dt</code></a></li>
 <li><a href="./#JuEQ.dv_dθ_dt-Union{Tuple{SE}, Tuple{T}, Tuple{CForm,SE,T,T,T,T,T,T,T,T,T,Vararg{T,N} where N}} where SE&lt;:StateEvolutionLaw where T&lt;:Number"><code>JuEQ.dv_dθ_dt</code></a></li>
 <li><a href="./#JuEQ.dv_dθ_dt!-Union{Tuple{T}, Tuple{CForm,StateEvolutionLaw,T,T,T,T,ElasticRSFProperty,OkadaGFAllocation}} where T&lt;:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T)"><code>JuEQ.dv_dθ_dt!</code></a></li>
 <li><a href="./#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T&lt;:Number"><code>JuEQ.dτ_dt</code></a></li>
-<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
 <li><a href="./#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},OkadaGFAllocMatrix,T,AbstractArray{T,1} where T}} where T&lt;:Number"><code>JuEQ.dτ_dt!</code></a></li>
+<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},OkadaGFAllocFFTConv,U,AbstractArray{T,2} where T}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
 <li><a href="./#JuEQ.geo_box_extruded_from_surfaceXY-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_box_extruded_from_surfaceXY</code></a></li>
 <li><a href="./#JuEQ.geo_line-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T&lt;:Real"><code>JuEQ.geo_line</code></a></li>
 <li><a href="./#JuEQ.geo_okada_line-Union{Tuple{I}, Tuple{T}, Tuple{T,T,I,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_okada_line</code></a></li>
@@ -41,9 +42,12 @@
 <p><a id='JuEQ.RectOkadaMesh' href='#JuEQ.RectOkadaMesh'>#</a>
 <strong><code>JuEQ.RectOkadaMesh</code></strong> &mdash; <em>Type</em>.</p>
 <p>Generate a uniform rectangular mesh in accordance with <a href="../public_interface/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> usage, i.e the rectangular sits parallel to x-axis, top edge starts from z = 0 and centered at x = 0. The geometry extends into negative half space and rotate around the pivot of (y=0, z=0).</p>
-<p><a id='JuEQ.UniElementTypeMeshEntity' href='#JuEQ.UniElementTypeMeshEntity'>#</a>
-<strong><code>JuEQ.UniElementTypeMeshEntity</code></strong> &mdash; <em>Type</em>.</p>
-<p>Mesh entities (nodes &amp; elements) of single element type.</p>
+<p><a id='JuEQ.SBarbotHex8MeshEntity' href='#JuEQ.SBarbotHex8MeshEntity'>#</a>
+<strong><code>JuEQ.SBarbotHex8MeshEntity</code></strong> &mdash; <em>Type</em>.</p>
+<p>Mesh entities of Tet4 for using strain-stress green's function.</p>
+<p><a id='JuEQ.SBarbotTet4MeshEntity' href='#JuEQ.SBarbotTet4MeshEntity'>#</a>
+<strong><code>JuEQ.SBarbotTet4MeshEntity</code></strong> &mdash; <em>Type</em>.</p>
+<p>Mesh entities of Hex8 for using strain-stress green's function.</p>
 <p><a id='JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T<:Number' href='#JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T<:Number'>#</a>
 <strong><code>JuEQ.dv_dt</code></strong> &mdash; <em>Method</em>.</p>
 <p>Derivative of velocity in quai-dynamic rate-and-state governing equation.</p>
