@@ -178,9 +178,40 @@ end
 
 ## mesh IO
 
-function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString, tag=1::Integer)
-    @gmsh_open f begin
-        
+function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
+    @gmsh_open f3 begin
+        nodes = gmsh.model.mesh.getNodes()
+        # This entity tag for volume is identified by `phytag`
+        volumetag = gmsh.model.getEntitiesForPhysicalGroup(3, phytag)
+        # Get all the volume elements for `volumetag` entity
+        es = gmsh.model.mesh.getElements(3, volumetag)
+        etag = es[2][1]
+        numelements = length(etag)
+        etype = es[1][1]
+        numnodes = gmsh.model.mesh.getElementProperties(etype)[4]
+
+        # Make sure element type can only be Hex8.
+        @assert etype == 5 "Element type $(gmsh.model.mesh.getElementProperties(etype)[1]), should be 8-node Hexahedron."
+        # The continuous node numbering is critical for retrieving correct node coordinates.
+        @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
+
+        q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
+        centers = gmsh.model.mesh.getBarycenters(es[1][1], volumetag, 0, 1)
+        x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
+        @inbounds @fastmath @simd for i in 1: numelements
+            # In Gmsh Hex8, vertex-1 and vertex-7 are the volume diagonal
+            ntag1 = es[3][1][numnodes*i-numnodes+1]
+            ntag7 = es[3][1][numnodes*i-numnodes+7]
+            p1x, p1y, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1-1], nodes[2][3*ntag1]
+            p7x, p7y, p7z = nodes[2][3*ntag7-2], nodes[2][3*ntag7-1], nodes[2][3*ntag7]
+            L[i] = abs(p7x - p1x)
+            W[i] = abs(p7z - p1z)
+            T[i] = abs(p7y - p1y)
+            q1[i] = x1[i]
+            q2[i] = x2[i] - L[i]/2
+            q3[i] = x3[i] - W[i]/2
+        end
+        return SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, etag, rotate)
     end
 end
 

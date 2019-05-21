@@ -98,6 +98,16 @@ struct SBarbotTet4MeshEntity <: UnstructuredMesh{3}
 end
 
 "Mesh entities of Tet4 for using strain-stress green's function."
-struct SBarbotHex8MeshEntity <: UnstructuredMesh{3}
-
+struct SBarbotHex8MeshEntity{T, A, U} <: UnstructuredMesh{3}
+    x1::T
+    x2::T
+    x3::T
+    q1::T
+    q2::T
+    q3::T
+    L::T
+    T::T
+    W::T
+    tag::A
+    θ::U
 end
