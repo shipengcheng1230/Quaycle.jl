@@ -64,10 +64,11 @@ end
 
 @testset "Combined Okada Rect and Box" begin
     fname = tempname() * ".msh"
-    gen_gmsh_mesh(
-        Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0,
-        Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, 10, 10, 4.0, 1.0, rfzn, rfzh;
-        filename=fname)
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0)
+    rfzn = ones(Float64, 10)
+    rfzh = accumulate((x, y) -> x * y, fill(1.5, size(rfzn))) |> cumsum
+    normalize!(rfzh, Inf)
+    gen_gmsh_mesh(mf, Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, 10, 10, 4.0, 1.0, rfzn, rfzh; filename=fname)
     els = @gmsh_open fname begin
         gmsh.model.mesh.getElements(2)
     end

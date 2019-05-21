@@ -3,8 +3,9 @@
 export gen_mesh
 
 abstract type AbstractMesh{dim} end
-abstract type BasicTransfiniteMesh{dim} <: AbstractMesh{dim} end
-abstract type OkadaMesh{dim} <: BasicTransfiniteMesh{dim} end
+abstract type StructuredMesh{dim} <: AbstractMesh{dim} end
+abstract type BasicTransfiniteStructuredMesh{dim} <: StructuredMesh{dim} end
+abstract type OkadaMesh{dim} <: BasicTransfiniteStructuredMesh{dim} end
 
 """
 Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
@@ -91,16 +92,12 @@ end
 ## unstructured mesh entities
 abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
 
-"Mesh entities (nodes & elements) of single element type."
-struct UniElementTypeMeshEntity{dim, ecode, I, T, U} <: UnstructuredMesh{dim}
-    ntag::I
-    nx::T
-    ny::T
-    nz::T
-    etag::I
-    enode::U
+"Mesh entities of Hex8 for using strain-stress green's function."
+struct SBarbotTet4MeshEntity <: UnstructuredMesh{3}
 
-    function UniElementTypeMeshEntity(ntag::I, nx::T, ny::T, nz::T, etag::I, enode::U, dim::Integer, ecode::Integer) where {I, T, U}
-        new{dim, ecode, I, T, U}(ntag, nx, ny, nz, etag, enode)
-    end
+end
+
+"Mesh entities of Tet4 for using strain-stress green's function."
+struct SBarbotHex8MeshEntity <: UnstructuredMesh{3}
+
 end
