@@ -1,6 +1,6 @@
 # most of the macro are expected to use at top-level scope
 
-export gen_gmsh_mesh, indice2tag
+export gen_gmsh_mesh, read_gmsh_mesh, indice2tag
 
 ## code snippet for mesh generator
 

@@ -116,4 +116,10 @@ end
     @assert minimum(L) > 0
     @assert minimum(W) > 0
     @assert minimum(T) > 0
+    @assert size(tag) == size(x1)
+    @assert size(tag) == size(x2)
+    @assert size(tag) == size(x3)
+    @assert size(tag) == size(q1)
+    @assert size(tag) == size(q2)
+    @assert size(tag) == size(q3)
 end

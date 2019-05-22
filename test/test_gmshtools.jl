@@ -91,8 +91,11 @@ end
     gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, 20, 25, 4.0, 5.0, rfzn, rfzh; filename=fname)
     mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1)
     fround = x -> round(x; digits=3)
-    unique(fround, mc.L) |> length == 20 / 2
-    unique(fround, mc.W) |> length == 7
-    unique(fround, mc.T) |> length == 25 ÷ 2 + 1
+    @test unique(fround, mc.L) |> length == 20 / 2
+    @test unique(fround, mc.W) |> length == 7
+    @test unique(fround, mc.T) |> length == 25 ÷ 2 + 1
+    @test unique(fround, mc.q1) |> length == 25
+    @test unique(fround, mc.q2) |> length == 20
+    @test unique(fround, mc.q3) |> length == 7
     rm(fname)
 end
