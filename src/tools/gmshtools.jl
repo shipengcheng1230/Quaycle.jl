@@ -178,7 +178,7 @@ end
 
 ## mesh IO
 
-macro check_and_get_SBarbot_mesh_entity(ecode)
+macro check_and_get_mesh_entity(ecode)
     esc(quote
         nodes = gmsh.model.mesh.getNodes()
         @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
@@ -197,7 +197,7 @@ end
 
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
     @gmsh_open f begin
-        @check_and_get_SBarbot_mesh_entity(5)
+        @check_and_get_mesh_entity(5)
         q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
         @inbounds @fastmath @simd for i in 1: numelements
             # in Gmsh Hex8, vertex-1 and vertex-7 are the volume diagonal
@@ -218,7 +218,7 @@ end
 
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag=1::Integer)
     @gmsh_open f begin
-        @check_and_get_SBarbot_mesh_entity(4)
+        @check_and_get_mesh_entity(4)
         A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
         for i in 1: numelements
             ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
