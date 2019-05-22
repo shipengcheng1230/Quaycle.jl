@@ -82,3 +82,17 @@ end
     end
     rm(fname)
 end
+
+@testset "SBarbot Hex8 mesh entities" begin
+    fname = tempname() * ".msh"
+    rfzn = ones(Int, 7)
+    rfzh = accumulate((x, y) -> x * y, fill(2.0, length(rfzn))) |> cumsum
+    normalize!(rfzh, Inf)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, 20, 25, 4.0, 5.0, rfzn, rfzh; filename=fname)
+    mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1)
+    fround = x -> round(x; digits=3)
+    unique(fround, mc.L) |> length == 20 / 2
+    unique(fround, mc.W) |> length == 7
+    unique(fround, mc.T) |> length == 25 ÷ 2 + 1
+    rm(fname)
+end
