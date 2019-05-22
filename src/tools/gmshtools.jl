@@ -181,7 +181,7 @@ end
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
     @gmsh_open f begin
         nodes = gmsh.model.mesh.getNodes()
-        volumetag = phytag > 0 ? gmsh.model.getEntitiesForPhysicalGroup(3, phytag) : phytag
+        volumetag = phytag ≥ 0 ? gmsh.model.getEntitiesForPhysicalGroup(3, phytag) : phytag
         es = gmsh.model.mesh.getElements(3, volumetag)
         etag = es[2][1]
         numelements = length(etag)
