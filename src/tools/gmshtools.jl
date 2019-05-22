@@ -178,24 +178,27 @@ end
 
 ## mesh IO
 
-function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
-    @gmsh_open f begin
+macro check_and_get_SBarbot_mesh_entity(ecode)
+    esc(quote
         nodes = gmsh.model.mesh.getNodes()
+        @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
         volumetag = phytag ≥ 0 ? gmsh.model.getEntitiesForPhysicalGroup(3, phytag) : phytag
         es = gmsh.model.mesh.getElements(3, volumetag)
+        @assert length(es[1]) == 1 "Got more than one element type."
         etag = es[2][1]
         numelements = length(etag)
         etype = es[1][1]
+        @assert etype == $(ecode) "Got element type $(gmsh.model.mesh.getElementProperties(etype)[1]), should be $(gmsh.model.mesh.getElementProperties($(ecode))[1])."
         numnodes = gmsh.model.mesh.getElementProperties(etype)[4]
-
-        @assert etype == 5 "Got element type $(gmsh.model.mesh.getElementProperties(etype)[1]), should be 8-node Hexahedron."
-        # the continuous node numbering is critical for retrieving correct node coordinates below.
-        @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
-
-        q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
         centers = gmsh.model.mesh.getBarycenters(es[1][1], volumetag, 0, 1)
-        # here is a map between Okada's coord vs SBarbot coord
         x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
+    end)
+end
+
+function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
+    @gmsh_open f begin
+        @check_and_get_SBarbot_mesh_entity(5)
+        q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
         @inbounds @fastmath @simd for i in 1: numelements
             # in Gmsh Hex8, vertex-1 and vertex-7 are the volume diagonal
             ntag1 = es[3][1][numnodes*i-numnodes+1]
@@ -213,8 +216,17 @@ function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=
     end
 end
 
-function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString, tag=1::Integer)
+function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag=1::Integer)
     @gmsh_open f begin
-
+        @check_and_get_SBarbot_mesh_entity(4)
+        A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
+        for i in 1: numelements
+            ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
+            A[i] .= selectdim(nodes[2], 1, 3*ta-2: 3*ta)
+            B[i] .= selectdim(nodes[2], 1, 3*tb-2: 3*tb)
+            C[i] .= selectdim(nodes[2], 1, 3*tc-2: 3*tc)
+            D[i] .= selectdim(nodes[2], 1, 3*td-2: 3*td)
+        end
+        return SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
     end
 end
