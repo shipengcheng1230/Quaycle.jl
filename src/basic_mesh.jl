@@ -128,8 +128,8 @@ end
     L::P # length ←x→
     T::P # thickness ←y→
     W::P # width ←z→
-    tag::A # element tag
     θ::U # strike
+    tag::A # element tag
 
     @assert minimum(x3) > 0
     @assert minimum(q3) ≥ 0

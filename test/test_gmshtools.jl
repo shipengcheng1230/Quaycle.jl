@@ -106,8 +106,16 @@ end
     mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=true)
     @test length(unique(fround, mc.q1)) == length(unique(fround, mc.L)) * length(unique(fround, mc.x1))
     @test length(unique(fround, mc.q2)) == length(unique(fround, mc.x2))
+
+    mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=false, rotate=90.0)
+    @test length(unique(fround, mc.q2)) == length(unique(fround, mc.x2)) * length(unique(fround, mc.L))
+    @test length(unique(fround, mc.q1)) == length(unique(fround, mc.x1))
+
     @test_throws AssertionError begin
         read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=true, check=true)
+    end
+    @test_throws AssertionError begin
+        read_gmsh_mesh(Val(:SBarbotHex8), fname; rotate=90.0, phytag=-1, reverse=false, check=true)
     end
     rm(fname)
 end
