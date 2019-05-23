@@ -274,7 +274,6 @@ function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=
             D[i][1] = nodes[2][3*td-1]
             D[i][2] = nodes[2][3*td-2]
             D[i][3] = -nodes[2][3*td]
-
         end
         SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
     end
