@@ -102,6 +102,19 @@ abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
     C::Q
     D::Q
     tag::T
+
+    @assert minimum(x3) > 0
+    @assert map(x -> x[3], A) |> minimum > 0
+    @assert map(x -> x[3], B) |> minimum > 0
+    @assert map(x -> x[3], C) |> minimum > 0
+    @assert map(x -> x[3], D) |> minimum > 0
+    @assert size(tag) == size(x1)
+    @assert size(tag) == size(x2)
+    @assert size(tag) == size(x3)
+    @assert size(tag) == size(A)
+    @assert size(tag) == size(B)
+    @assert size(tag) == size(C)
+    @assert size(tag) == size(D)
 end
 
 "Mesh entities of Tet4 for using strain-stress green's function."

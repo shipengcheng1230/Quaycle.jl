@@ -195,38 +195,55 @@ macro check_and_get_mesh_entity(ecode)
     end)
 end
 
-function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=1::Integer, rotate::Number=90.0)
+function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
     @gmsh_open f begin
         @check_and_get_mesh_entity(5)
         q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
         @inbounds @fastmath @simd for i in 1: numelements
-            # in Gmsh Hex8, vertex-1 and vertex-7 are the volume diagonal
             ntag1 = es[3][1][numnodes*i-numnodes+1]
-            ntag7 = es[3][1][numnodes*i-numnodes+7]
+            ntag2 = es[3][1][numnodes*i-numnodes+2]
+            ntag4 = es[3][1][numnodes*i-numnodes+4]
+            ntag5 = es[3][1][numnodes*i-numnodes+5]
+            reverse && begin ntag2, ntag4 = ntag4, ntag2 end
             p1x, p1y, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1-1], nodes[2][3*ntag1]
-            p7x, p7y, p7z = nodes[2][3*ntag7-2], nodes[2][3*ntag7-1], nodes[2][3*ntag7]
-            L[i] = abs(p7x - p1x)
-            W[i] = abs(p7z - p1z)
-            T[i] = abs(p7y - p1y)
-            q1[i] = x1[i]
-            q2[i] = x2[i] - L[i]/2
-            q3[i] = x3[i] - W[i]/2
+            p2x, p2y = nodes[2][3*ntag2-2], nodes[2][3*ntag2-1]
+            p4x, p4y = nodes[2][3*ntag4-2], nodes[2][3*ntag4-1]
+            p5z = nodes[2][3*ntag5]
+            T[i] = hypot(p1x - p4x, p1y - p4y)
+            W[i] = abs(p1z - p5z)
+            L[i] = hypot(p1x - p2x, p1y - p2y)
+            q1[i] = x1[i] - L[i] / 2 * cosd(rotate)
+            q2[i] = x2[i] - L[i] / 2 * sind(rotate)
+            q3[i] = x3[i] - W[i] / 2
         end
-        return SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, etag, rotate)
+        if check
+            f = x -> round(x; digits=3)
+            @assert unique(f, x1) |> length == unique(f, q1) |> length "Unmatched `q1` and `x1`, please set keyword `reverse` to `true`."
+        end
+        SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, etag, rotate)
     end
 end
 
-function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag=1::Integer)
+function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
     @gmsh_open f begin
         @check_and_get_mesh_entity(4)
         A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
-        for i in 1: numelements
+        @inbounds @fastmath @simd for i in 1: numelements
             ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
-            A[i] .= selectdim(nodes[2], 1, 3*ta-2: 3*ta)
-            B[i] .= selectdim(nodes[2], 1, 3*tb-2: 3*tb)
-            C[i] .= selectdim(nodes[2], 1, 3*tc-2: 3*tc)
-            D[i] .= selectdim(nodes[2], 1, 3*td-2: 3*td)
+            A[i][1] = nodes[2][3*ta-1]
+            A[i][2] = nodes[2][3*ta-2]
+            A[i][3] = -nodes[2][3*ta]
+            B[i][1] = nodes[2][3*tb-1]
+            B[i][2] = nodes[2][3*tb-2]
+            B[i][3] = -nodes[2][3*tb]
+            C[i][1] = nodes[2][3*tc-1]
+            C[i][2] = nodes[2][3*tc-2]
+            C[i][3] = -nodes[2][3*tc]
+            D[i][1] = nodes[2][3*td-1]
+            D[i][2] = nodes[2][3*td-2]
+            D[i][3] = -nodes[2][3*td]
+
         end
-        return SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
+        SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
     end
 end
