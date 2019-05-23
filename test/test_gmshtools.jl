@@ -50,6 +50,7 @@ end
             i = rand(1: mesh.nξ)
             @test gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[i], mesh.z[i], 1)[1] == i2t[i]
         end
+        rm(fname)
     end
     @testset "RectOkada" begin
         fname = tempname() * ".msh"
@@ -60,6 +61,7 @@ end
             i, j = rand(1: mesh.nx), rand(1: mesh.nξ)
             @test gmsh.model.mesh.getElementByCoordinates(mesh.x[i], mesh.y[j], mesh.z[j], 2)[1] == i2t[i,j]
         end
+        rm(fname)
     end
 end
 
@@ -102,12 +104,11 @@ end
 
     # check unmatched read
     mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=true)
-    length(unique(fround, mc.q1)) == length(unique(fround, mc.L)) * length(unique(fround, mc.x1))
-    length(unique(fround, mc.q2)) == length(unique(fround, mc.x2))
+    @test length(unique(fround, mc.q1)) == length(unique(fround, mc.L)) * length(unique(fround, mc.x1))
+    @test length(unique(fround, mc.q2)) == length(unique(fround, mc.x2))
     @test_throws AssertionError begin
         read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=true, check=true)
     end
-
     rm(fname)
 end
 
