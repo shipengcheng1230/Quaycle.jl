@@ -79,7 +79,7 @@ end
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=RForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
-    μ = friction(CForm(), sol.u, mp)
+    μ = friction(RForm(), sol.u, mp)
     μ_truth = [
         0.60000000, 0.59885200, 0.59884871, 0.59884871, 0.59884871,
         0.59884871, 0.59884871, 0.59884871, 0.59884871, 0.59884871,

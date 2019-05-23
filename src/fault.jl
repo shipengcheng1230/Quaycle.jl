@@ -24,8 +24,6 @@ end
 OkadaFaultSpace(mesh::OkadaMesh{1}, ft::PlaneFault) = OkadaFaultSpace(mesh, ft, 1)
 OkadaFaultSpace(mesh::OkadaMesh{2}, ft::PlaneFault) = OkadaFaultSpace(mesh, ft, 2)
 
-fault(::Val{:Okada}, ft::FT, mesh::M) where {FT<:PlaneFault, M<:OkadaMesh} = OkadaFaultSpace(mesh, ft)
-
 "Generate fault space encapsulating [`LineOkadaMesh`](@ref) and fault type `ft`."
 function fault(ftype::Val{:LineOkada}, ft::FT, ξ::T, Δξ::T, dip::T) where {T<:Real, FT<:PlaneFault}
     mesh = gen_mesh(ftype, ξ, Δξ, dip)

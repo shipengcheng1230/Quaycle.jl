@@ -92,7 +92,7 @@ end
 ## unstructured mesh entities
 abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
 
-"Mesh entities of Hex8 for using strain-stress green's function."
+"Mesh entities of Tet4 for using strain-stress green's function."
 @with_kw struct SBarbotTet4MeshEntity{P<:AbstractArray, Q<:AbstractVector, T<:AbstractVector} <: UnstructuredMesh{3}
     x1::P
     x2::P
@@ -117,7 +117,7 @@ abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
     @assert size(tag) == size(D)
 end
 
-"Mesh entities of Tet4 for using strain-stress green's function."
+"Mesh entities of Hex8 for using strain-stress green's function."
 @with_kw struct SBarbotHex8MeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number}
     x1::P # centroid +y
     x2::P # centroid +x

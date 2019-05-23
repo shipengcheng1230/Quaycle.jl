@@ -195,6 +195,21 @@ macro check_and_get_mesh_entity(ecode)
     end)
 end
 
+"""
+    read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
+
+Read the mesh and construct mesh entity infomation for SBarbot Hex8 Green's function use.
+
+## Arguments
+- `f`: mesh file name
+- `phytag`: physical tag for targeting volume entity. If < 0, retrieve all elements in all 3-dimensional entities.
+- `rotate`: the angle of strike direction, see [`sbarbot_disp_hex8!`](@ref)
+- `reverse`: if `true`, reverse the along-x, y-node tag during read. By default, 1→4 in x-axis, 1→2 in y-axis, 1→5 in z-axis
+- `check`: if `true`, check that number of distinctive `q1` equals that of `x1`, same for `q2` and `x2`, which should hold for transfinite mesh.
+
+## Notice
+This function can only be used for Hex8 element with each element lying parallel to z-axis.
+"""
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
     @gmsh_open f begin
         @check_and_get_mesh_entity(5)
@@ -219,11 +234,21 @@ function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=
         if check
             f = x -> round(x; digits=3)
             @assert unique(f, x1) |> length == unique(f, q1) |> length "Unmatched `q1` and `x1`, please set keyword `reverse` to `true`."
+            @assert unique(f, x2) |> length == unique(f, q2) |> length "Unmatched `q2` and `x2`, please set keyword `reverse` to `true`."
         end
         SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, etag, rotate)
     end
 end
 
+"""
+    read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
+
+Read the mesh and construct mesh entity infomation for SBarbot Tet4 Green's function use.
+
+## Arguments
+- `f`: mesh file name
+- `phytag`: physical tag for targeting volume entity. If < 0, retrieve all elements in all 3-dimensional entities.
+"""
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
     @gmsh_open f begin
         @check_and_get_mesh_entity(4)
