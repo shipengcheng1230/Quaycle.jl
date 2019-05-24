@@ -183,7 +183,7 @@ end
 function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector; kwargs...) where T
     st = ntuple(_ -> SharedArray{T}(mf.nx * mf.nξ, length(ma.tag)), Val(length(comp)))
     okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
-    return (sdata(x) for x in st)
+    return [sdata(x) for x in st]
 end
 
 function okada_strain_gf_tensor_chunk!(
