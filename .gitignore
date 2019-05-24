@@ -11,6 +11,7 @@ deps/deps.jl
 .vscode
 .idea/*
 *.msh
+*.bin
 
 docs/build/
 docs/site/

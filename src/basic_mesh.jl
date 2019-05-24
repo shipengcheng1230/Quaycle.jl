@@ -91,9 +91,10 @@ end
 
 ## unstructured mesh entities
 abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
+abstract type SBarbotMeshEntity{dim} <: UnstructuredMesh{dim} end
 
 "Mesh entities of Tet4 for using strain-stress green's function."
-@with_kw struct SBarbotTet4MeshEntity{P<:AbstractArray, Q<:AbstractVector, T<:AbstractVector} <: UnstructuredMesh{3}
+@with_kw struct SBarbotTet4MeshEntity{P<:AbstractArray, Q<:AbstractVector, T<:AbstractVector} <: SBarbotMeshEntity{3}
     x1::P
     x2::P
     x3::P
@@ -118,7 +119,7 @@ abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
 end
 
 "Mesh entities of Hex8 for using strain-stress green's function."
-@with_kw struct SBarbotHex8MeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number}
+@with_kw struct SBarbotHex8MeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{3}
     x1::P # centroid +y
     x2::P # centroid +x
     x3::P # centroid -z

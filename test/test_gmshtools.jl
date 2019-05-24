@@ -87,13 +87,15 @@ end
 end
 
 @testset "SBarbot Hex8 mesh entities" begin
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0)
     nx, ny, nz = 20, 25, 7
     fname = tempname() * ".msh"
     rfzn = ones(Int, nz)
     rfzh = accumulate((x, y) -> x * y, fill(2.0, length(rfzn))) |> cumsum
     normalize!(rfzh, Inf)
-    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, nx, ny, 4.0, 5.0, rfzn, rfzh; filename=fname)
-    mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=-1, reverse=false)
+    gen_gmsh_mesh(mf, Val(:BoxHexExtrudeFromSurface), -50.0, -50.0, -60.0, 100.0, 100.0, 100.0, nx, ny, 4.0, 5.0, rfzn, rfzh;
+        filename=fname, faulttag=(100, "fault"), asthenospheretag=(999, "asthenosphere"))
+    mc = read_gmsh_mesh(Val(:SBarbotHex8), fname; phytag=999, reverse=false)
     fround = x -> round(x; digits=3)
     @test unique(fround, mc.L) |> length == ceil(ny / 2)
     @test unique(fround, mc.W) |> length == nz

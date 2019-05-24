@@ -1,8 +1,9 @@
 ## static green's function
 export okada_disp_gf_tensor, gen_alloc
 
-## okada
-@gen_shared_chunk_call okada_disp_gf_tensor
+## okada displacement green's function
+
+@gen_shared_chunk_call okada_disp_gf_tensor false
 
 "Okada green's function in 1-D elastic fault in [`LineOkadaMesh`](@ref)."
 function okada_disp_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
@@ -160,6 +161,49 @@ end
     @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]
             @inbounds alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
+        end
+    end
+end
+
+## okada strain green's function
+
+"Compute 6 strain components from [`dc3d`](@ref) output."
+function strain_components!(ϵ::T, u::T) where T<:AbstractVector
+    ϵ[1] = u[4]
+    ϵ[2] = (u[5] + u[7]) / 2
+    ϵ[3] = (u[6] + u[10]) / 2
+    ϵ[4] = u[8]
+    ϵ[5] = (u[9] + u[11]) / 2
+    ϵ[6] = u[12]
+end
+
+@gen_shared_chunk_call okada_strain_gf_tensor true
+
+"Compute strain green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
+function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector; kwargs...) where T
+    st = ntuple(_ -> SharedArray{T}(mf.nx * mf.nξ, length(ma.tag)), Val(length(comp)))
+    okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
+    return [sdata(x) for x in st]
+end
+
+function okada_strain_gf_tensor_chunk!(
+    st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
+    λ::T, μ::T, ft::PlaneFault, comp::AbstractVector; nrept::Integer=2, buffer_ratio::Integer=0
+    ) where {T, N}
+    ud = unit_dislocation(ft)
+    lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
+    α = (λ + μ) / (λ + 2μ)
+    u = Vector{T}(undef, 12)
+    ϵ = Vector{T}(undef, 6)
+    i2s = CartesianIndices((mf.nx, mf.nξ))
+
+    @inbounds @fastmath @simd for sub in subs
+        i, j = sub[1], sub[2] # index of fault, index of volume
+        q = i2s[i] # return (ix, iξ)
+        okada_gf_periodic_bc!(u, ma.x2[j], ma.x1[j], -ma.x3[j], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
+        strain_components!(ϵ, u)
+        for (ic, c) in enumerate(comp)
+            st[ic][i,j] = ϵ[c]
         end
     end
 end

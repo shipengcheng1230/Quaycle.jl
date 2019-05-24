@@ -183,14 +183,15 @@ macro check_and_get_mesh_entity(ecode)
         nodes = gmsh.model.mesh.getNodes()
         @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
         volumetag = phytag ≥ 0 ? gmsh.model.getEntitiesForPhysicalGroup(3, phytag) : phytag
-        es = gmsh.model.mesh.getElements(3, volumetag)
+        @assert length(volumetag) == 1 "Multiple entities associated with physical group $(phytag), please distinguish them!"
+        es = gmsh.model.mesh.getElements(3, volumetag[1])
         @assert length(es[1]) == 1 "Got more than one element type."
         etag = es[2][1]
         numelements = length(etag)
         etype = es[1][1]
         @assert etype == $(ecode) "Got element type $(gmsh.model.mesh.getElementProperties(etype)[1]), should be $(gmsh.model.mesh.getElementProperties($(ecode))[1])."
         numnodes = gmsh.model.mesh.getElementProperties(etype)[4]
-        centers = gmsh.model.mesh.getBarycenters(es[1][1], volumetag, 0, 1)
+        centers = gmsh.model.mesh.getBarycenters(es[1][1], volumetag[1], 0, 1)
         x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     end)
 end
