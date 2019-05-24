@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="JuEQ.jl"/>
-</p>
+# JuEQ.jl (Julia Earthquake Machine)
 
-# JuEQ.jl
+<p align="center">
+  <img src="/assets/logo.svg" alt="JuEQ.jl" width="200"/>
+</p>
 
 | Build Status | Coverage | Documentation  | Social | License |
 |:---:|:---:|:---:|:---:|:---:|
