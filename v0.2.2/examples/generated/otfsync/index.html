@@ -1,0 +1,1593 @@
+<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="description" content="Julia implementations of earthquake cycle simulation"><link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/otfsync/"><meta name="author" content="Pengcheng Shi"><meta name="lang:clipboard.copy" content="Copy to clipboard"><meta name="lang:clipboard.copied" content="Copied to clipboard"><meta name="lang:search.language" content="en"><meta name="lang:search.pipeline.stopwords" content="True"><meta name="lang:search.pipeline.trimmer" content="True"><meta name="lang:search.result.none" content="No matching documents"><meta name="lang:search.result.one" content="1 matching document"><meta name="lang:search.result.other" content="# matching documents"><meta name="lang:search.tokenizer" content="[\s\-\.]+"><link rel="shortcut icon" href="../../../assets/images/favicon.png"><meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.3.1"><title>Example 2D - JuEQ.jl</title><link rel="stylesheet" href="../../../assets/stylesheets/application.4031d38b.css"><link rel="stylesheet" href="../../../assets/stylesheets/application-palette.224b79ff.css"><meta name="theme-color" content="#03a9f4"><script src="../../../assets/javascripts/modernizr.74668098.js"></script><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=swap"><style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style><link rel="stylesheet" href="../../../assets/fonts/material-icons.css"><link rel="stylesheet" href="../../../assets/Documenter.css"></head><body dir="ltr" data-md-color-primary="light-blue" data-md-color-accent="light-blue"><svg class="md-svg"><defs><svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg></defs></svg> <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off"> <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off"> <label class="md-overlay" data-md-component="overlay" for="__drawer"></label><header class="md-header" data-md-component="header"><nav class="md-header-nav md-grid"><div class="md-flex"><div class="md-flex__cell md-flex__cell--shrink"><a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo"><i class="md-icon">landscape</i></a></div><div class="md-flex__cell md-flex__cell--shrink"><label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label></div><div class="md-flex__cell md-flex__cell--stretch"><div class="md-flex__ellipsis md-header-nav__title" data-md-component="title"><span class="md-header-nav__topic">JuEQ.jl</span><span class="md-header-nav__topic">Example 2D</span></div></div><div class="md-flex__cell md-flex__cell--shrink"><label class="md-icon md-icon--search md-header-nav__button" for="__search"></label><div class="md-search" data-md-component="search" role="dialog"><label class="md-search__overlay" for="__search"></label><div class="md-search__inner" role="search"><form class="md-search__form" name="search"><input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active"> <label class="md-icon md-search__icon" for="__search"></label> <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">&#xE5CD;</button></form><div class="md-search__output"><div class="md-search__scrollwrap" data-md-scrollfix><div class="md-search-result" data-md-component="result"><div class="md-search-result__meta">Type to start searching</div><ol class="md-search-result__list"></ol></div></div></div></div></div></div><div class="md-flex__cell md-flex__cell--shrink"><div class="md-header-nav__source"><a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github"><div class="md-source__icon"><svg viewBox="0 0 24 24" width="24" height="24"><use xlink:href="#__github" width="24" height="24"></use></svg></div><div class="md-source__repository">JuEQ.jl</div></a></div></div></div></nav></header><div class="md-container"><main class="md-main"><div class="md-main__inner md-grid" data-md-component="container"><div class="md-sidebar md-sidebar--primary" data-md-component="navigation"><div class="md-sidebar__scrollwrap"><div class="md-sidebar__inner"><nav class="md-nav md-nav--primary" data-md-level="0"><label class="md-nav__title md-nav__title--site" for="__drawer"><a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo"><i class="md-icon">landscape</i></a>JuEQ.jl</label><div class="md-nav__source"><a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github"><div class="md-source__icon"><svg viewBox="0 0 24 24" width="24" height="24"><use xlink:href="#__github" width="24" height="24"></use></svg></div><div class="md-source__repository">JuEQ.jl</div></a></div><ul class="md-nav__list" data-md-scrollfix><li class="md-nav__item"><a href="../../.." title="Home" class="md-nav__link">Home</a></li><li class="md-nav__item md-nav__item--active md-nav__item--nested"><input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked><label class="md-nav__link" for="nav-2">Quasi Dynamic Simulation using BEM</label><nav class="md-nav" data-md-component="collapsible" data-md-level="1"><label class="md-nav__title" for="nav-2">Quasi Dynamic Simulation using BEM</label><ul class="md-nav__list" data-md-scrollfix><li class="md-nav__item"><a href="../../../quasi_dynamic_intro/" title="Basic Theory" class="md-nav__link">Basic Theory</a></li><li class="md-nav__item"><a href="../bp1/" title="Example 1D" class="md-nav__link">Example 1D</a></li><li class="md-nav__item md-nav__item--active"><input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc"><a href="./" title="Example 2D" class="md-nav__link md-nav__link--active">Example 2D</a></li></ul></nav></li><li class="md-nav__item md-nav__item--nested"><input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3"><label class="md-nav__link" for="nav-3">Library</label><nav class="md-nav" data-md-component="collapsible" data-md-level="1"><label class="md-nav__title" for="nav-3">Library</label><ul class="md-nav__list" data-md-scrollfix><li class="md-nav__item"><a href="../../../public_interface/" title="Public" class="md-nav__link">Public</a></li><li class="md-nav__item"><a href="../../../private_interface/" title="Private" class="md-nav__link">Private</a></li></ul></nav></li><li class="md-nav__item"><a href="../../../references/" title="References" class="md-nav__link">References</a></li><li class="md-nav__item"><a href="../../../LICENSE/" title="License" class="md-nav__link">License</a></li></ul></nav></div></div></div><div class="md-content"><article class="md-content__inner md-typeset"><a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/examples/generated/otfsync.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a><h1>Example 2D</h1><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This example is adapted from <a href="https://agu.confex.com/agu/fm16/meetingapp.cgi/Paper/132124">Wei, 2016 AGU</a></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It will automatically use parallel scheme if <code>nprocs() ≂̸ 1</code> when building stiffness tensor. To do so:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">using</span> <span class="n">Distributed</span>
+<span class="n">addprocs</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> <span class="c"># add # of cores you desire</span>
+<span class="k">using</span> <span class="n">JuEQ</span>
+</pre></div>
+</td></tr></table>
+
+</div>
+<p>First, list all the essential parameters:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">using</span> <span class="n">JuEQ</span>
+<span class="k">using</span> <span class="n">Plots</span>
+
+<span class="n">ms2mmyr</span> <span class="o">=</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">86400</span> <span class="o">*</span> <span class="mf">1e3</span>
+<span class="n">ρ</span> <span class="o">=</span> <span class="mf">2670.0</span> <span class="c"># kg/m³</span>
+<span class="n">cs</span> <span class="o">=</span> <span class="mf">3044.0</span> <span class="c"># m/s</span>
+<span class="n">vpl</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="c"># mm/yr</span>
+<span class="n">v0</span> <span class="o">=</span> <span class="mf">3.2e4</span> <span class="c"># mm/yr</span>
+<span class="n">f0</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">;</span>
+<span class="n">μ</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="c"># Bar·km/mm</span>
+<span class="n">λ</span> <span class="o">=</span> <span class="n">μ</span> <span class="c"># poisson material</span>
+<span class="n">α</span> <span class="o">=</span> <span class="p">(</span><span class="n">λ</span> <span class="o">+</span> <span class="n">μ</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">λ</span> <span class="o">+</span> <span class="mi">2</span><span class="n">μ</span><span class="p">)</span>
+<span class="n">η</span> <span class="o">=</span> <span class="n">μ</span> <span class="o">/</span> <span class="mi">2</span><span class="p">(</span><span class="n">cs</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">86400</span><span class="p">)</span> <span class="c"># Bar·yr/mm</span>
+<span class="nb">nothing</span>
+</pre></div>
+</td></tr></table>
+
+<p>First, create a fault space.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">fa</span> <span class="o">=</span> <span class="n">fault</span><span class="p">(</span><span class="kt">Val</span><span class="p">(</span><span class="o">:</span><span class="n">RectOkada</span><span class="p">),</span> <span class="n">STRIKING</span><span class="p">(),</span> <span class="mf">80.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">nothing</span>
+</pre></div>
+</td></tr></table>
+
+<p>Next, establish frictional and fault space parameters:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">ones</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="p">)</span> <span class="o">.*</span> <span class="mf">0.015</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">ones</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="p">)</span> <span class="o">.*</span> <span class="mf">0.0115</span>
+<span class="n">L</span> <span class="o">=</span> <span class="n">ones</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="p">)</span> <span class="o">.*</span> <span class="mf">12.0</span>
+
+<span class="n">left_patch</span> <span class="o">=</span> <span class="err">@</span><span class="o">.</span> <span class="o">-</span><span class="mf">25.</span> <span class="o">≤</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">x</span> <span class="o">≤</span> <span class="o">-</span><span class="mf">5.</span>
+<span class="n">right_patch</span> <span class="o">=</span> <span class="err">@</span><span class="o">.</span> <span class="mf">5.</span> <span class="o">≤</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">x</span> <span class="o">≤</span> <span class="mf">25.</span>
+<span class="n">vert_patch</span> <span class="o">=</span> <span class="err">@</span><span class="o">.</span> <span class="o">-</span><span class="mf">6.</span> <span class="o">≤</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">z</span> <span class="o">≤</span> <span class="o">-</span><span class="mi">1</span>
+
+<span class="n">b</span><span class="p">[</span><span class="n">xor</span><span class="o">.</span><span class="p">(</span><span class="n">left_patch</span><span class="p">,</span> <span class="n">right_patch</span><span class="p">),</span> <span class="n">vert_patch</span><span class="p">]</span> <span class="o">.=</span> <span class="mf">0.0185</span>
+
+<span class="n">σmax</span> <span class="o">=</span> <span class="mf">500.</span>
+<span class="n">σ</span> <span class="o">=</span> <span class="p">[</span><span class="n">min</span><span class="p">(</span><span class="n">σmax</span><span class="p">,</span> <span class="mf">15.</span> <span class="o">+</span> <span class="mf">180.</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="kp">in</span> <span class="o">-</span><span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ξ</span><span class="p">]</span>
+<span class="n">σ</span> <span class="o">=</span> <span class="kt">Matrix</span><span class="p">(</span><span class="n">repeat</span><span class="p">(</span><span class="n">σ</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span><span class="o">&#39;</span><span class="p">)</span>
+<span class="n">prop</span> <span class="o">=</span> <span class="n">ElasticRSFProperty</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">σ</span><span class="o">=</span><span class="n">σ</span><span class="p">,</span> <span class="n">λ</span><span class="o">=</span><span class="n">λ</span><span class="p">,</span> <span class="n">μ</span><span class="o">=</span><span class="n">μ</span><span class="p">,</span> <span class="n">vpl</span><span class="o">=</span><span class="n">vpl</span><span class="p">,</span> <span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="n">v0</span><span class="p">,</span> <span class="n">η</span><span class="o">=</span><span class="n">η</span><span class="p">)</span>
+<span class="nb">nothing</span>
+</pre></div>
+</td></tr></table>
+
+<p>Make sure our profile match our expectation:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">plot</span><span class="p">((</span><span class="n">a</span> <span class="o">.-</span> <span class="n">b</span><span class="p">)</span><span class="o">&#39;</span><span class="p">,</span> <span class="n">seriestype</span><span class="o">=:</span><span class="n">heatmap</span><span class="p">,</span>
+    <span class="n">xticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">40</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]),</span>
+    <span class="n">yticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">5</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span>
+    <span class="n">yflip</span><span class="o">=</span><span class="kc">true</span><span class="p">,</span> <span class="n">color</span><span class="o">=:</span><span class="n">isolum</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;a-b&quot;</span><span class="p">,</span>
+    <span class="p">);</span>
+
+<span class="n">p2</span> <span class="o">=</span> <span class="n">heatmap</span><span class="p">(</span><span class="n">σ</span><span class="o">&#39;</span><span class="p">,</span>
+    <span class="n">xticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">40</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]),</span>
+    <span class="n">yticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">5</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span>
+    <span class="n">yflip</span><span class="o">=</span><span class="kc">true</span><span class="p">,</span> <span class="n">color</span><span class="o">=:</span><span class="n">isolum</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;</span><span class="se">\\</span><span class="s">sigma&quot;</span>
+    <span class="p">);</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip8900">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip8900)" points="
+0,1600 2400,1600 2400,0 0,0 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip8901">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip8900)" points="
+140.517,651.16 2112.76,651.16 2112.76,158.1 140.517,158.1 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip8902">
+    <rect x="140" y="158" width="1973" height="494"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  146.68,158.1 146.68,651.16 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  639.74,158.1 639.74,651.16 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1132.8,158.1 1132.8,651.16 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1625.86,158.1 1625.86,651.16 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  2118.92,158.1 2118.92,651.16 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,170.426 2112.76,170.426 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,293.691 2112.76,293.691 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,416.956 2112.76,416.956 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,540.221 2112.76,540.221 
+  "/>
+<polyline clip-path="url(#clip8902)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,663.486 2112.76,663.486 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,651.16 2112.76,651.16 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,158.1 140.517,651.16 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  146.68,651.16 146.68,643.764 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  639.74,651.16 639.74,643.764 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1132.8,651.16 1132.8,643.764 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1625.86,651.16 1625.86,643.764 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2118.92,651.16 2118.92,643.764 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,170.426 170.1,170.426 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,293.691 170.1,293.691 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,416.956 170.1,416.956 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,540.221 170.1,540.221 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,663.486 170.1,663.486 
+  "/>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 146.68, 705.16)" x="146.68" y="705.16">-40</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 639.74, 705.16)" x="639.74" y="705.16">-20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1132.8, 705.16)" x="1132.8" y="705.16">0</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1625.86, 705.16)" x="1625.86" y="705.16">20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 2118.92, 705.16)" x="2118.92" y="705.16">40</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 187.926)" x="116.517" y="187.926">0</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 311.191)" x="116.517" y="311.191">5</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 434.456)" x="116.517" y="434.456">10</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 557.721)" x="116.517" y="557.721">15</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 680.986)" x="116.517" y="680.986">20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:84px; text-anchor:middle;" transform="rotate(0, 1126.64, 73.2)" x="1126.64" y="73.2">a-b</text>
+</g>
+<g clip-path="url(#clip8902)">
+<image width="1972" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAB7QAAAHtCAYAAACZAEE6AAATi0lEQVR4nO3bwQnCUBRFQSP2YY02
+IMQG7CUdWcl3L1kICv8EZiq4yweHt4xtHScAAAAAAAAAiDnPHgAAAAAAAAAAewRtAAAAAAAAAJIE
+bQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAA
+AJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAA
+AAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRt
+AAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAA
+kgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAA
+AAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0A
+AAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACS
+BG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAA
+AACSBG0AAAAAAAAAki6zBwDwu9v1PnsCAPCF5+sxewLwR+5wADgGdzjAsfnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgaRnbOmaPAAAAAAAAAIBP
+PrQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAA
+AABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEA
+AAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgS
+tAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAA
+AEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAA
+AAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0
+AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAA
+SBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAA
+AAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQB
+AAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABI
+ErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAA
+AABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEA
+AAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgS
+tAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAA
+AEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAA
+AAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0
+AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAA
+SBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAA
+AAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQB
+AAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABI
+ErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAA
+AABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEA
+AAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgS
+tAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAA
+AEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAA
+AAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0
+AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAA
+SBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAA
+AAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQB
+AAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABI
+ErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAA
+AABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEA
+AAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgS
+tAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAA
+AEgStAEAAAAAAABIErQBAAAAAAAASHoDIx4QPXdo2dYAAAAASUVORK5CYII=
+" transform="translate(141, 158)"/>
+</g>
+<defs>
+  <clipPath id="clip8903">
+    <rect x="2160" y="158" width="73" height="494"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip8903)">
+<image width="72" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAEgAAAHtCAYAAAC6SziuAAAEjElEQVR4nO3dwZEbMQwAQa4KiV9K
+SpCK4DBP6dEdgQs1C3Il2X7u++8e/vX69h/g1xlQMKAw51hBGwWFOc+3/wi/TUHBDgoKCgYUDCjM
+eeygjYKCAQUDCgYUDCg4xYKCggEFAwoGFAwoOMWCgsLoZ6egYEDBkg4KCgYUDCg45oOCglMsKCjY
+QUFBQUFBQcEpFhQU7KCgoKCgoKAw1w/JVwoKfkgeFBScYsGSDh6xYEDBgMJcx/xKQcEpFhQUXBSD
+goIBBQMKTrGgoOAUCwoK3sWCgoIBBQMK7kFBQcE9KCgoKCgoKPh3FINHLHjEgpfVoKDgVSMoKDjF
+goKCHRQUFOygoKCgoKCgoKCgoOADs6CgYAcFBQUFBQUFb/NBQcEOCgYUPGLBq0ZQULCDgoLCXEto
+paBgBwUFBS+rQUHBDgoKCgoKCgre5oOCgh0UFBQUFBQUfB4UFBS8zQcFBadYMKDgEQteVoOCgoti
+UFBwigUFBQUFBQUvq0FBwT0oKCg4xYKCgoKCgoJ7UFBQcA8KCgoGFAwouAeFuY8lvfGIBY9YUFBQ
+UFBQ8KoRFBR83BEUFOygoKDgHhQUFBQUFBR8HhQUFOygoKDgJh0UFOygoKDg86CgoDDHKbaypINH
+LLgoBgUFOygoKPjALCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcEOCgoKvnoOHrHg
+EQuO+aCgYAcFBQU7KCgo+Mg1KCg4xYKCglMsKCjYQUFBwQ4KCgpu0kFBwSkWFBQUFBQU3IOCgoId
+FAwoeMSCX3cEBQU7KCgoKCgoKCgoKCgoKCgoKCgoKPjaJygo2EFBQUFBQUHB1z5BQcEOCgoKCgoG
+FDxiwb8nHRQU7KCgoKCgoKDg5y9BQcEOCgoKbtJBQcEOCgoKCgoKCgoKCgruQUFBwQ4KCgoKCgoK
+TrHgEQseseAXZkFBwZIOCgpOsaCgYAcFBQU7KCgoKCgoKDjFgoKCHRQUFOygoKBgBwUFBTsoKCjY
+QUFBwYCCRywoKDjmg4KCHRQUFOygoKBgBwUFBTsoKCgoKCgoOMWCgoIdFBQU/FWEoKBgBwUFBQUF
+BQU36eARCx6xoKCgoGBJBwUFOygoKCgoKCj4wCwoKNhBQUFBQUFBwbtYUFCwg4KCgoKCgoJTLCgo
+2EFBQcGAgkcsKCg45oOCgh0UFBQUFBQUFBQUFNyDgoLCHL9eWCkoOMWCgoKCgoKCe1BQULCDgoKC
+goKCggEFj1hQUHBRDAoKdlBQUFBQUFBQUFBQMKBgQMFNOigoOMWCgoKCgoKCgoKCwpyroI2Cgpt0
+UFBwigUDCh6xoKCgoKCgoKBgQMGAgh0UFBS8rAYFBTsoKCgoKCgoGFAwoGAHBQUFXxwGBQU7KCgo
+KCgoKPjPj4JHLHjEgoKCgoKCgoKCgoKCggEFAwp2UFBQUFBQUFBQUFCY62uflYKCAQUDCk6xoKCg
+oKCgoKBgQMEjFgwoGFCwg4KCgoKCgoKCgoKCAQUDCnZQUFDwtU9QULCDgoKCAQUDCgYUDCgYUDCg
+YEDhA5L7qeKYT8uDAAAAAElFTkSuQmCC
+" transform="translate(2161, 158)"/>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 629.592)" x="2268.76" y="629.592">-</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 629.592)" x="2296.87" y="629.592">0.003</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 559.155)" x="2268.76" y="559.155">-</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 559.155)" x="2296.87" y="559.155">0.002</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 488.718)" x="2268.76" y="488.718">-</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 488.718)" x="2296.87" y="488.718">0.001</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 418.281)" x="2268.76" y="418.281">0</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 347.844)" x="2268.76" y="347.844">0.001</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 277.407)" x="2268.76" y="277.407">0.002</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 206.97)" x="2268.76" y="206.97">0.003</text>
+</g>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2232.76,651.16 2232.76,615.941 2256.76,615.941 2232.76,615.941 2232.76,545.504 2256.76,545.504 2232.76,545.504 2232.76,475.067 2256.76,475.067 2232.76,475.067 
+  2232.76,404.63 2256.76,404.63 2232.76,404.63 2232.76,334.193 2256.76,334.193 2232.76,334.193 2232.76,263.755 2256.76,263.755 2232.76,263.755 2232.76,193.318 
+  2256.76,193.318 2232.76,193.318 2232.76,158.1 
+  "/>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:66px; text-anchor:middle;" transform="rotate(-90, 2410.36, 404.63)" x="2410.36" y="404.63"></text>
+</g>
+<polygon clip-path="url(#clip8900)" points="
+140.517,1451.05 2112.76,1451.05 2112.76,957.99 140.517,957.99 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip8904">
+    <rect x="140" y="957" width="1973" height="494"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  146.68,957.99 146.68,1451.05 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  639.74,957.99 639.74,1451.05 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1132.8,957.99 1132.8,1451.05 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1625.86,957.99 1625.86,1451.05 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  2118.92,957.99 2118.92,1451.05 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,970.317 2112.76,970.317 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,1093.58 2112.76,1093.58 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,1216.85 2112.76,1216.85 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,1340.11 2112.76,1340.11 
+  "/>
+<polyline clip-path="url(#clip8904)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,1463.38 2112.76,1463.38 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1451.05 2112.76,1451.05 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,957.99 140.517,1451.05 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  146.68,1451.05 146.68,1443.65 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  639.74,1451.05 639.74,1443.65 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1132.8,1451.05 1132.8,1443.65 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1625.86,1451.05 1625.86,1443.65 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2118.92,1451.05 2118.92,1443.65 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,970.317 170.1,970.317 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1093.58 170.1,1093.58 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1216.85 170.1,1216.85 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1340.11 170.1,1340.11 
+  "/>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1463.38 170.1,1463.38 
+  "/>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 146.68, 1505.05)" x="146.68" y="1505.05">-40</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 639.74, 1505.05)" x="639.74" y="1505.05">-20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1132.8, 1505.05)" x="1132.8" y="1505.05">0</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1625.86, 1505.05)" x="1625.86" y="1505.05">20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 2118.92, 1505.05)" x="2118.92" y="1505.05">40</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 987.817)" x="116.517" y="987.817">0</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 1111.08)" x="116.517" y="1111.08">5</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 1234.35)" x="116.517" y="1234.35">10</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 1357.61)" x="116.517" y="1357.61">15</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 1480.88)" x="116.517" y="1480.88">20</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Symbol; font-size:91px; text-anchor:start;" transform="rotate(0, 1099.3, 875.105)" x="1099.3" y="875.105">σ</text>
+</g>
+<g clip-path="url(#clip8904)">
+<image width="1972" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAB7QAAAHtCAYAAACZAEE6AAATiElEQVR4nO3boXFCQQBFUT6zxGAj
+qIK0RqtEkTKSQeB+Clj8XnFOBc/fedvtvu8HAAAAAAAAAIg5rh4AAAAAAAAAAO8I2gAAAAAAAAAk
+CdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAAAAAAAAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAAAAAA
+AAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAAAAAAAAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAA
+AAAAAAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAAAAAAAAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ
+2gAAAAAAAAAkCdoAAAAAAAAAJAnaAAAAAAAAACQJ2gAAAAAAAAAkCdoAAAAAAAAAJI2P08/qDQAA
+AAAAAAAw8dAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgaXxu36s3AAAAAAAAAMDEQxsAAAAAAACAJEEbAAAAAAAAgCRBGwAA
+AAAAAIAkQRsAAAAAAACAJEEbAAAAAAAAgCRBGwAAAAAAAIAkQRsAAAAAAACAJEEbAAAAAAAAgCRB
+GwAAAAAAAIAkQRsAAAAAAACAJEEbAAAAAAAAgCRBGwAAAAAAAIAkQRsAAAAAAACAJEEbAAAAAAAA
+gCRBGwAAAAAAAIAkQRsAAAAAAACAJEEbAAAAAAAAgCRBGwAAAAAAAIAkQRsAAAAAAACAJEEbAAAA
+AAAAgCRBGwAAAAAAAIAkQRsAAAAAAACAJEEbAAAAAAAAgKTx9Xqs3gAAAAAAAAAAEw9tAAAAAAAA
+AJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAA
+AAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRt
+AAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAA
+kgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAAAAAAkgRtAAAAAAAAAJIEbQAAAAAAAACSBG0AAAAA
+AAAAksb177l6AwAAAAAAAABMPLQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAA
+SBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAA
+AAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQB
+AAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABI
+ErQBAAAAAAAASBK0AQAAAAAAAEgStAEAAAAAAABIGpff8+oNAAAAAAAAADDx0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAA
+ACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAA
+AAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQ
+BgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAA
+IEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAA
+AAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAG
+AAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAg
+SdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAA
+AAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYA
+AAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ0AYAAAAAAAAgSdAGAAAAAAAAIEnQBgAAAAAAACBJ
+0AYAAAAAAAAgSdAGAAAAAAAAIOkfjXQOFUqK6vEAAAAASUVORK5CYII=
+" transform="translate(141, 958)"/>
+</g>
+<defs>
+  <clipPath id="clip8905">
+    <rect x="2160" y="957" width="73" height="494"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip8905)">
+<image width="72" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAEgAAAHtCAYAAAC6SziuAAAEjElEQVR4nO3dwZEbMQwAQa4KiV9K
+SpCK4DBP6dEdgQs1C3Il2X7u++8e/vX69h/g1xlQMKAw51hBGwWFOc+3/wi/TUHBDgoKCgYUDCjM
+eeygjYKCAQUDCgYUDCg4xYKCggEFAwoGFAwoOMWCgsLoZ6egYEDBkg4KCgYUDCg45oOCglMsKCjY
+QUFBQUFBQcEpFhQU7KCgoKCgoKAw1w/JVwoKfkgeFBScYsGSDh6xYEDBgMJcx/xKQcEpFhQUXBSD
+goIBBQMKTrGgoOAUCwoK3sWCgoIBBQMK7kFBQcE9KCgoKCgoKPh3FINHLHjEgpfVoKDgVSMoKDjF
+goKCHRQUFOygoKCgoKCgoKCgoOADs6CgYAcFBQUFBQUFb/NBQcEOCgYUPGLBq0ZQULCDgoLCXEto
+paBgBwUFBS+rQUHBDgoKCgoKCgre5oOCgh0UFBQUFBQUfB4UFBS8zQcFBadYMKDgEQteVoOCgoti
+UFBwigUFBQUFBQUvq0FBwT0oKCg4xYKCgoKCgoJ7UFBQcA8KCgoGFAwouAeFuY8lvfGIBY9YUFBQ
+UFBQ8KoRFBR83BEUFOygoKDgHhQUFBQUFBR8HhQUFOygoKDgJh0UFOygoKDg86CgoDDHKbaypINH
+LLgoBgUFOygoKPjALCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcEOCgoKvnoOHrHg
+EQuO+aCgYAcFBQU7KCgo+Mg1KCg4xYKCglMsKCjYQUFBwQ4KCgpu0kFBwSkWFBQUFBQU3IOCgoId
+FAwoeMSCX3cEBQU7KCgoKCgoKCgoKCgoKCgoKCgoKPjaJygo2EFBQUFBQUHB1z5BQcEOCgoKCgoG
+FDxiwb8nHRQU7KCgoKCgoKDg5y9BQcEOCgoKbtJBQcEOCgoKCgoKCgoKCgruQUFBwQ4KCgoKCgoK
+TrHgEQseseAXZkFBwZIOCgpOsaCgYAcFBQU7KCgoKCgoKDjFgoKCHRQUFOygoKBgBwUFBTsoKCjY
+QUFBwYCCRywoKDjmg4KCHRQUFOygoKBgBwUFBTsoKCgoKCgoOMWCgoIdFBQU/FWEoKBgBwUFBQUF
+BQU36eARCx6xoKCgoGBJBwUFOygoKCgoKCj4wCwoKNhBQUFBQUFBwbtYUFCwg4KCgoKCgoJTLCgo
+2EFBQcGAgkcsKCg45oOCgh0UFBQUFBQUFBQUFNyDgoLCHL9eWCkoOMWCgoKCgoKCe1BQULCDgoKC
+goKCggEFj1hQUHBRDAoKdlBQUFBQUFBQUFBQMKBgQMFNOigoOMWCgoKCgoKCgoKCwpyroI2Cgpt0
+UFBwigUDCh6xoKCgoKCgoKBgQMGAgh0UFBS8rAYFBTsoKCgoKCgoGFAwoGAHBQUFXxwGBQU7KCgo
+KCgoKPjPj4JHLHjEgoKCgoKCgoKCgoKCggEFAwp2UFBQUFBQUFBQUFCY62uflYKCAQUDCk6xoKCg
+oKCgoKBgQMEjFgwoGFCwg4KCgoKCgoKCgoKCAQUDCnZQUFDwtU9QULCDgoKCAQUDCgYUDCgYUDCg
+YEDhA5L7qeKYT8uDAAAAAElFTkSuQmCC
+" transform="translate(2161, 958)"/>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1419.88)" x="2268.76" y="1419.88">100</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1363.85)" x="2268.76" y="1363.85">150</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1307.82)" x="2268.76" y="1307.82">200</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1251.79)" x="2268.76" y="1251.79">250</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1195.76)" x="2268.76" y="1195.76">300</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1139.73)" x="2268.76" y="1139.73">350</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1083.7)" x="2268.76" y="1083.7">400</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1027.67)" x="2268.76" y="1027.67">450</text>
+</g>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 971.641)" x="2268.76" y="971.641">500</text>
+</g>
+<polyline clip-path="url(#clip8900)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2232.76,1451.05 2232.76,1406.23 2256.76,1406.23 2232.76,1406.23 2232.76,1350.2 2256.76,1350.2 2232.76,1350.2 2232.76,1294.17 2256.76,1294.17 2232.76,1294.17 
+  2232.76,1238.14 2256.76,1238.14 2232.76,1238.14 2232.76,1182.11 2256.76,1182.11 2232.76,1182.11 2232.76,1126.08 2256.76,1126.08 2232.76,1126.08 2232.76,1070.05 
+  2256.76,1070.05 2232.76,1070.05 2232.76,1014.02 2256.76,1014.02 2232.76,1014.02 2232.76,957.99 2256.76,957.99 2232.76,957.99 
+  "/>
+<g clip-path="url(#clip8900)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:66px; text-anchor:middle;" transform="rotate(-90, 2410.36, 1204.52)" x="2410.36" y="1204.52"></text>
+</g>
+</svg>
+
+<p>Then, provide the initial condition and assemble the ODEs:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vinit</span> <span class="o">=</span> <span class="n">vpl</span> <span class="o">.*</span> <span class="n">ones</span><span class="p">(</span><span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="p">)</span>
+<span class="n">θ0</span> <span class="o">=</span> <span class="n">L</span> <span class="o">./</span> <span class="n">vinit</span> <span class="o">./</span> <span class="mf">1.1</span>
+<span class="n">u0</span> <span class="o">=</span> <span class="n">cat</span><span class="p">(</span><span class="n">vinit</span><span class="p">,</span> <span class="n">θ0</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">prob</span><span class="p">,</span> <span class="o">=</span> <span class="n">assemble</span><span class="p">(</span><span class="n">fa</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">18.</span><span class="p">);</span> <span class="n">buffer_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">nothing</span>
+</pre></div>
+</td></tr></table>
+
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="codehilite"><pre><span></span>Computing green&#39;s function ... 19%|████                 |  ETA: 0:00:02[K
+Computing green&#39;s function ... 40%|████████▍            |  ETA: 0:00:01[K
+Computing green&#39;s function ... 61%|████████████▊        |  ETA: 0:00:01[K
+Computing green&#39;s function ... 81%|█████████████████▏   |  ETA: 0:00:00[K
+Computing green&#39;s function ...100%|█████████████████████| Time: 0:00:02[K
+</pre></div>
+</td></tr></table>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges to immitate <em>zero</em> dislocation at the ridge region. Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.</p>
+<p>Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of <code>bufferratio/2*fa[:x]</code>. Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.</p>
+</div>
+<p>Afterwards, solve ODEs problem:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">sol</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">Tsit5</span><span class="p">(),</span> <span class="n">reltol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">abstol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="nb">nothing</span>
+</pre></div>
+</td></tr></table>
+
+<p>Last, take a look at the max velocity time series:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">maxv</span> <span class="o">=</span> <span class="n">JuEQ</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">log10</span><span class="o">.</span><span class="p">(</span><span class="n">maxv</span> <span class="o">/</span> <span class="n">ms2mmyr</span><span class="p">),</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">&quot;Time (year)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;Max Velocity (log10 (m/s))&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip9500">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip9500)" points="
+0,1600 2400,1600 2400,0 0,0 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip9501">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip9500)" points="
+203.721,1425.62 2352.76,1425.62 2352.76,47.2441 203.721,47.2441 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip9502">
+    <rect x="203" y="47" width="2150" height="1379"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  264.542,1425.62 264.542,47.2441 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  827.707,1425.62 827.707,47.2441 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1390.87,1425.62 1390.87,47.2441 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1954.04,1425.62 1954.04,47.2441 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,1287.31 2352.76,1287.31 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,1094.33 2352.76,1094.33 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,901.356 2352.76,901.356 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,708.381 2352.76,708.381 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,515.406 2352.76,515.406 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,322.431 2352.76,322.431 
+  "/>
+<polyline clip-path="url(#clip9502)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  203.721,129.456 2352.76,129.456 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,1425.62 2352.76,1425.62 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,1425.62 203.721,47.2441 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  264.542,1425.62 264.542,1404.94 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  827.707,1425.62 827.707,1404.94 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1390.87,1425.62 1390.87,1404.94 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1954.04,1425.62 1954.04,1404.94 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,1287.31 235.956,1287.31 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,1094.33 235.956,1094.33 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,901.356 235.956,901.356 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,708.381 235.956,708.381 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,515.406 235.956,515.406 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,322.431 235.956,322.431 
+  "/>
+<polyline clip-path="url(#clip9500)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  203.721,129.456 235.956,129.456 
+  "/>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 264.542, 1479.62)" x="264.542" y="1479.62">0</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 827.707, 1479.62)" x="827.707" y="1479.62">5</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1390.87, 1479.62)" x="1390.87" y="1479.62">10</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1954.04, 1479.62)" x="1954.04" y="1479.62">15</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 1304.81)" x="179.721" y="1304.81">-8</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 1111.83)" x="179.721" y="1111.83">-7</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 918.856)" x="179.721" y="918.856">-6</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 725.881)" x="179.721" y="725.881">-5</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 532.906)" x="179.721" y="532.906">-4</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 339.931)" x="179.721" y="339.931">-3</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 179.721, 146.956)" x="179.721" y="146.956">-2</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:66px; text-anchor:middle;" transform="rotate(0, 1278.24, 1559.48)" x="1278.24" y="1559.48">Time (year)</text>
+</g>
+<g clip-path="url(#clip9500)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:66px; text-anchor:middle;" transform="rotate(-90, 89.2861, 736.431)" x="89.2861" y="736.431">Max Velocity (log10 (m/s))</text>
+</g>
+<polyline clip-path="url(#clip9502)" style="stroke:#009af9; stroke-width:4; stroke-opacity:1; fill:none" points="
+  264.542,1383.56 267.136,1384.48 268.499,1384.8 271.161,1385.25 273.527,1385.54 276.977,1385.86 280.697,1386.09 285.385,1386.3 290.493,1386.44 296.248,1386.54 
+  302.471,1386.59 309.241,1386.61 316.505,1386.23 323.978,1385.7 330.236,1385.33 335.451,1385.07 340.261,1384.88 345.101,1384.71 350.162,1384.57 355.47,1384.46 
+  360.948,1384.36 366.477,1384.29 371.966,1384.24 377.382,1384.19 382.735,1384.16 388.051,1384.13 393.357,1384.11 398.667,1384.09 403.981,1384.07 409.298,1384.05 
+  414.609,1384.04 419.912,1384.03 425.204,1384.01 430.485,1384 435.757,1383.99 441.022,1383.98 446.28,1383.97 451.532,1383.96 456.778,1383.95 462.016,1383.95 
+  467.248,1383.94 472.473,1383.93 477.691,1383.92 482.902,1383.91 488.106,1383.9 493.303,1383.9 498.492,1383.89 503.673,1380.95 508.846,1375.68 514.008,1369.62 
+  519.155,1363.33 524.28,1355.84 529.358,1347.88 534.332,1338.5 539.098,1327.96 543.543,1316.79 547.61,1305.05 551.275,1292.77 554.176,1281.64 556.676,1270.59 
+  559.008,1258.12 560.84,1246.59 562.419,1235.19 563.89,1222.22 565.04,1209.32 566.032,1196.35 566.956,1182.26 567.768,1167.93 568.413,1155.25 569.039,1142.04 
+  569.586,1132.51 570.096,1122.18 570.563,1116.52 571.005,1112.48 571.43,1111.03 571.833,1112.59 572.193,1113.02 572.536,1105.02 572.872,1100.45 573.201,1099.24 
+  573.523,1100.83 573.826,1089.22 574.111,1082.54 574.384,1081.35 574.653,1083.05 574.921,1086.28 575.167,1091.98 575.411,1079.93 575.635,1072.51 575.851,1070.75 
+  576.06,1071.99 576.273,1076.58 576.484,1077.33 576.691,1081.92 576.901,1084.21 577.117,1090.38 577.34,1090.68 577.571,1099.49 577.808,1098.4 578.061,1102.7 
+  578.316,1109.73 578.59,1107.79 578.867,1114 579.157,1116.33 579.458,1115.46 579.766,1114.33 580.083,1113.52 580.403,1113.16 580.733,1111.93 581.064,1110.83 
+  581.395,1111.11 581.733,1110.24 582.071,1108.61 582.404,1109.94 582.743,1109.01 583.081,1107.02 583.417,1110.57 583.749,1107.67 584.085,1107.5 584.424,1110.54 
+  584.746,1109.53 585.088,1110.92 585.416,1110.97 585.755,1114.47 586.079,1113.76 586.423,1117.21 586.758,1123.61 587.101,1120.95 587.443,1125.62 587.797,1130.26 
+  588.165,1135.5 588.519,1135.6 588.906,1141.26 589.298,1152.05 589.711,1155.78 590.123,1155.84 590.562,1163 591.033,1174.55 591.543,1184.5 592.047,1184.79 
+  592.591,1190.94 593.183,1202.93 593.837,1214.45 594.516,1217.99 595.238,1224.24 596.026,1228.16 596.881,1234.85 597.793,1240.92 598.763,1246.7 599.793,1255.46 
+  600.892,1262.03 602.068,1268.54 603.331,1271 604.696,1274.59 606.179,1276.72 607.803,1279.85 609.59,1281.81 611.554,1283.97 613.703,1285.75 616.039,1287.91 
+  618.561,1289.5 621.263,1293.12 624.137,1296.76 627.176,1301.47 630.383,1306.92 633.767,1312.26 637.346,1317.9 641.142,1323.69 645.179,1329.58 649.485,1335.37 
+  654.089,1341.12 659.019,1347.03 664.31,1352.89 669.997,1358.74 676.122,1364.57 682.716,1367.89 689.318,1370.3 694.049,1371.88 698.454,1373.23 702.92,1374.53 
+  707.59,1375.82 712.484,1377.09 717.541,1378.27 722.676,1379.4 727.826,1380.45 732.966,1381.39 738.101,1382.22 743.247,1382.97 748.419,1383.58 753.624,1383.83 
+  758.862,1383.88 764.125,1383.93 769.409,1383.98 774.708,1384.02 780.019,1384.06 785.341,1384.1 790.673,1384.14 796.015,1384.17 801.366,1384.2 806.725,1384.23 
+  812.091,1384.25 817.462,1384.27 822.837,1384.29 828.215,1384.3 833.596,1384.31 838.977,1384.32 844.36,1384.33 849.742,1384.33 855.123,1384.33 860.502,1384.33 
+  865.879,1384.32 871.253,1384.31 876.622,1384.31 881.988,1384.3 887.348,1384.28 892.702,1384.27 898.049,1384.26 903.388,1378.23 908.717,1371.61 914.031,1363.17 
+  919.316,1352.33 924.537,1343.77 929.596,1333.86 934.367,1319.9 938.781,1308.39 942.804,1300.19 946.41,1286.27 949.269,1272.77 952.069,1267.75 954.533,1258.65 
+  956.507,1246.88 958.213,1235.17 959.814,1233.59 961.309,1236.42 962.846,1224.97 964.161,1212.13 965.222,1201.17 966.239,1199.42 967.166,1206.81 968.136,1206.98 
+  969.133,1196.79 969.991,1191.39 970.828,1175.06 971.542,1167.76 972.195,1170.05 972.822,1179.5 973.473,1186.99 974.16,1175.18 974.789,1169.13 975.384,1166.14 
+  975.957,1150.14 976.467,1140.8 976.919,1139.92 977.35,1147.51 977.779,1151.41 978.228,1162.83 978.698,1156.11 979.165,1147.45 979.596,1144.69 980.016,1142.73 
+  980.429,1127.13 980.803,1116.8 981.132,1113.79 981.442,1118.69 981.745,1120.8 982.053,1129.37 982.374,1144.78 982.722,1138.34 983.07,1128.45 983.402,1123 
+  983.717,1123.32 984.027,1119.46 984.34,1104.18 984.617,1093.85 984.864,1090.07 985.094,1093.77 985.318,1094.29 985.542,1101.68 985.773,1116.26 986.021,1132.1 
+  986.288,1120.04 986.554,1109.74 986.816,1102.92 987.059,1101.4 987.298,1105.8 987.538,1093.2 987.777,1078.8 987.979,1070.02 988.166,1067.55 988.337,1069.59 
+  988.507,1071.19 988.674,1080.25 988.848,1096.4 989.038,1117.88 989.239,1110.85 989.445,1099.29 989.667,1088.71 989.867,1082.32 990.06,1080.95 990.244,1085.48 
+  990.432,1076.74 990.624,1061.3 990.788,1050.55 990.937,1045.49 991.071,1047.48 991.201,1047.19 991.328,1054.18 991.458,1068.57 991.597,1088.97 991.751,1108.61 
+  991.905,1097.25 992.076,1084.95 992.26,1072.96 992.425,1064.54 992.582,1060.57 992.73,1062.31 992.877,1067.5 993.027,1051.38 993.175,1036.51 993.298,1026.89 
+  993.411,1023.09 993.512,1024.5 993.611,1026.75 993.709,1036.43 993.81,1053.25 993.921,1075.68 994.039,1095.09 994.16,1088.59 994.297,1076.19 994.451,1062.51 
+  994.594,1051 994.727,1042.93 994.85,1039.84 994.967,1042.69 995.083,1047.04 995.203,1030.54 995.319,1015.18 995.416,1004.89 995.503,1000.25 995.582,1002.35 
+  995.657,1005.34 995.732,1015.71 995.81,1033.14 995.896,1056.21 995.986,1076.95 996.08,1074.63 996.184,1070.89 996.305,1057.13 996.432,1042.83 996.548,1030.68 
+  996.656,1021.94 996.754,1018.26 996.846,1020.63 996.936,1029.21 997.03,1012.5 997.124,995.65 997.2,983.596 997.262,977.038 997.322,975.99 997.376,980.853 
+  997.43,988.689 997.486,1003.11 997.547,1023.72 997.614,1048.15 997.68,1058.21 997.755,1054.64 997.838,1052.13 997.935,1044.77 998.033,1030.46 998.13,1016.35 
+  998.219,1004.6 998.3,996.824 998.374,994.5 998.443,998.517 998.512,1003.62 998.584,986.229 998.653,969.169 998.71,956.622 998.754,949.66 998.798,947.966 
+  998.837,953.078 998.877,965.592 998.917,982.355 998.962,1003.69 999.011,1027.84 999.06,1040.07 999.114,1035.26 999.176,1029.61 999.25,1022.73 999.323,1017.59 
+  999.396,1007.1 999.468,992.788 999.537,979.853 999.598,970.683 999.653,966.679 999.704,968.958 999.754,977.867 999.805,964.166 999.857,946.23 999.899,931.14 
+  999.931,921.019 999.963,914.644 999.991,914.747 1000.02,922.181 1000.04,936.764 1000.07,957.807 1000.11,984.305 1000.14,1003.99 1000.17,1000.99 1000.21,998.897 
+  1000.26,992.476 1000.31,986.694 1000.36,982.95 1000.41,981.878 1000.45,976.744 1000.5,962.117 1000.55,947.964 1000.59,937.233 1000.63,931.209 1000.67,931.25 
+  1000.7,937.951 1000.73,925.205 1000.76,909.339 1000.79,896.94 1000.81,886.559 1000.83,875.964 1000.85,869.082 1000.87,868.033 1000.88,873.928 1000.9,887.093 
+  1000.91,906.757 1000.93,931.938 1000.95,954.754 1000.97,949.379 1000.99,943.834 1001.02,938.467 1001.04,934.358 1001.07,932.746 1001.1,934.173 1001.13,939.069 
+  1001.15,947.515 1001.18,932.64 1001.21,915.502 1001.24,899.241 1001.27,885.872 1001.29,877.73 1001.31,873.99 1001.32,865.308 1001.34,848.608 1001.35,836.19 
+  1001.36,826.97 1001.37,821.497 1001.38,821.404 1001.39,812.146 1001.4,799.033 1001.4,789.941 1001.41,786.469 1001.42,789.629 1001.42,799.965 1001.43,817.149 
+  1001.44,815.709 1001.44,795.625 1001.45,775.676 1001.46,759.648 1001.46,747.425 1001.46,738.578 1001.47,733.149 1001.47,732.562 1001.47,737.417 1001.48,747.903 
+  1001.48,763.772 1001.48,784.123 1001.49,806.233 1001.49,824.723 1001.49,834.776 1001.5,824.237 1001.5,811.315 1001.51,794.32 1001.52,773.406 1001.52,752.553 
+  1001.53,735.729 1001.53,721.315 1001.54,708.834 1001.54,697.829 1001.54,690.747 1001.54,688.447 1001.54,692.194 1001.55,702.628 1001.55,719.203 1001.55,740.994 
+  1001.55,752.349 1001.55,739.434 1001.56,721.813 1001.56,698.859 1001.56,674.355 1001.56,650.92 1001.57,628.125 1001.57,605.355 1001.57,583.267 1001.57,563.523 
+  1001.57,546.185 1001.57,530.98 1001.57,518.289 1001.57,508.477 1001.57,501.767 1001.57,500.146 1001.57,504.61 1001.57,515.747 1001.57,533.504 1001.57,556.797 
+  1001.57,586.371 1001.57,612.47 1001.57,629.449 1001.57,646.829 1001.57,666.184 1001.57,675.808 1001.57,670.111 1001.57,663.214 1001.57,654.644 1001.57,643.924 
+  1001.58,630.619 1001.58,615.169 1001.58,599.923 1001.58,585.5 1001.58,575.031 1001.58,567.494 1001.58,563.541 1001.58,564.671 1001.58,571.771 1001.58,585.02 
+  1001.58,603.91 1001.58,627.765 1001.58,641.187 1001.58,641.902 1001.58,634.746 1001.58,616.442 1001.58,594.637 1001.59,566.676 1001.59,539.786 1001.59,520.129 
+  1001.59,499.018 1001.59,477.295 1001.59,458.194 1001.59,441.017 1001.59,424.899 1001.59,410.38 1001.59,397.799 1001.59,387.427 1001.59,379.234 1001.59,375.291 
+  1001.59,376.486 1001.59,383.518 1001.59,385.418 1001.59,371.521 1001.59,357.903 1001.59,349.466 1001.59,345.253 1001.59,345.958 1001.59,352.534 1001.59,365.681 
+  1001.59,384.804 1001.59,409.453 1001.59,440.146 1001.59,466.572 1001.59,493.277 1001.59,518.548 1001.59,529.4 1001.59,524.394 1001.59,518.007 1001.59,509.835 
+  1001.59,500.467 1001.59,488.676 1001.59,473.861 1001.59,454.62 1001.59,432.748 1001.59,414.451 1001.59,398.888 1001.59,384.071 1001.59,370.821 1001.59,359.632 
+  1001.59,349.93 1001.59,344.127 1001.59,343.026 1001.59,347.775 1001.59,359.008 1001.59,376.066 1001.59,388.666 1001.59,377.107 1001.59,367.355 1001.59,358.547 
+  1001.59,353.294 1001.59,351.904 1001.59,355.576 1001.59,365.236 1001.59,380.865 1001.59,402.176 1001.59,428.939 1001.59,457.746 1001.59,483.807 1001.59,503.292 
+  1001.59,505.487 1001.59,509.062 1001.59,514.656 1001.59,523.418 1001.59,535.564 1001.59,550.603 1001.59,568.447 1001.59,571.265 1001.59,566.535 1001.59,561.615 
+  1001.59,556.73 1001.59,546.636 1001.59,536.378 1001.59,526.594 1001.59,518.709 1001.59,514.085 1001.59,513.968 1001.59,519.315 1001.59,530.582 1001.59,547.301 
+  1001.59,568.85 1001.59,570.264 1001.59,569.021 1001.59,571.847 1001.6,574.474 1001.6,564.239 1001.6,554.37 1001.6,547.068 1001.6,543.256 1001.6,544.207 
+  1001.6,550.858 1001.6,563.647 1001.6,570.428 1001.6,574.996 1001.6,584.613 1001.6,599.152 1001.6,618.453 1001.6,642.222 1001.6,659.549 1001.6,658.934 
+  1001.6,657.416 1001.6,653.808 1001.6,651.762 1001.6,652.675 1001.6,657.538 1001.61,661.426 1001.61,656.541 1001.61,648.255 1001.61,642.825 1001.61,641.856 
+  1001.61,646.586 1001.61,657.625 1001.61,674.563 1001.61,672.127 1001.61,665.555 1001.62,661.221 1001.62,660.062 1001.62,663.043 1001.62,665.937 1001.62,648.695 
+  1001.62,629.483 1001.62,614.345 1001.62,604.129 1001.62,597.569 1001.62,595.528 1001.62,599.209 1001.63,609.303 1001.63,625.476 1001.63,646.988 1001.63,666.145 
+  1001.63,656.542 1001.63,646.011 1001.63,634.579 1001.63,624.498 1001.63,616.822 1001.63,612.652 1001.63,613.167 1001.63,619.337 1001.63,631.722 1001.64,649.996 
+  1001.64,673.545 1001.64,702.662 1001.64,727.657 1001.64,730.615 1001.64,726.705 1001.64,722.69 1001.64,719.381 1001.65,718.549 1001.65,715.749 1001.65,707.503 
+  1001.65,700.601 1001.65,696.653 1001.65,696.781 1001.66,702.03 1001.66,713.083 1001.66,729.715 1001.66,740.95 1001.66,755.558 1001.67,759.711 1001.67,752.266 
+  1001.67,745.919 1001.68,742.111 1001.68,742.296 1001.68,747.417 1001.68,758.004 1001.69,760.207 1001.69,749.913 1001.69,741.236 1001.7,735.717 1001.7,734.446 
+  1001.7,738.128 1001.71,723.096 1001.71,703.83 1001.71,690.323 1001.71,680.824 1001.71,675.436 1001.72,675.87 1001.72,682.831 1001.72,696.224 1001.72,715.258 
+  1001.72,707.188 1001.72,693.444 1001.73,679.773 1001.73,669.036 1001.73,661.676 1001.73,659.223 1001.73,662.655 1001.73,672.593 1001.74,688.941 1001.74,710.643 
+  1001.74,728.779 1001.74,719.031 1001.74,708.517 1001.74,697.062 1001.75,687.092 1001.75,679.494 1001.75,675.472 1001.75,676.17 1001.75,682.534 1001.75,695.071 
+  1001.75,713.354 1001.76,736.815 1001.76,764.901 1001.76,761.669 1001.76,753.067 1001.77,743.675 1001.77,733.187 1001.77,724.812 1001.77,718.451 1001.78,715.789 
+  1001.78,717.77 1001.78,725.272 1001.78,738.788 1001.79,757.734 1001.79,781.919 1001.79,808.961 1001.79,812.978 1001.8,808.133 1001.8,803.01 1001.81,796.788 
+  1001.81,787.172 1001.82,778.309 1001.82,771.961 1001.83,769.328 1001.83,771.618 1001.84,779.682 1001.84,793.711 1001.84,805.557 1001.85,807.411 1001.86,813.437 
+  1001.86,824.005 1001.87,839.058 1001.87,832.346 1001.88,816.851 1001.89,800.363 1001.9,784.837 1001.9,772.577 1001.91,765.355 1001.91,761.597 1001.92,743.467 
+  1001.92,731.69 1001.92,725.166 1001.93,724.814 1001.93,731.307 1001.93,742.543 1001.94,728.213 1001.94,714.942 1001.94,707.964 1001.94,706.282 1001.95,711.152 
+  1001.95,723.085 1001.95,740.752 1001.95,742.479 1001.96,729.717 1001.96,719.152 1001.96,711.457 1001.96,708.135 1001.97,710.078 1001.97,718.042 1001.97,732.246 
+  1001.97,751.848 1001.98,767.397 1001.98,757.03 1001.98,746.878 1001.98,736.682 1001.99,729.253 1001.99,725.023 1001.99,725.354 1002,731.158 1002,742.894 
+  1002,760.343 1002,782.84 1002.01,796.292 1002.01,787.447 1002.01,777.656 1002.02,767.492 1002.02,759.168 1002.03,753.502 1002.03,751.726 1002.03,754.886 
+  1002.04,763.763 1002.04,778.526 1002.05,798.563 1002.05,823.982 1002.06,832.52 1002.06,823.685 1002.07,814.035 1002.07,803.537 1002.08,794.762 1002.08,788.354 
+  1002.09,785.693 1002.1,787.832 1002.1,795.619 1002.11,809.375 1002.11,828.507 1002.12,847.072 1002.13,852.177 1002.13,855.783 1002.14,852.722 1002.15,844.947 
+  1002.16,835.472 1002.17,827.549 1002.18,822.667 1002.19,821.994 1002.19,826.571 1002.2,837.047 1002.21,853.226 1002.22,867.855 1002.23,860.595 1002.24,856.116 
+  1002.25,854.935 1002.26,858.397 1002.28,867.131 1002.29,862.509 1002.3,859.73 1002.31,857.51 1002.32,854.934 1002.33,856.823 1002.35,864.09 1002.36,865.983 
+  1002.37,860.899 1002.38,859.816 1002.39,863.892 1002.41,873.619 1002.42,888.582 1002.43,881.248 1002.45,872.644 1002.46,867.721 1002.48,867.7 1002.49,873.38 
+  1002.5,874.096 1002.52,872.103 1002.53,874.976 1002.55,883.217 1002.56,885.119 1002.58,879.483 1002.59,873.719 1002.61,870.931 1002.62,873.501 1002.64,881.998 
+  1002.65,896.155 1002.67,894.916 1002.69,885.062 1002.7,879.162 1002.72,878.14 1002.74,882.925 1002.75,883.546 1002.77,883.685 1002.78,889.131 1002.8,899.983 
+  1002.82,896.772 1002.84,887.313 1002.85,882.193 1002.87,882.037 1002.89,887.702 1002.9,899.356 1002.92,911.65 1002.94,900.157 1002.96,892.094 1002.98,888.326 
+  1003,890.184 1003.02,893.586 1003.04,893.938 1003.06,899.662 1003.07,910.778 1003.09,907.269 1003.11,897.746 1003.13,892.382 1003.15,892.179 1003.17,897.851 
+  1003.19,909.42 1003.21,923.301 1003.23,911.741 1003.26,903.059 1003.28,898.691 1003.3,899.852 1003.32,902.955 1003.34,905.019 1003.36,912.613 1003.38,917.711 
+  1003.41,914.703 1003.43,906.148 1003.45,901.866 1003.47,903.037 1003.49,910.178 1003.51,921.448 1003.54,932.128 1003.56,920.933 1003.59,912.524 1003.61,908.648 
+  1003.64,910.331 1003.66,912.999 1003.68,917.099 1003.71,926.435 1003.73,926.303 1003.76,921.891 1003.78,914.591 1003.81,911.867 1003.83,914.81 1003.85,922.566 
+  1003.88,930.654 1003.9,940.214 1003.93,929.574 1003.96,921.844 1003.99,918.907 1004.01,921.626 1004.04,924.32 1004.07,929.102 1004.09,936.907 1004.12,935.907 
+  1004.15,932.313 1004.18,925.658 1004.21,923.604 1004.23,927.206 1004.26,933.585 1004.29,942.239 1004.32,950.863 1004.35,940.576 1004.39,933.401 1004.42,931.079 
+  1004.45,934.506 1004.48,942.252 1004.51,943.231 1004.54,947.217 1004.57,946.948 1004.6,951.447 1004.64,947.186 1004.67,942.884 1004.71,943.427 1004.74,948.797 
+  1004.77,959.357 1004.81,971.749 1004.85,961.481 1004.89,954.094 1004.92,951.222 1004.96,953.926 1005,962.741 1005.04,961.773 1005.08,961.051 1005.12,965.431 
+  1005.16,974.572 1005.2,968.27 1005.25,965.798 1005.29,968.684 1005.34,977.584 1005.38,992.184 1005.43,998.036 1005.49,993.963 1005.54,987.851 1005.6,985.355 
+  1005.65,987.837 1005.71,987.832 1005.76,992.107 1005.82,1002.29 1005.88,1003.31 1005.94,1005.09 1006.01,1007.89 1006.08,1013.64 1006.15,1007.68 1006.22,1006.64 
+  1006.3,1011.85 1006.37,1018.21 1006.45,1012.52 1006.53,1012.27 1006.61,1016.85 1006.69,1021.49 1006.77,1017.04 1006.86,1015.72 1006.94,1021.13 1007.03,1025.18 
+  1007.13,1020.3 1007.22,1022.44 1007.31,1028.07 1007.41,1029.39 1007.51,1025.06 1007.61,1027.67 1007.71,1035.29 1007.81,1030.07 1007.92,1030.5 1008.02,1037.99 
+  1008.13,1040.73 1008.24,1036.84 1008.35,1037.95 1008.47,1044.75 1008.58,1041.37 1008.71,1041.58 1008.82,1049.01 1008.95,1050.57 1009.08,1048.95 1009.21,1050.66 
+  1009.34,1059.38 1009.47,1060.31 1009.62,1061.28 1009.77,1061.88 1009.91,1067.13 1010.07,1069.37 1010.23,1074.79 1010.39,1083.05 1010.57,1081.25 1010.76,1084.57 
+  1010.94,1090.26 1011.14,1102.87 1011.35,1109.36 1011.57,1106.3 1011.79,1109.34 1012.04,1119.41 1012.3,1132.97 1012.6,1141.76 1012.88,1140.8 1013.19,1145.33 
+  1013.53,1155.99 1013.91,1172.24 1014.33,1191.61 1014.75,1201.35 1015.22,1204.67 1015.75,1209.23 1016.36,1209.11 1017.04,1210.39 1017.79,1214 1018.61,1215.67 
+  1019.51,1217.09 1020.46,1219.06 1021.5,1220.29 1022.61,1220.46 1023.77,1221.8 1025.03,1223.41 1026.38,1223.89 1027.8,1228.42 1029.32,1230.74 1030.88,1236.2 
+  1032.51,1240.87 1034.19,1246.59 1035.95,1252.83 1037.79,1258.46 1039.73,1265.32 1041.78,1270.97 1043.95,1277.38 1046.27,1283.73 1048.73,1289.94 1051.37,1296.7 
+  1054.19,1303 1057.21,1309.99 1060.45,1316.71 1063.92,1323.78 1067.65,1331.14 1071.66,1338.11 1075.99,1345.29 1080.66,1350.09 1085.7,1353.43 1091.18,1356.75 
+  1097.12,1360.04 1103.55,1363.32 1109.86,1366.29 1115.01,1368.57 1119.46,1370.38 1123.74,1372.02 1128.16,1373.62 1132.85,1375.24 1137.81,1376.81 1142.96,1378.34 
+  1148.19,1379.7 1153.43,1380.95 1158.64,1382.06 1163.85,1382.98 1169.07,1383.71 1174.31,1383.88 1179.6,1383.96 1184.91,1384.03 1190.26,1384.1 1195.62,1384.16 
+  1200.99,1384.21 1206.37,1384.26 1211.76,1384.31 1217.16,1384.34 1222.56,1384.38 1227.98,1384.4 1233.4,1384.43 1238.82,1384.44 1244.24,1384.45 1249.67,1384.46 
+  1255.1,1384.47 1260.52,1384.47 1265.95,1384.46 1271.37,1384.46 1276.8,1384.45 1282.21,1384.44 1287.63,1384.43 1293.04,1384.41 1298.45,1384.4 1303.85,1384.38 
+  1309.25,1384.36 1314.64,1384.34 1320.02,1384.33 1325.4,1384.31 1330.77,1384.29 1336.13,1384.27 1341.48,1384.25 1346.83,1379.08 1352.16,1373.53 1357.48,1365.95 
+  1362.78,1353.96 1368.02,1345.04 1373.16,1335.3 1378.07,1330.08 1382.66,1313.7 1386.82,1303 1390.55,1291.91 1393.95,1292.3 1397.17,1277.94 1399.65,1270.8 
+  1401.83,1258.87 1403.89,1250.12 1405.7,1252.16 1407.5,1259.13 1409.39,1243.67 1410.97,1237.67 1412.47,1234.23 1413.88,1218.68 1415.11,1212.49 1416.22,1216.38 
+  1417.31,1229.06 1418.48,1224.94 1419.65,1213.07 1420.66,1208.69 1421.64,1211.73 1422.58,1201.77 1423.51,1187.4 1424.29,1181.16 1425.02,1183.34 1425.71,1193.82 
+  1426.44,1211.22 1427.27,1200.21 1428.03,1189.67 1428.76,1184.11 1429.43,1185.05 1430.1,1192.59 1430.78,1180.14 1431.47,1164.86 1432.03,1156.07 1432.56,1154.21 
+  1433.05,1160.3 1433.55,1174.04 1434.06,1190.94 1434.67,1181.38 1435.22,1170.79 1435.78,1163.41 1436.28,1161.67 1436.78,1166.11 1437.28,1176.56 1437.81,1162.92 
+  1438.35,1146.56 1438.8,1135.54 1439.21,1130.19 1439.58,1132.22 1439.94,1142.01 1440.31,1157.47 1440.71,1175.43 1441.15,1163.6 1441.58,1153.02 1442.02,1144.69 
+  1442.41,1141.25 1442.8,1143.45 1443.18,1151.71 1443.57,1161.47 1444.01,1144.05 1444.43,1127.84 1444.79,1115.72 1445.11,1108.83 1445.4,1108.82 1445.68,1116.39 
+  1445.96,1130.88 1446.25,1147.67 1446.59,1154.67 1446.91,1143.83 1447.27,1133.17 1447.6,1125.33 1447.92,1121.91 1448.22,1123.98 1448.52,1132.09 1448.83,1145.92 
+  1449.17,1137.43 1449.55,1119.2 1449.86,1104.43 1450.14,1092.93 1450.39,1087.31 1450.61,1088.59 1450.83,1097.42 1451.04,1112.52 1451.27,1130.75 1451.54,1140.76 
+  1451.79,1130.27 1452.07,1119.26 1452.35,1109.83 1452.61,1104.13 1452.86,1103.25 1453.1,1108.15 1453.34,1119.14 1453.59,1135.43 1453.89,1121.37 1454.18,1103.86 
+  1454.44,1087.9 1454.67,1075.3 1454.88,1067.73 1455.06,1066.76 1455.23,1073.29 1455.4,1087.29 1455.57,1104.64 1455.77,1127.31 1455.97,1121.76 1456.18,1111.11 
+  1456.41,1099.99 1456.64,1090.73 1456.85,1085.06 1457.04,1084.19 1457.23,1089.09 1457.42,1100.11 1457.63,1116.56 1457.85,1114.05 1458.09,1097.31 1458.32,1079.99 
+  1458.53,1064.62 1458.69,1053.82 1458.84,1046.63 1458.98,1045.71 1459.11,1051.82 1459.23,1064.93 1459.36,1082.64 1459.51,1104.54 1459.67,1110.51 1459.83,1100.53 
+  1460.01,1089.49 1460.2,1078.3 1460.37,1069.71 1460.54,1064.66 1460.69,1064.62 1460.84,1070.48 1460.99,1082.45 1461.15,1099.86 1461.34,1102.8 1461.53,1086.44 
+  1461.73,1068.47 1461.91,1051.51 1462.04,1038.55 1462.16,1029.04 1462.27,1023.59 1462.37,1024.04 1462.47,1031.28 1462.56,1045.31 1462.66,1064.64 1462.78,1082.78 
+  1462.89,1081.04 1463.02,1081.68 1463.15,1075.15 1463.3,1063.78 1463.44,1053.4 1463.58,1045.8 1463.7,1042.28 1463.82,1044.1 1463.94,1052.01 1464.06,1065.99 
+  1464.18,1085.18 1464.34,1087.53 1464.48,1072.28 1464.65,1053.96 1464.79,1036.06 1464.91,1021.42 1465,1009.82 1465.09,1001.19 1465.17,997.945 1465.24,1001.14 
+  1465.31,1011.42 1465.39,1028.54 1465.47,1051.11 1465.56,1075.94 1465.65,1074.36 1465.74,1064.49 1465.85,1053.32 1465.97,1040.91 1466.08,1030 1466.19,1021.57 
+  1466.28,1017.3 1466.37,1018.35 1466.46,1025.56 1466.55,1039.05 1466.64,1039.88 1466.74,1045.22 1466.84,1055.86 1466.95,1050.87 1467.07,1033.99 1467.18,1015.97 
+  1467.28,998.645 1467.35,985.674 1467.41,975.622 1467.47,969.052 1467.52,967.966 1467.57,973.477 1467.62,986.006 1467.67,1004.97 1467.73,1029.43 1467.79,1047.12 
+  1467.85,1047.64 1467.92,1040.53 1468,1029.18 1468.09,1016.29 1468.18,1004.09 1468.25,993.91 1468.32,987.325 1468.39,985.669 1468.45,990.021 1468.51,1000.89 
+  1468.57,1017.78 1468.64,1039.82 1468.72,1046.26 1468.8,1033.21 1468.89,1016.39 1468.98,998.379 1469.06,980.115 1469.12,965.259 1469.16,953.31 1469.21,942.001 
+  1469.25,932.345 1469.29,927.404 1469.32,929.121 1469.35,938.414 1469.38,954.989 1469.42,977.669 1469.46,1005.36 1469.49,1012.82 1469.54,1010.9 1469.58,1002.15 
+  1469.64,989.481 1469.7,975.707 1469.75,962.471 1469.8,951.505 1469.85,944.117 1469.89,941.759 1469.92,945.512 1469.96,955.918 1470,972.591 1470.04,994.483 
+  1470.09,1007.32 1470.13,998.727 1470.19,982.679 1470.24,963.734 1470.29,943.861 1470.33,925.813 1470.37,910.629 1470.39,898.225 1470.42,888.232 1470.44,883.227 
+  1470.46,875.887 1470.47,866.21 1470.49,861.571 1470.51,863.628 1470.52,873.072 1470.53,889.559 1470.55,911.387 1470.57,899.777 1470.59,889.025 1470.6,879.813 
+  1470.62,874.683 1470.64,874.744 1470.65,880.964 1470.67,893.622 1470.69,902.291 1470.71,889.966 1470.72,878.603 1470.74,868.524 1470.76,861.798 1470.77,859.486 
+  1470.79,862.809 1470.8,872.457 1470.81,886.442 1470.83,889.251 1470.84,893.504 1470.86,875.338 1470.87,855.122 1470.89,834.836 1470.9,819.601 1470.91,807.888 
+  1470.92,799.455 1470.92,794.621 1470.93,794.752 1470.94,800.489 1470.94,811.996 1470.95,828.922 1470.96,841.599 1470.96,829.896 1470.97,817.982 1470.98,804.84 
+  1470.99,793.815 1470.99,785.29 1471,781.173 1471.01,782.489 1471.01,790.011 1471.02,802.733 1471.02,789.706 1471.03,773.951 1471.03,760.895 1471.04,750.975 
+  1471.04,743.676 1471.05,741.132 1471.05,744.209 1471.05,753.599 1471.06,769.594 1471.06,791.05 1471.06,818.029 1471.07,817.983 1471.07,809.951 1471.08,800.436 
+  1471.09,789.071 1471.09,778.688 1471.1,769.702 1471.1,763.749 1471.11,761.931 1471.11,765.414 1471.11,774.942 1471.12,790.404 1471.12,811.083 1471.13,825.144 
+  1471.13,816.463 1471.14,806.166 1471.15,791.937 1471.15,775.763 1471.16,758.484 1471.16,740.883 1471.17,726.65 1471.17,714.507 1471.17,704.522 1471.17,696.971 
+  1471.18,693.743 1471.18,695.841 1471.18,704.047 1471.18,718.593 1471.18,726.627 1471.19,709.699 1471.19,688.682 1471.19,664.482 1471.19,645.519 1471.19,628.968 
+  1471.19,614.053 1471.2,601.561 1471.2,591.145 1471.2,585.36 1471.2,582.86 1471.2,571.931 1471.2,566.383 1471.2,568.484 1471.2,578.827 1471.2,588.464 
+  1471.2,581.047 1471.2,575.104 1471.2,572.628 1471.2,574.432 1471.2,581.426 1471.2,594.324 1471.2,612.644 1471.2,636.138 1471.2,664.583 1471.2,683.089 
+  1471.2,677.65 1471.21,671.332 1471.21,663.278 1471.21,653.092 1471.21,643.504 1471.21,634.447 1471.21,627.691 1471.21,624.153 1471.21,625.152 1471.21,631.607 
+  1471.21,643.88 1471.21,661.563 1471.22,676.816 1471.22,660.001 1471.22,640.128 1471.22,611.765 1471.22,578.388 1471.22,554.659 1471.22,531.466 1471.22,506.852 
+  1471.22,484.33 1471.22,463.803 1471.22,444.561 1471.22,426.935 1471.22,411.199 1471.22,397.571 1471.22,385.239 1471.22,365.234 1471.22,344.643 1471.22,329.019 
+  1471.22,315.657 1471.22,303.72 1471.22,296.049 1471.22,293.314 1471.22,296.566 1471.22,298.349 1471.22,279.978 1471.22,259.419 1471.22,240.164 1471.22,221.095 
+  1471.22,202.66 1471.22,184.481 1471.22,164.202 1471.22,146.739 1471.22,132.249 1471.22,118.788 1471.22,105.888 1471.22,96.7714 1471.22,90.2465 1471.22,86.7799 
+  1471.22,87.6499 1471.22,93.7578 1471.22,105.646 1471.22,123.501 1471.22,146.771 1471.22,176.198 1471.22,202.778 1471.22,229.097 1471.22,254.235 1471.22,270.367 
+  1471.22,274.303 1471.22,280.28 1471.22,288.762 1471.22,299.801 1471.22,313.732 1471.22,326.588 1471.22,338.937 1471.22,353.759 1471.22,370.814 1471.22,389.64 
+  1471.22,409.74 1471.22,430.656 1471.22,432.535 1471.22,429.075 1471.22,425.172 1471.22,420.851 1471.22,416.32 1471.22,411.957 1471.22,408.604 1471.22,407.38 
+  1471.22,409.28 1471.22,415.215 1471.22,419.65 1471.22,412.686 1471.22,407.51 1471.22,405.96 1471.22,408.934 1471.22,417.239 1471.22,431.33 1471.22,448.445 
+  1471.22,458.428 1471.22,472.997 1471.22,490.63 1471.22,511.079 1471.22,532.617 1471.22,554.433 1471.22,576.1 1471.22,579.998 1471.22,577.817 1471.22,571.511 
+  1471.22,563.531 1471.22,555.391 1471.22,548.273 1471.23,544.102 1471.23,539.151 1471.23,533.56 1471.23,531.618 1471.23,534.502 1471.23,542.988 1471.23,547.682 
+  1471.23,543.84 1471.23,542.974 1471.23,539.996 1471.23,541.232 1471.23,547.591 1471.23,559.255 1471.23,567.929 1471.23,573.189 1471.23,570.065 1471.23,570.496 
+  1471.23,575.129 1471.23,584.165 1471.23,593.994 1471.23,585.795 1471.23,578.497 1471.23,574.329 1471.23,571.63 1471.23,571.949 1471.23,578.704 1471.23,592.09 
+  1471.23,591.708 1471.23,594.852 1471.23,595.026 1471.24,593.947 1471.24,598.364 1471.24,608.818 1471.24,624.945 1471.24,646.174 1471.24,644.89 1471.24,644.685 
+  1471.24,647.574 1471.24,650.324 1471.24,650.665 1471.24,654.836 1471.24,650.377 1471.24,648.85 1471.24,651.524 1471.25,659.244 1471.25,657.117 1471.25,656.506 
+  1471.25,660.794 1471.25,670.665 1471.25,686.054 1471.25,703.818 1471.25,713.054 1471.25,714.444 1471.26,715.627 1471.26,720.208 1471.26,725.759 1471.26,718.945 
+  1471.26,714.22 1471.27,711.291 1471.27,712.184 1471.27,714.387 1471.27,712.038 1471.27,713.915 1471.28,712.365 1471.28,713.5 1471.28,715.076 1471.28,712.822 
+  1471.28,715.826 1471.29,724.762 1471.29,726.536 1471.29,722.937 1471.29,723.605 1471.3,729.479 1471.3,741.01 1471.3,748.851 1471.3,743.604 1471.31,741.946 
+  1471.31,745.304 1471.31,754.376 1471.31,766.129 1471.32,757.945 1471.32,751.303 1471.33,747.907 1471.33,748.901 1471.33,752.866 1471.33,751.837 1471.34,747.467 
+  1471.34,747.542 1471.34,752.91 1471.35,755.813 1471.35,759.065 1471.35,767.81 1471.36,772.265 1471.36,775.28 1471.37,769.006 1471.37,766.103 1471.37,767.905 
+  1471.38,775.197 1471.38,774.271 1471.39,759.038 1471.39,745.242 1471.39,735.142 1471.4,730.744 1471.4,733.351 1471.4,739.469 1471.41,725.386 1471.41,715.902 
+  1471.41,713.325 1471.41,718.015 1471.42,729.969 1471.42,748.482 1471.42,767.779 1471.43,756.001 1471.43,745.367 1471.43,735.426 1471.43,729.182 1471.44,727.063 
+  1471.44,730.296 1471.44,739.652 1471.45,754.966 1471.45,775.693 1471.45,787.871 1471.46,794.172 1471.46,799.703 1471.46,790.034 1471.47,779.678 1471.47,770.955 
+  1471.48,764.723 1471.48,762.301 1471.49,764.754 1471.49,772.902 1471.49,786.988 1471.5,806.395 1471.5,811.175 1471.51,810.23 1471.51,812.322 1471.52,818.331 
+  1471.53,818.153 1471.53,810.013 1471.54,804.192 1471.54,802.409 1471.55,802.275 1471.56,800.006 1471.56,802.106 1471.57,809.515 1471.57,807.998 1471.58,809.786 
+  1471.59,816.958 1471.59,829.589 1471.6,835.414 1471.61,827.28 1471.62,821.481 1471.63,819.625 1471.63,822.872 1471.64,831.771 1471.65,832.474 1471.66,834.212 
+  1471.66,838.091 1471.67,835.364 1471.68,828.528 1471.69,825.214 1471.7,826.737 1471.71,833.802 1471.71,837.797 1471.72,834.519 1471.73,829.659 1471.74,829.526 
+  1471.75,835.044 1471.76,846.47 1471.77,859.329 1471.78,850.327 1471.79,843.224 1471.8,839.825 1471.81,841.42 1471.82,848.71 1471.83,853.838 1471.84,856.868 
+  1471.85,853.636 1471.86,847.321 1471.87,844.967 1471.88,847.811 1471.89,854.658 1471.9,854.377 1471.91,853.057 1471.93,848.381 1471.94,848.428 1471.95,854.165 
+  1471.96,865.827 1471.97,879.022 1471.98,868.911 1472,861.569 1472.01,858.002 1472.02,859.521 1472.03,866.819 1472.05,873.829 1472.06,870.178 1472.07,864.418 
+  1472.09,862.864 1472.1,866.588 1472.11,875.883 1472.13,872.312 1472.14,869.963 1472.15,865.442 1472.17,865.67 1472.18,871.608 1472.19,883.483 1472.21,895.91 
+  1472.22,885.67 1472.24,878.163 1472.26,874.542 1472.27,876.14 1472.29,883.601 1472.3,885.925 1472.32,880.4 1472.33,879.059 1472.35,882.964 1472.37,892.539 
+  1472.38,891.27 1472.4,885.796 1472.42,881.087 1472.43,881.172 1472.45,886.976 1472.47,898.727 1472.48,911.49 1472.5,901.067 1472.52,893.308 1472.54,889.486 
+  1472.56,890.997 1472.58,898.447 1472.6,895.341 1472.61,893.666 1472.63,897.154 1472.65,906.24 1472.67,910.331 1472.69,900.927 1472.71,895.496 1472.73,894.938 
+  1472.75,900.111 1472.77,911.207 1472.79,926.389 1472.81,915.517 1472.84,907.292 1472.86,902.966 1472.88,904.007 1472.9,909.68 1472.92,907.027 1472.95,909.252 
+  1472.97,916.988 1472.99,926.519 1473.01,916.629 1473.04,909.508 1473.06,907.29 1473.08,910.685 1473.11,919.951 1473.13,934.586 1473.15,931.115 1473.18,921.499 
+  1473.21,915.826 1473.23,915.188 1473.26,920.413 1473.28,919.851 1473.31,924.24 1473.33,932.422 1473.36,934.964 1473.39,925.832 1473.42,920.243 1473.44,919.789 
+  1473.47,925.159 1473.49,935.828 1473.52,948.284 1473.55,939.081 1473.58,930.492 1473.61,926.418 1473.64,927.828 1473.67,932.685 1473.7,935.939 1473.73,942.786 
+  1473.76,943.661 1473.79,940.177 1473.82,933.766 1473.85,932.164 1473.88,936.268 1473.91,943.214 1473.94,953.863 1473.98,953.116 1474.01,943.819 1474.05,939.181 
+  1474.08,939.938 1474.11,946.731 1474.15,954.049 1474.18,953.463 1474.22,954.521 1474.25,960.214 1474.29,953.692 1474.33,950.127 1474.36,951.63 1474.4,958.744 
+  1474.44,971.261 1474.48,970.732 1474.52,962.38 1474.56,959.14 1474.61,961.414 1474.65,969.671 1474.69,966.885 1474.73,968.195 1474.78,975.019 1474.82,976.622 
+  1474.87,972.518 1474.92,973.441 1474.96,980.133 1475.01,992.632 1475.06,992.578 1475.12,987.247 1475.17,987.127 1475.23,990.159 1475.28,992.522 1475.34,993.147 
+  1475.4,994.754 1475.46,990.496 1475.51,991.463 1475.57,998.297 1475.64,1007.12 1475.7,1001.1 1475.77,996.699 1475.84,998.502 1475.9,1002.05 1475.97,1008.72 
+  1476.04,1006.58 1476.11,1001.09 1476.18,1001.44 1476.25,1008.1 1476.32,1017.32 1476.4,1009.62 1476.48,1006.36 1476.55,1009.68 1476.63,1013.75 1476.71,1019.4 
+  1476.79,1014.04 1476.87,1010.85 1476.95,1014.04 1477.03,1022.63 1477.11,1022.04 1477.21,1016.67 1477.29,1017.96 1477.38,1024.22 1477.46,1028.39 1477.56,1027.16 
+  1477.65,1022.8 1477.74,1024.64 1477.83,1032.52 1477.93,1033.31 1478.03,1028.2 1478.13,1029.86 1478.23,1038.23 1478.33,1038.67 1478.44,1040.35 1478.55,1037.17 
+  1478.65,1040.32 1478.76,1049.66 1478.88,1050.02 1479.01,1047.82 1479.13,1051.36 1479.25,1051.42 1479.37,1057.67 1479.51,1058.22 1479.64,1061.49 1479.78,1071.44 
+  1479.93,1071.52 1480.09,1070.97 1480.25,1074.31 1480.41,1079.61 1480.58,1091.46 1480.76,1105.44 1480.95,1098.72 1481.15,1097 1481.37,1101.85 1481.59,1113.17 
+  1481.82,1126.56 1482.09,1135.74 1482.35,1132.86 1482.63,1135.1 1482.94,1143.77 1483.28,1158.51 1483.68,1178.6 1484.06,1195.91 1484.48,1200.1 1484.95,1201.4 
+  1485.49,1204.25 1486.12,1206.33 1486.82,1207 1487.59,1209.84 1488.43,1209.92 1489.35,1210.67 1490.33,1211.22 1491.38,1214.63 1492.52,1213.74 1493.73,1216.99 
+  1495.03,1219.87 1496.39,1224.5 1497.8,1228.86 1499.27,1234.98 1500.8,1239.83 1502.4,1246.61 1504.09,1251.83 1505.87,1258.19 1507.75,1264.26 1509.75,1270.31 
+  1511.88,1276.89 1514.15,1282.84 1516.57,1289.75 1519.16,1295.89 1521.93,1302.98 1524.9,1309.63 1528.08,1316.79 1531.49,1324.21 1535.16,1331.32 1539.11,1338.67 
+  1543.37,1345.92 1547.98,1349.34 1552.97,1352.7 1558.38,1356.09 1564.26,1359.45 1570.63,1362.78 1576.95,1365.83 1582.15,1368.18 1586.62,1370.04 1590.9,1371.72 
+  1595.3,1373.36 1599.98,1375.01 1604.92,1376.61 1610.06,1378.17 1615.28,1379.58 1620.51,1380.87 1625.72,1382 1630.93,1382.96 1636.15,1383.71 1641.4,1383.88 
+  1646.68,1383.96 1651.99,1384.04 1657.34,1384.1 1662.7,1384.16 1668.07,1384.22 1673.45,1384.27 1678.84,1384.31 1684.24,1384.35 1689.65,1384.38 1695.06,1384.41 
+  1700.48,1384.43 1705.9,1384.45 1711.33,1384.46 1716.76,1384.47 1722.19,1384.47 1727.62,1384.47 1733.04,1384.47 1738.47,1384.46 1743.89,1384.45 1749.32,1384.44 
+  1754.73,1384.43 1760.15,1384.42 1765.56,1384.4 1770.96,1384.38 1776.36,1384.37 1781.75,1384.35 1787.14,1384.33 1792.52,1384.31 1797.89,1384.29 1803.26,1384.27 
+  1808.62,1384.25 1813.97,1383.14 1819.3,1377.32 1824.63,1371.44 1829.94,1360.34 1835.22,1350.33 1840.43,1341.15 1845.49,1333.83 1850.28,1321.07 1854.68,1310.31 
+  1858.65,1297.01 1862.26,1293.91 1865.62,1284.18 1868.29,1274.38 1870.85,1262.79 1873.07,1253.24 1875.07,1255.39 1877,1259.08 1878.82,1245.23 1880.42,1239.85 
+  1881.92,1233.87 1883.35,1219.67 1884.57,1215.19 1885.72,1220.59 1886.84,1234.21 1888.08,1223.94 1889.23,1213.68 1890.26,1210.74 1891.25,1215.28 1892.23,1198.41 
+  1893.13,1186.74 1893.91,1183.42 1894.65,1188.82 1895.37,1202.11 1896.15,1211.28 1897.01,1197.39 1897.77,1188.7 1898.51,1185.65 1899.19,1189.3 1899.88,1190.01 
+  1900.59,1173.3 1901.22,1161.57 1901.79,1156.51 1902.3,1159.24 1902.81,1169.87 1903.33,1186.25 1903.91,1189.57 1904.5,1177.53 1905.08,1168.24 1905.62,1163.82 
+  1906.13,1165.33 1906.64,1173.11 1907.16,1170.89 1907.73,1153.64 1908.21,1141.06 1908.65,1133.71 1909.04,1133.48 1909.41,1140.94 1909.79,1155.57 1910.19,1171.89 
+  1910.65,1170.11 1911.08,1159.08 1911.54,1149.4 1911.96,1144.21 1912.36,1144.35 1912.75,1150.52 1913.15,1162.65 1913.59,1150.59 1914.04,1133.3 1914.41,1120.65 
+  1914.76,1112.56 1915.06,1111.26 1915.35,1117.5 1915.64,1131.02 1915.94,1147.54 1916.28,1160.85 1916.62,1149.72 1916.97,1138.78 1917.34,1129.82 1917.67,1125.09 
+  1917.98,1125.57 1918.29,1132.02 1918.61,1144.41 1918.95,1142.8 1919.34,1124.29 1919.67,1109.31 1919.97,1097.28 1920.22,1091.03 1920.46,1091.52 1920.68,1099.54 
+  1920.91,1114.88 1921.14,1132.84 1921.42,1146.74 1921.68,1136.17 1921.97,1125.01 1922.27,1114.88 1922.55,1108.27 1922.81,1106.22 1923.06,1109.84 1923.31,1119.59 
+  1923.56,1134.84 1923.86,1126.44 1924.17,1108.62 1924.44,1092.79 1924.69,1079.88 1924.9,1072 1925.09,1070.55 1925.27,1076.58 1925.44,1090.15 1925.63,1108.89 
+  1925.83,1131.27 1926.04,1128.1 1926.26,1117.44 1926.51,1106.1 1926.75,1096.17 1926.97,1089.69 1927.18,1087.77 1927.38,1091.52 1927.58,1101.44 1927.79,1116.96 
+  1928.02,1118.94 1928.28,1101.33 1928.52,1084.23 1928.74,1068.76 1928.93,1057.05 1929.07,1051.01 1929.22,1050.59 1929.35,1057.05 1929.49,1070.91 1929.63,1090.47 
+  1929.79,1113.31 1929.95,1116.42 1930.12,1106.29 1930.31,1095.15 1930.51,1083.76 1930.7,1074.86 1930.88,1069.42 1931.04,1068.95 1931.2,1074.35 1931.36,1085.89 
+  1931.53,1102.94 1931.72,1106.67 1931.93,1090.14 1932.13,1072.41 1932.32,1055.68 1932.46,1042.97 1932.58,1033.75 1932.7,1028.73 1932.8,1029.71 1932.9,1037.57 
+  1933.01,1052.24 1933.12,1072.77 1933.24,1098.09 1933.37,1101.8 1933.5,1091.99 1933.65,1080.99 1933.82,1068.93 1933.97,1058.57 1934.12,1050.9 1934.25,1047.55 
+  1934.38,1049.66 1934.5,1057.94 1934.63,1072.3 1934.76,1081.64 1934.92,1090.61 1935.07,1076.22 1935.24,1058.34 1935.39,1040.89 1935.52,1025.06 1935.62,1014.09 
+  1935.71,1006.74 1935.79,1004.17 1935.87,1007.82 1935.94,1018.42 1936.02,1035.5 1936.1,1058.17 1936.2,1082.18 1936.3,1081.82 1936.4,1072.69 1936.52,1061.5 
+  1936.65,1048.91 1936.77,1037.62 1936.89,1028.68 1936.99,1023.76 1937.09,1024.08 1937.18,1030.54 1937.28,1043.4 1937.38,1061.81 1937.49,1073.53 1937.62,1063.82 
+  1937.74,1050.81 1937.87,1034.21 1937.98,1017.93 1938.07,1003.56 1938.14,991.065 1938.22,980.872 1938.28,975.546 1938.34,976.316 1938.39,984.239 1938.45,999.521 
+  1938.5,1020.84 1938.57,1047.71 1938.64,1056.16 1938.71,1055.46 1938.8,1045.09 1938.89,1032.72 1938.99,1019.77 1939.08,1007.89 1939.16,998.645 1939.23,993.498 
+  1939.3,993.763 1939.37,1000.33 1939.44,1013.42 1939.51,1032.2 1939.59,1056.12 1939.67,1046.47 1939.76,1032.14 1939.86,1013.86 1939.96,995.297 1940.03,979.572 
+  1940.09,966.835 1940.14,957.32 1940.18,946.341 1940.22,938.674 1940.26,936.366 1940.3,940.942 1940.33,953.017 1940.37,971.803 1940.41,996.267 1940.45,1012.92 
+  1940.5,1005.93 1940.55,998.205 1940.6,990.524 1940.65,984.736 1940.71,982.029 1940.76,976.249 1940.81,965.811 1940.85,957.059 1940.9,952.001 1940.94,951.844 
+  1940.98,957.568 1941.02,969.617 1941.06,987.36 1941.11,1010.18 1941.16,1014.6 1941.21,1002.45 1941.27,985.736 1941.33,967.19 1941.39,947.476 1941.43,931.001 
+  1941.46,917.414 1941.49,906.782 1941.52,899.364 1941.54,897.019 1941.56,885.401 1941.58,877.219 1941.6,874.726 1941.62,879.034 1941.63,890.613 1941.65,908.92 
+  1941.67,932.758 1941.69,947.896 1941.71,935.894 1941.74,921.455 1941.76,905.228 1941.79,891.003 1941.81,879.927 1941.83,874.107 1941.84,874.844 1941.86,882.874 
+  1941.88,893.461 1941.9,884.443 1941.91,877.401 1941.93,874.222 1941.95,875.88 1941.96,883.224 1941.98,896.607 1941.99,913.327 1942.01,911.343 1942.03,902.158 
+  1942.05,893.436 1942.07,880.042 1942.09,861.601 1942.1,843.217 1942.12,829.93 1942.13,819.674 1942.14,812.278 1942.14,809.652 1942.15,812.555 1942.16,821.471 
+  1942.17,833.361 1942.17,823.352 1942.18,812.854 1942.19,805.179 1942.2,800.835 1942.2,801.374 1942.21,807.627 1942.22,818.503 1942.22,805.517 1942.23,790.382 
+  1942.24,777.658 1942.24,767.324 1942.25,761.266 1942.25,760.463 1942.26,765.978 1942.26,778.4 1942.27,797.074 1942.27,821.169 1942.28,840.486 1942.28,832.85 
+  1942.29,823.727 1942.3,812.94 1942.3,801.106 1942.31,790.87 1942.32,782.512 1942.32,777.84 1942.33,777.909 1942.33,783.726 1942.34,795.843 1942.34,813.665 
+  1942.35,836.58 1942.36,838.182 1942.36,827.417 1942.37,813.496 1942.38,795.112 1942.39,775.835 1942.39,759.458 1942.4,745.435 1942.4,733.309 1942.4,722.571 
+  1942.41,715.67 1942.41,713.44 1942.41,717.171 1942.42,727.569 1942.42,744.171 1942.42,766.122 1942.42,753.327 1942.43,739.347 1942.43,722.186 1942.43,703.446 
+  1942.44,685.219 1942.44,669.234 1942.44,655.011 1942.44,642.583 1942.44,632.339 1942.44,624.203 1942.44,619.615 1942.44,608.749 1942.45,601.57 1942.45,599.61 
+  1942.45,590.6 1942.45,573.328 1942.45,561.195 1942.45,552.954 1942.45,548.977 1942.45,550.72 1942.45,559.034 1942.45,573.995 1942.45,595.047 1942.45,621.621 
+  1942.45,650.765 1942.45,676.679 1942.45,702.553 1942.45,727.22 1942.45,732.256 1942.45,726.949 1942.45,719.996 1942.46,712.116 1942.46,702.427 1942.46,690.554 
+  1942.46,675.594 1942.46,657.913 1942.46,640.287 1942.46,625.728 1942.47,613.377 1942.47,603.234 1942.47,595.425 1942.47,591.906 1942.47,593.639 1942.47,601.394 
+  1942.47,615.378 1942.47,609.647 1942.47,588.337 1942.47,561.421 1942.47,538.395 1942.47,518.208 1942.47,498.714 1942.47,480.787 1942.47,464.837 1942.47,450.988 
+  1942.47,439.564 1942.47,430.461 1942.47,417.047 1942.47,395.279 1942.47,376.563 1942.47,360.311 1942.47,345.877 1942.47,333.834 1942.47,323.716 1942.47,317.921 
+  1942.47,317.137 1942.47,311.346 1942.47,292.914 1942.47,274.895 1942.47,259.079 1942.47,245.321 1942.47,233.77 1942.47,221.106 1942.47,202.923 1942.47,183.047 
+  1942.47,161.35 1942.47,146.99 1942.47,133.525 1942.47,119.152 1942.47,106.842 1942.47,97.7683 1942.47,90.8625 1942.47,86.5982 1942.47,86.2547 1942.47,90.7426 
+  1942.47,100.774 1942.47,116.747 1942.47,138.224 1942.47,165.423 1942.47,193.633 1942.47,219.715 1942.47,245.426 1942.47,267.517 1942.47,270.262 1942.47,274.742 
+  1942.47,281.828 1942.47,291.407 1942.47,303.748 1942.47,319.153 1942.47,330.909 1942.47,339.98 1942.47,351.709 1942.47,366.212 1942.47,383.393 1942.47,385.061 
+  1942.47,381.435 1942.47,377.846 1942.47,374.601 1942.47,372.453 1942.47,372.548 1942.47,375.843 1942.47,383.202 1942.47,395.152 1942.47,404.46 1942.47,397.228 
+  1942.47,390.811 1942.47,387.317 1942.47,387.252 1942.47,391.669 1942.47,401.502 1942.47,416.77 1942.47,437.348 1942.47,451.579 1942.47,449.078 1942.47,448.216 
+  1942.47,447.173 1942.47,448.762 1942.47,454.479 1942.47,465.1 1942.47,480.898 1942.48,501.831 1942.48,526.649 1942.48,550.354 1942.48,567.792 1942.48,562.831 
+  1942.48,557.025 1942.48,550.043 1942.48,541.738 1942.48,534.236 1942.48,528.117 1942.48,524.859 1942.48,525.545 1942.48,531.165 1942.48,542.292 1942.48,558.229 
+  1942.48,553.733 1942.48,552.293 1942.48,555.138 1942.48,550.727 1942.48,545.641 1942.48,543.914 1942.48,546.701 1942.48,554.656 1942.48,567.682 1942.48,572.16 
+  1942.48,568.703 1942.48,569.53 1942.48,574.873 1942.48,584.74 1942.48,599.176 1942.48,603.992 1942.48,593.927 1942.48,584.101 1942.48,576.282 1942.48,572.445 
+  1942.49,574.141 1942.49,582.288 1942.49,596.717 1942.49,597.454 1942.49,592.228 1942.49,592.272 1942.49,598.383 1942.49,610.675 1942.49,628.531 1942.49,649.434 
+  1942.49,647.424 1942.49,647.9 1942.49,651.946 1942.49,654.896 1942.49,648.899 1942.49,645.489 1942.5,646.039 1942.5,651.456 1942.5,656.025 1942.5,663.848 
+  1942.5,677.119 1942.5,695.5 1942.5,699.087 1942.5,704.219 1942.5,712.533 1942.51,721.017 1942.51,725.891 1942.51,728.621 1942.51,725.891 1942.51,722.111 
+  1942.51,715.02 1942.52,710.014 1942.52,708.38 1942.52,711.184 1942.52,711.238 1942.52,711.867 1942.53,717.701 1942.53,726.139 1942.53,720.361 1942.53,719.206 
+  1942.54,719.103 1942.54,719.53 1942.54,725.24 1942.54,736.779 1942.54,753.656 1942.55,760.235 1942.55,763.226 1942.55,758.089 1942.56,755.37 1942.56,756.483 
+  1942.56,762.235 1942.57,754.6 1942.57,748.91 1942.57,746.804 1942.58,749.442 1942.58,754.833 1942.58,749.144 1942.58,747.091 1942.59,750.201 1942.59,755.275 
+  1942.59,756.489 1942.6,762.822 1942.6,774.627 1942.6,770.793 1942.61,765.652 1942.61,764.64 1942.62,768.708 1942.62,778.369 1942.62,779.097 1942.63,782.174 
+  1942.63,774.675 1942.64,762.512 1942.64,753.077 1942.65,748.073 1942.65,748.722 1942.65,738.343 1942.66,727.934 1942.66,724.708 1942.66,729.267 1942.67,741.476 
+  1942.67,760.222 1942.67,758.335 1942.68,746.417 1942.68,736.466 1942.68,730.695 1942.68,729.918 1942.69,735.083 1942.69,746.699 1942.69,764.225 1942.7,787.019 
+  1942.7,802.468 1942.7,800.033 1942.71,790.132 1942.71,779.82 1942.72,770.78 1942.72,764.333 1942.73,761.597 1942.73,763.711 1942.73,771.522 1942.74,785.274 
+  1942.74,804.423 1942.75,809.16 1942.75,810.282 1942.76,814.084 1942.76,821.609 1942.77,815.291 1942.78,807.433 1942.78,802.578 1942.79,801.973 1942.79,800.293 
+  1942.8,798.901 1942.81,802.174 1942.81,808.303 1942.82,807.824 1942.82,812.253 1942.83,822.215 1942.84,837.329 1942.85,829.492 1942.85,822.544 1942.86,819.196 
+  1942.87,820.512 1942.88,827.257 1942.88,832.071 1942.89,832.281 1942.9,837.049 1942.91,836.084 1942.92,833.156 1942.92,827.011 1942.93,824.745 1942.94,827.557 
+  1942.95,835.659 1942.96,838.628 1942.97,831.802 1942.98,828.755 1942.98,831.014 1942.99,839.207 1943,853.098 1943.01,854.24 1943.02,845.481 1943.03,840.49 
+  1943.04,839.889 1943.05,844.716 1943.06,853.354 1943.07,854.926 1943.08,859.822 1943.09,851.661 1943.1,846.214 1943.12,845.244 1943.13,849.707 1943.14,853.795 
+  1943.15,856.73 1943.16,850.697 1943.17,847.851 1943.18,850.311 1943.19,858.699 1943.2,872.788 1943.22,873.457 1943.23,864.353 1943.24,859.091 1943.25,858.296 
+  1943.27,863.025 1943.28,873.687 1943.29,875.28 1943.31,868.362 1943.32,863.765 1943.33,863.781 1943.35,869.302 1943.36,873.206 1943.37,872.307 1943.39,867.896 
+  1943.4,865.235 1943.41,867.881 1943.43,876.455 1943.44,890.71 1943.46,890.586 1943.47,881.485 1943.49,875.965 1943.5,875.062 1943.52,879.76 1943.53,890.4 
+  1943.55,884.465 1943.57,880.037 1943.58,880.268 1943.6,885.985 1943.61,893.573 1943.63,889.184 1943.65,883.939 1943.66,881.023 1943.68,883.37 1943.7,891.609 
+  1943.71,905.587 1943.73,906.541 1943.75,897.101 1943.77,891.256 1943.79,890.107 1943.81,894.641 1943.83,899.598 1943.85,895.07 1943.86,894.959 1943.88,900.219 
+  1943.9,911.077 1943.92,906.813 1943.94,898.821 1943.96,895.335 1943.98,897.077 1944,904.672 1944.02,918.051 1944.04,921.391 1944.07,911.24 1944.09,905.011 
+  1944.11,903.539 1944.14,907.856 1944.16,909.097 1944.18,908.157 1944.2,912.502 1944.22,922.341 1944.25,922.315 1944.27,913.336 1944.3,908.614 1944.32,909.104 
+  1944.34,915.452 1944.36,927.577 1944.39,936.267 1944.42,925.522 1944.44,918.225 1944.47,915.569 1944.49,918.66 1944.52,920.695 1944.54,922.359 1944.57,929.537 
+  1944.6,936.399 1944.62,930.197 1944.65,922.846 1944.68,920.251 1944.71,923.292 1944.73,932.227 1944.76,945.929 1944.79,943.062 1944.82,933.448 1944.85,927.987 
+  1944.88,927.703 1944.91,933.357 1944.94,935.099 1944.97,941.575 1945,944.148 1945.03,943.989 1945.06,936.374 1945.09,933.092 1945.12,935.334 1945.15,942.825 
+  1945.18,952.542 1945.22,956.326 1945.25,946.41 1945.29,940.721 1945.32,940.167 1945.36,945.598 1945.39,954.246 1945.42,954.412 1945.46,955.158 1945.5,960.95 
+  1945.53,955.246 1945.57,951.151 1945.61,952.071 1945.64,958.588 1945.68,970.568 1945.72,972.792 1945.77,964.111 1945.81,960.203 1945.85,961.613 1945.89,968.996 
+  1945.94,967.726 1945.98,968.919 1946.02,975.642 1946.07,977.679 1946.12,973.4 1946.16,974.068 1946.21,980.529 1946.26,992.908 1946.31,988.311 1946.37,985.731 
+  1946.42,988.518 1946.48,991.53 1946.53,993.221 1946.59,993.841 1946.65,992.865 1946.71,993.76 1946.76,996.937 1946.83,1002.54 1946.89,1004.98 1946.96,998.062 
+  1947.02,996.395 1947.09,1000.9 1947.16,1009.52 1947.22,1009.09 1947.3,1003.22 1947.37,1003.32 1947.44,1007.42 1947.51,1012.96 1947.59,1013.52 1947.67,1007.36 
+  1947.74,1007.07 1947.82,1013.21 1947.89,1022.41 1947.98,1015.26 1948.06,1012.17 1948.14,1015.75 1948.23,1020.23 1948.31,1025.02 1948.4,1018.82 1948.48,1016.76 
+  1948.57,1021.22 1948.66,1030.35 1948.75,1025.49 1948.85,1022.03 1948.94,1025.45 1949.03,1031.5 1949.13,1034.35 1949.23,1030.1 1949.33,1028.55 1949.42,1033.53 
+  1949.52,1042.22 1949.63,1035.13 1949.74,1033.97 1949.85,1039.72 1949.95,1043.45 1950.07,1047.28 1950.18,1042.76 1950.3,1044.42 1950.42,1052.55 1950.54,1056.09 
+  1950.67,1053.19 1950.8,1056.59 1950.93,1056.46 1951.07,1062.59 1951.21,1063.48 1951.36,1067.08 1951.5,1077.37 1951.66,1075.84 1951.83,1076.43 1952,1079.8 
+  1952.18,1086.56 1952.36,1099.76 1952.56,1107.08 1952.76,1102.04 1952.98,1102.53 1953.21,1109.99 1953.44,1122.45 1953.71,1137.99 1953.98,1137.82 1954.26,1137.41 
+  1954.57,1142.83 1954.91,1154.75 1955.29,1172.15 1955.71,1192.46 1956.12,1201.14 1956.59,1203.45 1957.11,1206.49 1957.72,1206.28 1958.42,1208.22 1959.19,1209.32 
+  1960.04,1210.77 1960.96,1210.65 1961.94,1212.06 1963.01,1214.1 1964.17,1214.22 1965.39,1219.16 1966.71,1220.86 1968.07,1226.98 1969.5,1230.47 1970.98,1236.73 
+  1972.53,1241.86 1974.16,1247.93 1975.87,1254.09 1977.68,1259.87 1979.59,1266.62 1981.63,1272.22 1983.8,1278.93 1986.11,1284.9 1988.59,1291.64 1991.23,1298.04 
+  1994.06,1305.15 1997.09,1311.82 2000.34,1319.16 2003.83,1326.4 2007.59,1333.62 2011.63,1341.01 2016,1347.01 2020.71,1350.43 2025.83,1353.84 2031.39,1357.18 
+  2037.42,1360.51 2043.91,1363.81 2049.92,1366.63 2054.84,1368.82 2059.2,1370.6 2063.49,1372.25 2067.97,1373.87 2072.73,1375.51 2077.74,1377.1 2082.91,1378.61 
+  2088.14,1379.99 2093.36,1381.22 2098.57,1382.29 2103.78,1383.2 2109,1383.83 2114.26,1383.91 2119.55,1383.98 2124.87,1384.05 2130.22,1384.12 2135.58,1384.18 
+  2140.95,1384.23 2146.34,1384.28 2151.73,1384.32 2157.13,1384.36 2162.54,1384.39 2167.95,1384.41 2173.37,1384.43 2178.8,1384.45 2184.22,1384.46 2189.65,1384.47 
+  2195.08,1384.47 2200.51,1384.47 2205.93,1384.46 2211.36,1384.46 2216.78,1384.45 2222.2,1384.44 2227.62,1384.42 2233.03,1384.41 2238.44,1384.39 2243.84,1384.38 
+  2249.24,1384.36 2254.63,1384.34 2260.01,1384.32 2265.39,1384.31 2270.76,1384.29 2276.12,1384.27 2281.48,1384.25 2286.82,1380.9 2291.93,1375.5 
+  "/>
+</svg>
+
+<p>And view some snapshots of ruptures (quasi-dynamic) patterns:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">ind</span> <span class="o">=</span> <span class="n">argmax</span><span class="p">(</span><span class="n">maxv</span><span class="p">)</span>
+<span class="n">myplot</span> <span class="o">=</span> <span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">heatmap</span><span class="p">(</span><span class="n">log10</span><span class="o">.</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="o">:</span><span class="p">,</span><span class="o">:</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">./</span><span class="n">ms2mmyr</span><span class="p">)</span><span class="o">&#39;</span><span class="p">,</span>
+    <span class="n">xticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">40</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]),</span>
+    <span class="n">yticks</span><span class="o">=</span><span class="p">(</span><span class="n">collect</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span> <span class="mi">5</span><span class="o">:</span> <span class="n">fa</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">nξ</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span>
+    <span class="n">yflip</span><span class="o">=</span><span class="kc">true</span><span class="p">,</span> <span class="n">color</span><span class="o">=:</span><span class="n">isolum</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;t = </span><span class="si">$</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="n">snaps</span> <span class="o">=</span> <span class="n">myplot</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">snaps</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip0100">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip0100)" points="
+0,1600 2400,1600 2400,0 0,0 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip0101">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<polygon clip-path="url(#clip0100)" points="
+140.517,1051.1 2112.76,1051.1 2112.76,558.045 140.517,558.045 
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip0102">
+    <rect x="140" y="558" width="1973" height="494"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  146.68,558.045 146.68,1051.1 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  639.74,558.045 639.74,1051.1 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1132.8,558.045 1132.8,1051.1 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1625.86,558.045 1625.86,1051.1 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  2118.92,558.045 2118.92,1051.1 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,570.372 2112.76,570.372 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,693.636 2112.76,693.636 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,816.901 2112.76,816.901 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,940.166 2112.76,940.166 
+  "/>
+<polyline clip-path="url(#clip0102)" style="stroke:#000000; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  140.517,1063.43 2112.76,1063.43 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1051.1 2112.76,1051.1 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,558.045 140.517,1051.1 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  146.68,1051.1 146.68,1043.71 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  639.74,1051.1 639.74,1043.71 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1132.8,1051.1 1132.8,1043.71 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1625.86,1051.1 1625.86,1043.71 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2118.92,1051.1 2118.92,1043.71 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,570.372 170.1,570.372 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,693.636 170.1,693.636 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,816.901 170.1,816.901 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,940.166 170.1,940.166 
+  "/>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  140.517,1063.43 170.1,1063.43 
+  "/>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 146.68, 1105.1)" x="146.68" y="1105.1">-40</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 639.74, 1105.1)" x="639.74" y="1105.1">-20</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1132.8, 1105.1)" x="1132.8" y="1105.1">0</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1625.86, 1105.1)" x="1625.86" y="1105.1">20</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 2118.92, 1105.1)" x="2118.92" y="1105.1">40</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 587.872)" x="116.517" y="587.872">0</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 711.136)" x="116.517" y="711.136">5</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 834.401)" x="116.517" y="834.401">10</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 957.666)" x="116.517" y="957.666">15</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:end;" transform="rotate(0, 116.517, 1080.93)" x="116.517" y="1080.93">20</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:84px; text-anchor:middle;" transform="rotate(0, 1126.64, 73.2)" x="1126.64" y="73.2">t = 14.913521453799977</text>
+</g>
+<g clip-path="url(#clip0102)">
+<image width="1972" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAB7QAAAHtCAYAAACZAEE6AAAgAElEQVR4nOzbS5Mk13ke4HPq0j09
+0wOA4FAkRYmEJdpeeOW1Hd4wtPR/0T/z3g5p4ZC1cITDYQcpySLNMAPinbRIYm7dXZXHCyxMVENA
+vpPI7m9mnmf91cmTt5Nf1lvV//x/jtFKqzS9tedy1/uabi+o79nYfc253En975tW3Vbv6fjHsD4b
+vyfj92wu0dittd5uovrbnz9k9T3b3qZdz6/tV9HY2/Yyqt+351H9WVj/YDyN6k9djmezax9N2b4/
+mLLzth/pdZiZgk8cezb6sW+i+kPL6hdvr2+z8YP5TeG+HMO5JOft4/r02KZX0ieNZR//TD1sHdNn
+fFq/DZ9b2+Ce3sTP9NNtZZ/frbgvrbW2C+aTzyU7b8lcXmX8vLf8pOTTh3Dte7HZR/VPtw+i+o/6
+o6j+eVh/FdTftIto7FPHdh7VTy07tmNka/9YuDZ/lnitDPvqTdgnb1vWi57atxeza8+Dvq+11h6G
+9Y/D+stj1ltehL1lsv4tveLSazbtNdP1Lx4/6J/yuWT3f9onp33xqaR3TPcl6alby6+juD68LhLh
+V1OfIhsg7R03ad8b9n7JfNKeehfOJe2Lb20v7k2DfQ/7zPS8pZfhTXhPvwx7y2eb+b3l07BPPPWy
+X0b11+1hVH8T1h9b1ldPY34vOrWzaOwxwr617aL6259Pt5ddhy3oq+Ox4+9Twh5/rP19zZKeIN3W
+uvXx+1D05dTa+7rU2tu76/35LJXm8knLOmwAAAAAAAAAWIlAGwAAAAAAAICSBNoAAAAAAAAAlCTQ
+BgAAAAAAAKAkgTYAAAAAAAAAJQm0AQAAAAAAAChJoA0AAAAAAABASQJtAAAAAAAAAEoSaAMAAAAA
+AABQkkAbAAAAAAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAAAAAAAAAlCbQBAAAAAAAAKEmg
+DQAAAAAAAEBJAm0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACAkgTaAAAAAAAAAJQk0AYAAAAA
+AACgJIE2AAAAAAAAACUJtAEAAAAAAAAoSaANAAAAAAAAQEkCbQAAAAAAAABK2t33BD5fv+8J/J61
+5zJWHv8Otzeyscfq+56N3/u0YFvp70TCYzXSuW2j6t6y8UdyrMYxGru1rH4sXNJ6z7bXx01UP9rZ
+7NopqH2l+r4Px8+O7Vi4XO7bYXbtZXsRjX0xZeftPLxu09Xs0OevGdfh/TzC59amL1uL0zt8TaNn
++54eqxGu9WvP57b1epYRXic97Ak24XNoiq/zoH7pYraydHZJfbocbMP+ZBfW71euP5Vcty822TPy
++SZ7Bj/rD6L6jzbvRvUvWlZ/0x7Nrj2ObO6nRjsP68N+JXyurromxGtr2LcGvdXH9VdR/amb/jKo
+za6TY8/O82bKjtWjNn/urbV2Ho5/Mc0/F2n/cOom6DNba+0m7W+i6tam9N002P16T+xlM0rOfdoL
+pX3mtHLfW6lvPZXObIz0Hkq/fwlndNdfM36GzcLJbMJ3iqTXPAufqWkfm15HV+F3kldhL3rV5/dX
+L/plNPatbbV3ovqkz2ytteO4iOqntLcc879ry/vQ7J1gjLBvvSX9PindXlAfr5Xpd+3pXbf2+K/+
+nEufK+t3RHWe8Xff/dXrNt9G/qENAAAAAAAAQEkCbQAAAAAAAABKEmgDAAAAAAAAUJJAGwAAAAAA
+AICSBNoAAAAAAAAAlCTQBgAAAAAAAKAkgTYAAAAAAAAAJQm0AQAAAAAAAChJoA0AAAAAAABASQJt
+AAAAAAAAAEoSaAMAAAAAAABQkkAbAAAAAAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAAAAAA
+AAAlCbQBAAAAAAAAKEmgDQAAAAAAAEBJAm0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACAkgTa
+AAAAAAAAAJQk0AYAAAAAAACgJIE2AAAAAAAAACUJtAEAAAAAAAAoaXffE+D39eLbG0XGfpX6bD5j
+LDkX2dx6X3df0vmMdPzgWPX0PPT0NzfbsP50g8esPNxe7/PH7yNbnkcP68Pxp7bP6sP53NLnXysX
+/UU09B9OH0X1X7q5jupfbrLr9ul2/rE9bLOx09XlGN9zn3To2T1xE7YhN8F1dQyvwWN4P6f1U/gb
+wngtvmXNniK7sjZ9yupbWp+t3YegfhuOfWrfDlH9COtTyVWxDc9DuuBswg+cTdm5uDwuO3cPjvP3
+/1dn2dh/v3svqv/l5htR/cv2flR/GI+i+qldzK4dIzw4p58P+48x0l4wfe6tuLaO9Kmd3aNJH9pa
+a73dRPWnjm1+/3Rol9HYNz2rv97Mv2Zbay1tY//w+h+i+ifX84/ty7D3O/V0G/Y323W/k0hfs5Pe
+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
+AAAAAAAAAEoSaAMAAAAAAABQkkAbAAAAAAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAAAAAA
+AAAlCbQBAAAAAAAAKEmgDQAAAAAAAEBJAm0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACAkgTa
+AAAAAAAAAJQk0AYAAAAAAACgJIE2AAAAAAAAACUJtAEAAAAAAAAoSaANAAAAAAAAQEkCbQAAAAAA
+AABKEmgDAAAAAAAAUJJAGwAAAAAAAICSBNoAAAAAAAAAlCTQBgAAAAAAAKCk3X1P4HONlcfvK4/P
+Wyi9qKpd5OF8RjB+fL+lH1h6Q2efH8m+t9Z6T+rX3fcR1vf490/Lfi812jaozR5l09hH9Tf9UVT/
+o7M/iOo/vPz+7Nr3r6Oh2815dh72Y8o2cGIXfn6b1vfj7NpNuJb1eC1ed/yx+rPh/1u7FUr3Pa4f
+642fXxeftFn5nkjvuaQ+XQ/Opqz+8pDV/9/Hz6L675/9aVR/6qpdzq6dxnk09hjZcyt9ziXP0Nby
+fiZ7xt9tb3YXK9p60vVm7WOzdF/nXyfxNdizazz92iO9R6eWrQFXff768v2zr0Vjn/rXj/93VH95
+yMYPD1Xbb9Z7bq3dh25aVt/7sh4i6lfSXiicW97HZvJvLJIt3N15eJXtpeOn7zjbNv/9ae0+dOm7
+5ln4+fev5+/7h5fza1vL3/lvWvadQvqdxbq94tL/wmWfT7+rqtQP5T117e884/p4/xPVApxq8+Gt
+c3dfGZbjH9oAAAAAAAAAlCTQBgAAAAAAAKAkgTYAAAAAAAAAJQm0AQAAAAAAAChJoA0AAAAAAABA
+SQJtAAAAAAAAAEoSaAMAAAAAAABQkkAbAAAAAAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAA
+AAAAAAAlCbQBAAAAAAAAKEmgDQAAAAAAAEBJAm0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACA
+kgTaAAAAAAAAAJQk0AYAAAAAAACgJIE2AAAAAAAAACUJtAEAAAAAAAAoSaANAAAAAAAAQEkCbQAA
+AAAAAABKEmgDAAAAAAAAUJJAGwAAAAAAAICSdvc9gXs3gtq+2ix4q619YSUXeWtrzmeEc+nxXJbO
+fe3tJfXp743C+hFeFz0bfyz9vdSY//nRt9nQbR/VH9qDqP63/UlU/93Ln8+u/bOfP4/G/tVZdp73
+0zGqP7XrU1bfsu3txvz6m3AuPV6fUnXXs7WfEiP8RFq/pp6ulaefD4/utmXXbVq/H/Prz6b0Hsp8
+8zcPo/q/+Ea2hX/cfDWqP3Vo8+c3hc+V9DnURvacW72HSNaXcde9WbXxE/nquub4S89d75X63rBX
+7Nk9mq4ByfqydC377+/9LKr/zo+z6+pvnryM6tNny34zv37tZ2jcKy7sIdZcntbvzV7f3u+2bG75
+kcquk0143SbvT/m7WXg/L3zX3Ib31Nefzf/K+z99NetL03f+9DuFtFccLXzOJd+3LP4vXPrMXruP
+Xa/vrfWd4vLP50+xNY9V6q6PLXwBFraObwv/0AYAAAAAAACgJIE2AAAAAAAAACUJtAEAAAAAAAAo
+SaANAAAAAAAAQEkCbQAAAAAAAABKEmgDAAAAAAAAUJJAGwAAAAAAAICSBNoAAAAAAAAAlCTQBgAA
+AAAAAKAkgTYAAAAAAAAAJQm0AQAAAAAAAChJoA0AAAAAAABASQJtAAAAAAAAAEoSaAMAAAAAAABQ
+kkAbAAAAAAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAAAAAAAAAlCbQBAAAAAAAAKEmgDQAA
+AAAAAEBJAm0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACAknb3PYHXygjr+yqzgJWlF25wY4xw
+7PgeWnrTpZ/P6kew/72HY4dz6encw98/9baN6m+bZleOcHGegrFba62P86j+qr8T1X//7I9n1/7x
+e38bjf3Bs2xfv/942e/crsZx1fptn78/mxGe52Dsj2XXXdpCpPf07c+v95vF9J5LZ5KOP8L1Mj4Z
+C2zSYxVet7uwfj/Nv+fOwrG/9TTb1x+8/zyq/+75v4rqX7Z3o/pTU7D2j3YWjT3CV7C4fqTP4PQu
+Tepr92a5Ncev9rK5dPzkOsmuwfga7+nXHuk9mq0Byfrysi9by757/kFU/633v5fVP82ukx8+Xu+5
+tdtk10X6zN30O2wgQmkvlPaJI3y3m+LnyprrWdrjf1J+1rNP9HB+6XW7Dcbfhe9mZ2H9eTj3Ux88
+O0T1f/fe/OsweSdvrbWrlr3zJ+t+a61NbR/Vp71ii+7pZd/t5O+l634Xtub3eOv3rXfcV6ff4UaE
+JrwF6raOrzX/0AYAAAAAAACgJIE2AAAAAAAAACUJtAEAAAAAAAAoSaANAAAAAAAAQEkCbQAAAAAA
+AABKEmgDAAAAAAAAUJJAGwAAAAAAAICSBNoAAAAAAAAAlCTQBgAAAAAAAKAkgTYAAAAAAAAAJQm0
+AQAAAAAAAChJoA0AAAAAAABASQJtAAAAAAAAAEoSaAMAAAAAAABQkkAbAAAAAAAAgJIE2gAAAAAA
+AACUJNAGAAAAAAAAoCSBNgAAAAAAAAAlCbQBAAAAAAAAKEmgDQAAAAAAAEBJAm0AAAAAAAAAShJo
+AwAAAAAAAFCSQBsAAAAAAACAkgTaAAAAAAAAAJS0u+8JvNFGWN9XmQVvnLUvlDoX7gin0vvSuaSf
+X/E3QfHOZ3MZ4Xnu4XTG4ssi2GB8yWYfmNoU1R9GVv/b/tXZtX99+SIa+88OP4zqv/byOqo/dXWx
+zeo3x6x+zK/f9mzsbXiej+F53oTzGQvXlxGtZ9UakPSmXs/yp0q2L9uwfj9l1+FZcN0+ucrG/t1Z
+VN7+8t0/iep/078e1R/Go6j+1NTOZ9eOsc8GT+tbtrbm9WEPET3kq60vpyrNL53L2mvlsmOTXCc9
+7GPzazxbz9J7dLSsfurz15ela1m6dv7lu1mv+e/DXvPJVXbdvryYf+7SZ+J2E74Ppe9PUfVdq9Nr
+vZr58+/p/X9i07IefhO+I6TvINtwPrvg/eksqG2ttfMpq1/6rvmbsNf868sPZtcm7+St5Wtz0le2
+lj9Xxsi+3h9BHDDiZ+7pANnn8/fgsD7+sioZP517Ope7681ebXtrPvkqzYW31uvePr0h/EMbAAAA
+AAAAgJIE2gAAAAAAAACUJNAGAAAAAAAAoCSBNgAAAAAAAAAlCbQBAAAAAAAAKEmgDQAAAAAAAEBJ
+Am0AAAAAAAAAShJoAwAAAAAAAFCSQBsAAAAAAACAkgTaAAAAAAAAAJQk0AYAAAAAAACgJIE2AAAA
+AAAAACUJtAEAAAAAAAAoSaANAAAAAAAAQEkCbQAAAAAAAABKEmgDAAAAAAAAUJJAGwAAAAAAAICS
+BNoAAAAAAAAAlCTQBgAAAAAAAKAkgTYAAAAAAAAAJQm0AQAAAAAAAChJoA0AAAAAAABASQJtAAAA
+AAAAAEoSaAMAAAAAAABQ0u6+JwBU0+97AgssnXv6G58prJ8/vxHOpbcRziWrT0fv6QdOt7fmZRjO
+bVr5lrgOJvTzzQfR2P/xvew6+jdPfxjVn/rnz15E9d99vI3qn27mH6vtOEZj79t1VL/th6h+Gtm5
+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
+AEj6AuDspc5E2xBxAAAAAElFTkSuQmCC
+" transform="translate(141, 558)"/>
+</g>
+<defs>
+  <clipPath id="clip0103">
+    <rect x="2160" y="558" width="73" height="494"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip0103)">
+<image width="72" height="493" xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAEgAAAHtCAYAAAC6SziuAAAEjElEQVR4nO3dwZEbMQwAQa4KiV9K
+SpCK4DBP6dEdgQs1C3Il2X7u++8e/vX69h/g1xlQMKAw51hBGwWFOc+3/wi/TUHBDgoKCgYUDCjM
+eeygjYKCAQUDCgYUDCg4xYKCggEFAwoGFAwoOMWCgsLoZ6egYEDBkg4KCgYUDCg45oOCglMsKCjY
+QUFBQUFBQcEpFhQU7KCgoKCgoKAw1w/JVwoKfkgeFBScYsGSDh6xYEDBgMJcx/xKQcEpFhQUXBSD
+goIBBQMKTrGgoOAUCwoK3sWCgoIBBQMK7kFBQcE9KCgoKCgoKPh3FINHLHjEgpfVoKDgVSMoKDjF
+goKCHRQUFOygoKCgoKCgoKCgoOADs6CgYAcFBQUFBQUFb/NBQcEOCgYUPGLBq0ZQULCDgoLCXEto
+paBgBwUFBS+rQUHBDgoKCgoKCgre5oOCgh0UFBQUFBQUfB4UFBS8zQcFBadYMKDgEQteVoOCgoti
+UFBwigUFBQUFBQUvq0FBwT0oKCg4xYKCgoKCgoJ7UFBQcA8KCgoGFAwouAeFuY8lvfGIBY9YUFBQ
+UFBQ8KoRFBR83BEUFOygoKDgHhQUFBQUFBR8HhQUFOygoKDgJh0UFOygoKDg86CgoDDHKbaypINH
+LLgoBgUFOygoKPjALCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcE9KCgo2EFBQcEOCgoKvnoOHrHg
+EQuO+aCgYAcFBQU7KCgo+Mg1KCg4xYKCglMsKCjYQUFBwQ4KCgpu0kFBwSkWFBQUFBQU3IOCgoId
+FAwoeMSCX3cEBQU7KCgoKCgoKCgoKCgoKCgoKCgoKPjaJygo2EFBQUFBQUHB1z5BQcEOCgoKCgoG
+FDxiwb8nHRQU7KCgoKCgoKDg5y9BQcEOCgoKbtJBQcEOCgoKCgoKCgoKCgruQUFBwQ4KCgoKCgoK
+TrHgEQseseAXZkFBwZIOCgpOsaCgYAcFBQU7KCgoKCgoKDjFgoKCHRQUFOygoKBgBwUFBTsoKCjY
+QUFBwYCCRywoKDjmg4KCHRQUFOygoKBgBwUFBTsoKCgoKCgoOMWCgoIdFBQU/FWEoKBgBwUFBQUF
+BQU36eARCx6xoKCgoGBJBwUFOygoKCgoKCj4wCwoKNhBQUFBQUFBwbtYUFCwg4KCgoKCgoJTLCgo
+2EFBQcGAgkcsKCg45oOCgh0UFBQUFBQUFBQUFNyDgoLCHL9eWCkoOMWCgoKCgoKCe1BQULCDgoKC
+goKCggEFj1hQUHBRDAoKdlBQUFBQUFBQUFBQMKBgQMFNOigoOMWCgoKCgoKCgoKCwpyroI2Cgpt0
+UFBwigUDCh6xoKCgoKCgoKBgQMGAgh0UFBS8rAYFBTsoKCgoKCgoGFAwoGAHBQUFXxwGBQU7KCgo
+KCgoKPjPj4JHLHjEgoKCgoKCgoKCgoKCggEFAwp2UFBQUFBQUFBQUFCY62uflYKCAQUDCk6xoKCg
+oKCgoKBgQMEjFgwoGFCwg4KCgoKCgoKCgoKCAQUDCnZQUFDwtU9QULCDgoKCAQUDCgYUDCgYUDCg
+YEDhA5L7qeKYT8uDAAAAAElFTkSuQmCC
+" transform="translate(2161, 558)"/>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 1015.94)" x="2268.76" y="1015.94">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 1015.94)" x="2296.87" y="1015.94">8.25</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 965.736)" x="2268.76" y="965.736">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 965.736)" x="2296.87" y="965.736">8.00</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 915.537)" x="2268.76" y="915.537">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 915.537)" x="2296.87" y="915.537">7.75</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 865.338)" x="2268.76" y="865.338">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 865.338)" x="2296.87" y="865.338">7.50</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 815.139)" x="2268.76" y="815.139">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 815.139)" x="2296.87" y="815.139">7.25</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 764.94)" x="2268.76" y="764.94">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 764.94)" x="2296.87" y="764.94">7.00</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 714.741)" x="2268.76" y="714.741">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 714.741)" x="2296.87" y="714.741">6.75</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 664.542)" x="2268.76" y="664.542">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 664.542)" x="2296.87" y="664.542">6.50</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2268.76, 614.343)" x="2268.76" y="614.343">-</text>
+</g>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 2296.87, 614.343)" x="2296.87" y="614.343">6.25</text>
+</g>
+<polyline clip-path="url(#clip0100)" style="stroke:#000000; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2232.76,1051.1 2232.76,1002.28 2256.76,1002.28 2232.76,1002.28 2232.76,952.085 2256.76,952.085 2232.76,952.085 2232.76,901.886 2256.76,901.886 2232.76,901.886 
+  2232.76,851.687 2256.76,851.687 2232.76,851.687 2232.76,801.488 2256.76,801.488 2232.76,801.488 2232.76,751.289 2256.76,751.289 2232.76,751.289 2232.76,701.09 
+  2256.76,701.09 2232.76,701.09 2232.76,650.891 2256.76,650.891 2232.76,650.891 2232.76,600.692 2256.76,600.692 2232.76,600.692 2232.76,558.045 
+  "/>
+<g clip-path="url(#clip0100)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:66px; text-anchor:middle;" transform="rotate(-90, 2410.36, 804.575)" x="2410.36" y="804.575"></text>
+</g>
+</svg>
+
+<p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article></div></div></main><footer class="md-footer"><div class="md-footer-nav"><nav class="md-footer-nav__inner md-grid"><a href="../bp1/" title="Example 1D" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev"><div class="md-flex__cell md-flex__cell--shrink"><i class="md-icon md-icon--arrow-back md-footer-nav__button"></i></div><div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span class="md-flex__ellipsis"><span class="md-footer-nav__direction">Previous</span>Example 1D</span></div></a><a href="../../../public_interface/" title="Public" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next"><div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span class="md-flex__ellipsis"><span class="md-footer-nav__direction">Next</span>Public</span></div><div class="md-flex__cell md-flex__cell--shrink"><i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i></div></a></nav></div><div class="md-footer-meta md-typeset"><div class="md-footer-meta__inner md-grid"><div class="md-footer-copyright"><div class="md-footer-copyright__highlight">Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a></div>powered by <a href="https://www.mkdocs.org">MkDocs</a> and <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs</a></div><div class="md-footer-social"><link rel="stylesheet" href="../../../assets/fonts/font-awesome.css"> <a href="https://github.com/shipengcheng1230" class="md-footer-social__link fa fa-github"></a>  <a href="https://www.linkedin.com/in/pengcheng-shi-396960148" class="md-footer-social__link fa fa-linkedin"></a>  <a href="https://steamcommunity.com/profiles/76561198054638928/" class="md-footer-social__link fa fa-steam"></a>  <a href="https://live.xbox.com/en-US/Profile?Gamertag=ElyseesKukushka" class="md-footer-social__link fa fa-xbox"></a> </div></div></div></footer></div><script src="../../../assets/javascripts/application.b260a35d.js"></script><script>app.initialize({version:"1.0.4",url:{base:"../../.."}})</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script><script src="../../../assets/mathjaxhelper.js"></script></body></html>
