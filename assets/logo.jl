@@ -19,7 +19,6 @@ pt32 = Point(pt3.x + r * sind(-θ), pt3.y + r * cosd(-θ))
 
 @svg begin
     rotate(π)
-
     sethue(0.22, 0.596, 0.149)
     circle(pt1, r, :stroke)
     pie(pt1.x, pt1.y, r, π/2, π, :fill)
