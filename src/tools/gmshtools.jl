@@ -76,7 +76,7 @@ end
 
 ## concrete mesh generator
 
-"Generate equivalent [`LineTopCenterMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
+"Generate equivalent [`LineOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
         dy, dz = -ξ * cosd(dip), -ξ * sind(dip)
@@ -88,7 +88,7 @@ function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::Abst
     end
 end
 
-"Generate equivalent [`RectTopCenterMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
+"Generate equivalent [`RectOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
 function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
         y, z = -ξ * cosd(dip), -ξ * sind(dip)

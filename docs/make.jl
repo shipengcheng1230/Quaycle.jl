@@ -27,3 +27,5 @@ deploydocs(
   target = "site",
   make = () -> run(`mkdocs build`),
 )
+
+cp(joinpath(@__DIR__, "..", "assets", "logo.svg"), joinpath(@__DIR__, "build", "assets", "logo.svg"); force=true)

@@ -1,14 +1,15 @@
 # The julia-style colors are selected from https://github.com/JuliaGraphics/julia-logo-graphics
+# logo version v0.1.0
 
 using Luxor
 
-R = 160.0
-r = 120.0
+R = 80.0
+r = 65.0
 θ = -60.0
 
-pt1 = Point(R * cosd(90.0), R * sind(90.0))
-pt2 = Point(R * cosd(210.0), R * sind(210.0))
-pt3 = Point(R * cosd(330.0), R * sind(330.0))
+pt1 = Point(R * cosd(90.0), R * sind(90.0) - 15)
+pt2 = Point(R * cosd(210.0), R * sind(210.0) - 15)
+pt3 = Point(R * cosd(330.0), R * sind(330.0) - 15)
 
 pt21 = Point(pt2.x - r * sind(θ), pt2.y - r * cosd(θ))
 pt22 = Point(pt2.x + r * sind(θ), pt2.y + r * cosd(θ))
@@ -34,13 +35,9 @@ pt32 = Point(pt3.x + r * sind(-θ), pt3.y + r * cosd(-θ))
     sethue("white")
     arc2sagitta(pt31, pt32, r/2, :fillpreserve)
     arc2sagitta(pt32, pt31, r/2, :fillpreserve)
+    sethue("royalblue")
 
-    settext(
-        "<span font='33' background='royalblue' foreground='white'> JuEQ.jl </span>",
-        pt3,
-        halign="center",
-        valign="center",
-        markup=true,
-        angle = -30,
-    )
-end 800 800 "logo"
+    fontsize(25)
+    fontface("Century Schoolbook L")
+    text("JuEQ.jl", Point(pt3.x + 47, pt3.y), halign=:left, valign=:baseline, angle=30/π)
+end 300 300 "logo"

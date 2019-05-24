@@ -1,5 +1,9 @@
 # JuEQ.jl Documentation
 
+<p align="center">
+  <img src="../../assets/logo.svg" alt="JuEQ.jl"/>
+</p>
+
 ## Overview
 This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.
 
