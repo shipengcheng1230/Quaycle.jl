@@ -177,10 +177,17 @@ function strain_components!(ϵ::T, u::T) where T<:AbstractVector
     ϵ[6] = u[12]
 end
 
+function strain_components(u::T) where T
+    ϵ = Vector{eltype(u)}(undef, 6)
+    strain_components!(ϵ, u)
+    return ϵ
+end
+
 @gen_shared_chunk_call okada_strain_gf_tensor true
 
 "Compute strain green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
-function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector; kwargs...) where T
+function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
+    @assert minimum(comp) ≥ 1 && maximum(comp) ≤ 6 && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6]."
     st = ntuple(_ -> SharedArray{T}(mf.nx * mf.nξ, length(ma.tag)), Val(length(comp)))
     okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
     return [sdata(x) for x in st]
@@ -188,8 +195,8 @@ end
 
 function okada_strain_gf_tensor_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::PlaneFault, comp::AbstractVector; nrept::Integer=2, buffer_ratio::Integer=0
-    ) where {T, N}
+    λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; nrept::Integer=2, buffer_ratio::Integer=0
+    ) where {T<:Real, N, I<:Integer}
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
     α = (λ + μ) / (λ + 2μ)
