@@ -187,7 +187,7 @@ end
 
 "Compute strain green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
 function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
-    @assert minimum(comp) ≥ 1 && maximum(comp) ≤ 6 && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6]."
+    @assert comp ⊆ [1, 2, 3, 4, 5, 6] && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6] and its length is no longer than 6."
     st = ntuple(_ -> SharedArray{T}(mf.nx * mf.nξ, length(ma.tag)), Val(length(comp)))
     okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
     return [sdata(x) for x in st]
