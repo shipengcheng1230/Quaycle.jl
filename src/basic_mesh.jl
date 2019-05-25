@@ -11,8 +11,8 @@ abstract type OkadaMesh{dim} <: BasicTransfiniteStructuredMesh{dim} end
 Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
 at y-z plane, started from (0, 0, 0) and extended into negative half space.
 """
-struct LineOkadaMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} <: OkadaMesh{1}
-    ξ::T # along downdip
+@with_kw struct LineOkadaMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} <: OkadaMesh{1}
+    ξ::T # centroid along downdip
     Δξ::U
     nξ::I
     aξ::S
@@ -21,6 +21,11 @@ struct LineOkadaMesh{T<:AbstractVector, U<:Real, I<:Integer, S<:AbstractVector} 
     z::T
     dep::U # fault origin depth
     dip::U # fault dipping angle
+
+    @assert length(ξ) == nξ
+    @assert length(aξ) == nξ
+    @assert length(y) == nξ
+    @assert length(z) == nξ
 end
 
 """
@@ -28,12 +33,12 @@ Generate a uniform rectangular mesh in accordance with [`dc3d`](@ref) usage, i.e
 parallel to x-axis, top edge starts from z = 0 and centered at x = 0.
 The geometry extends into negative half space and rotate around the pivot of (y=0, z=0).
 """
-struct RectOkadaMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <: OkadaMesh{2}
-    x::T # along strike
+@with_kw struct RectOkadaMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <: OkadaMesh{2}
+    x::T # centroid along strike
     Δx::U
     nx::I
     ax::S
-    ξ::T
+    ξ::T # centroid along downdip
     Δξ::U
     nξ::I
     aξ::S
@@ -41,6 +46,13 @@ struct RectOkadaMesh{T<:AbstractArray, U<:Real, I<:Integer, S<:AbstractArray} <:
     z::T
     dep::U # fault origin depth
     dip::U # fault dipping angle
+
+    @assert length(x) == nx
+    @assert length(ax) == nx
+    @assert length(ξ) == nξ
+    @assert length(aξ) == nξ
+    @assert length(y) == nξ
+    @assert length(z) == nξ
 end
 
 """
@@ -95,9 +107,9 @@ abstract type SBarbotMeshEntity{dim} <: UnstructuredMesh{dim} end
 
 "Mesh entities of Tet4 for using strain-stress green's function."
 @with_kw struct SBarbotTet4MeshEntity{P<:AbstractArray, Q<:AbstractVector, T<:AbstractVector} <: SBarbotMeshEntity{3}
-    x1::P
-    x2::P
-    x3::P
+    x1::P # centroid +y
+    x2::P # centroid +x
+    x3::P # centroid -z
     A::Q
     B::Q
     C::Q
@@ -126,10 +138,10 @@ end
     q1::P # anchor +y
     q2::P # anchor +x
     q3::P # anchor -z
-    L::P # length ←x→
-    T::P # thickness ←y→
-    W::P # width ←z→
-    θ::U # strike
+    L::P # length ←y→ when θ = 0°
+    T::P # thickness ←x→ when θ = 0°
+    W::P # width ←z→, always
+    θ::U # strike, clockwise away from +y
     tag::A # element tag
 
     @assert minimum(x3) > 0
