@@ -72,9 +72,11 @@ function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, de
     end
 end
 
+"Dislocation direction: *hanging wall* - *foot wall*."
 @inline unit_dislocation(::DIPPING) = [0.0, 1.0, 0.0]
 @inline unit_dislocation(::STRIKING) = [1.0, 0.0, 0.0]
 
+"Normal of hanging outwards: (0, \\sin θ, -\\cos θ)."
 @inline function shear_traction(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
@@ -83,8 +85,9 @@ end
 end
 
 @inline function shear_traction(::STRIKING, u::AbstractVector, λ::T, μ::T, dip::T) where T
-    # Special case for `dip = 90.` against above, however, at x-y plane instead.
-    μ * (u[5] + u[7])
+    σxy = μ * (u[5] + u[7])
+    σxz = μ * (u[6] + u[10])
+    σxy * sind(dip) - σxz * cosd(dip)
 end
 
 ## Allocation for inplace operations
