@@ -112,7 +112,7 @@ function assemble(
     fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...
     )
-    gf = okada_disp_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
+    gf = okada_stress_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
     return assemble(gf, fs, p, u0, tspan; flf=flf, se=se), gf
 end
 

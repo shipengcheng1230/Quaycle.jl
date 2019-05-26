@@ -1,21 +1,20 @@
 ## static green's function
-export okada_disp_gf_tensor, okada_strain_gf_tensor, gen_alloc
+export okada_stress_gf_tensor, okada_strain_gf_tensor, gen_alloc
 
 ## okada displacement green's function
-
-@gen_shared_chunk_call okada_disp_gf_tensor false
+@gen_shared_chunk_call okada_stress_gf_tensor false
 
 "Okada green's function in 1-D elastic fault in [`LineOkadaMesh`](@ref)."
-function okada_disp_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
+function okada_stress_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
-    okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
+    okada_stress_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
     return sdata(st)
 end
 
 "Okada green's function in 2-D elastic fault in [`RectOkadaMesh`](@ref). Translational symmetry is considered."
-function okada_disp_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
+function okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; fourier_domain=true, kwargs...) where T
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
-    okada_disp_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
+    okada_stress_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
 
     function __convert_to_fourier_domain__()
         FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
@@ -33,7 +32,7 @@ function okada_disp_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault;
     fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
-function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; ax_ratio::Real=12.5) where T
+function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; ax_ratio::Real=12.5) where T
     ud = unit_dislocation(ft)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
@@ -46,7 +45,7 @@ function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray,
     end
 end
 
-function okada_disp_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0) where T
+function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0) where T
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
@@ -88,7 +87,7 @@ end
     μ * (u[5] + u[7])
 end
 
-##
+## Allocation for inplace operations
 abstract type OkadaGFAllocation{dim} <: AbstractAllocation{dim} end
 
 "Allocation for computing stress rate in 1-D elastic fault."
@@ -166,9 +165,8 @@ end
 end
 
 ## okada strain green's function
-
 "Compute 6 strain components from [`dc3d`](@ref) output."
-function strain_components!(ϵ::T, u::T) where T<:AbstractVector
+@inline function strain_components!(ϵ::T, u::T) where T<:AbstractVector
     ϵ[1] = u[4]
     ϵ[2] = (u[5] + u[7]) / 2
     ϵ[3] = (u[6] + u[10]) / 2
@@ -188,7 +186,7 @@ end
 "Compute strain green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
 function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
     @assert comp ⊆ [1, 2, 3, 4, 5, 6] && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6] and its length is no longer than 6."
-    st = ntuple(_ -> SharedArray{T}(mf.nx * mf.nξ, length(ma.tag)), Val(length(comp)))
+    st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(length(comp)))
     okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
     return [sdata(x) for x in st]
 end
@@ -205,9 +203,9 @@ function okada_strain_gf_tensor_chunk!(
     i2s = CartesianIndices((mf.nx, mf.nξ))
 
     @inbounds @fastmath @simd for sub in subs
-        i, j = sub[1], sub[2] # index of fault, index of volume
-        q = i2s[i] # return (ix, iξ)
-        okada_gf_periodic_bc!(u, ma.x2[j], ma.x1[j], -ma.x3[j], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
+        i, j = sub[1], sub[2] # index of volume, index of fault
+        q = i2s[j] # return (ix, iξ)
+        okada_gf_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
         strain_components!(ϵ, u)
         for (ic, c) in enumerate(comp)
             st[ic][i,j] = ϵ[c]
