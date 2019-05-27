@@ -34,3 +34,22 @@ end
 
     rm(filename)
 end
+
+@testset "Shear traction consistency between 2 coordinate system" begin
+    λ, μ = rand(2)
+    dip = rand() * 90
+    ν = λ / 2 / (λ + μ)
+    rϵ = rand(6)
+    # observation point is out of strain volume
+    args = (10.0, 10.0, 10.0, -10.0, -10.0, 20.0, 2.0, 2.0, 2.0, 0.0, rϵ..., μ, ν)
+    ϵ = sbarbot_strain_hex8(args...)
+    σ = sbarbot_stress_hex8(args...)
+    # construct an equivalent output from `dc3d`, ignoring the first 3 displacement
+    u = [0.0, 0.0, 0.0, ϵ[4], ϵ[2], -ϵ[5], ϵ[2], ϵ[1], -ϵ[3], -ϵ[5], -ϵ[3], ϵ[6]]
+    τyz1 = shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
+    τyz2 = shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
+    @test τyz1 ≈ τyz2
+    τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
+    τxy2 = shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
+    @test τxy1 ≈ τxy2
+end

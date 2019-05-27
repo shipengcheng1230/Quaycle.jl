@@ -40,7 +40,7 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArra
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
         u = dc3d(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
-        st[i,j] = shear_traction(ft, u, λ, μ, mesh.dip)
+        st[i,j] = shear_traction_dc3d(ft, u, λ, μ, mesh.dip)
         next!(pm)
     end
 end
@@ -54,7 +54,7 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArra
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
-        @inbounds st[i,j,l] = shear_traction(ft, u, λ, μ, mesh.dip)
+        @inbounds st[i,j,l] = shear_traction_dc3d(ft, u, λ, μ, mesh.dip)
         next!(pm)
     end
 end
@@ -77,14 +77,14 @@ end
 @inline unit_dislocation(::STRIKING, T=Float64) = [one(T), zero(T), zero(T)]
 
 "Normal of hanging outwards: ``(0,\\; \\sin{θ},\\; -\\cos{θ})``."
-@inline function shear_traction(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
+@inline function shear_traction_dc3d(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
     -((σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip))
 end
 
-@inline function shear_traction(::STRIKING, u::AbstractVector, λ::T, μ::T, dip::T) where T
+@inline function shear_traction_dc3d(::STRIKING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σxy = μ * (u[5] + u[7])
     σxz = μ * (u[6] + u[10])
     σxy * sind(dip) - σxz * cosd(dip)
