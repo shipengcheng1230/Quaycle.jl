@@ -186,16 +186,15 @@ function stress_components(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real
 end
 
 "Compute stress green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
-function okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
-    @assert comp ⊆ [1, 2, 3, 4, 5, 6] && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6] and its length is no longer than 6."
-    st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(length(comp)))
-    okada_stress_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
+function okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault; kwargs...) where {T<:Real, I<:Integer}
+    st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(6))
+    okada_stress_gf_tensor!(st, mf, ma, λ, μ, ft; kwargs...)
     return [sdata(x) for x in st]
 end
 
 function okada_stress_gf_tensor_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; nrept::Integer=2, buffer_ratio::Integer=0
+    λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0
     ) where {T<:Real, N, I<:Integer}
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
@@ -203,14 +202,15 @@ function okada_stress_gf_tensor_chunk!(
     u = Vector{T}(undef, 12)
     σ = Vector{T}(undef, 6)
     i2s = CartesianIndices((mf.nx, mf.nξ))
+    indexST = Base.OneTo(6)
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
         q = i2s[j] # return (ix, iξ)
         okada_gf_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
         stress_components!(σ, u, λ, μ)
-        for (ic, c) in enumerate(comp)
-            st[ic][i,j] = σ[c]
+        for ind in indexST
+            st[ind][i,j] = σ[ind]
         end
     end
 end
