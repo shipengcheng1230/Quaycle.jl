@@ -24,10 +24,12 @@
 <li><a href="./#JuEQ.geo_rect_x-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T&lt;:Real"><code>JuEQ.geo_rect_x</code></a></li>
 <li><a href="./#JuEQ.get_subs-Tuple{SharedArrays.SharedArray}"><code>JuEQ.get_subs</code></a></li>
 <li><a href="./#JuEQ.okada_gf_periodic_bc!-Union{Tuple{T}, Tuple{AbstractArray{T,1},T,T,T,T,T,T,AbstractArray{T,1},AbstractArray{T,1},AbstractArray{T,1},Integer,T}} where T&lt;:Real"><code>JuEQ.okada_gf_periodic_bc!</code></a></li>
-<li><a href="./#JuEQ.shear_traction-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T"><code>JuEQ.shear_traction</code></a></li>
-<li><a href="./#JuEQ.strain_components!-Union{Tuple{T}, Tuple{T,T}} where T&lt;:(AbstractArray{T,1} where T)"><code>JuEQ.strain_components!</code></a></li>
-<li><a href="./#JuEQ.unit_dislocation-Tuple{DIPPING}"><code>JuEQ.unit_dislocation</code></a></li>
-<li><a href="./#JuEQ.@gen_shared_chunk_call-Tuple{Symbol,Any}"><code>JuEQ.@gen_shared_chunk_call</code></a></li>
+<li><a href="./#JuEQ.shear_traction_dc3d-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T"><code>JuEQ.shear_traction_dc3d</code></a></li>
+<li><a href="./#JuEQ.shear_traction_sbarbot-Union{Tuple{T}, Tuple{STRIKING,AbstractArray{T,1} where T,T,T,T}} where T&lt;:Real"><code>JuEQ.shear_traction_sbarbot</code></a></li>
+<li><a href="./#JuEQ.stress_components!-Union{Tuple{U}, Tuple{T}, Tuple{T,T,U,U}} where U&lt;:Real where T&lt;:(AbstractArray{T,1} where T)"><code>JuEQ.stress_components!</code></a></li>
+<li><a href="./#JuEQ.unit_dislocation"><code>JuEQ.unit_dislocation</code></a></li>
+<li><a href="./#JuEQ.unit_strain"><code>JuEQ.unit_strain</code></a></li>
+<li><a href="./#JuEQ.@gen_shared_chunk_call-Tuple{Symbol}"><code>JuEQ.@gen_shared_chunk_call</code></a></li>
 </ul>
 <p><a id='Interfaces-1'></a></p>
 <h2 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h2>
@@ -99,18 +101,72 @@
 <li><code>lrept</code> represents jumping periodic block for simulating locked region at along-strike edge.</li>
 <li><code>nrept</code> represents number of blocks to be summed.</li>
 </ul>
-<p><a id='JuEQ.shear_traction-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T' href='#JuEQ.shear_traction-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T'>#</a>
-<strong><code>JuEQ.shear_traction</code></strong> &mdash; <em>Method</em>.</p>
-<p>Normal of hanging outwards: (0, \sin θ, -\cos θ).</p>
-<p><a id='JuEQ.strain_components!-Union{Tuple{T}, Tuple{T,T}} where T<:(AbstractArray{T,1} where T)' href='#JuEQ.strain_components!-Union{Tuple{T}, Tuple{T,T}} where T<:(AbstractArray{T,1} where T)'>#</a>
-<strong><code>JuEQ.strain_components!</code></strong> &mdash; <em>Method</em>.</p>
-<p>Compute 6 strain components from <a href="../public_interface/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> output.</p>
-<p><a id='JuEQ.unit_dislocation-Tuple{DIPPING}' href='#JuEQ.unit_dislocation-Tuple{DIPPING}'>#</a>
-<strong><code>JuEQ.unit_dislocation</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='JuEQ.shear_traction_dc3d-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T' href='#JuEQ.shear_traction_dc3d-Union{Tuple{T}, Tuple{DIPPING,AbstractArray{T,1} where T,T,T,T}} where T'>#</a>
+<strong><code>JuEQ.shear_traction_dc3d</code></strong> &mdash; <em>Method</em>.</p>
+<p>Normal of hanging outwards: <span><span class="MathJax_Preview">(0,\; \sin{θ},\; -\cos{θ})</span><script type="math/tex">(0,\; \sin{θ},\; -\cos{θ})</script></span>.</p>
+<p><a id='JuEQ.shear_traction_sbarbot-Union{Tuple{T}, Tuple{STRIKING,AbstractArray{T,1} where T,T,T,T}} where T<:Real' href='#JuEQ.shear_traction_sbarbot-Union{Tuple{T}, Tuple{STRIKING,AbstractArray{T,1} where T,T,T,T}} where T<:Real'>#</a>
+<strong><code>JuEQ.shear_traction_sbarbot</code></strong> &mdash; <em>Method</em>.</p>
+<p>Shear traction from output of SBarbot green's function.</p>
+<p><a id='JuEQ.stress_components!-Union{Tuple{U}, Tuple{T}, Tuple{T,T,U,U}} where U<:Real where T<:(AbstractArray{T,1} where T)' href='#JuEQ.stress_components!-Union{Tuple{U}, Tuple{T}, Tuple{T,T,U,U}} where U<:Real where T<:(AbstractArray{T,1} where T)'>#</a>
+<strong><code>JuEQ.stress_components!</code></strong> &mdash; <em>Method</em>.</p>
+<p>Compute 6 stress components from <a href="../public_interface/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> output.</p>
+<p><a id='JuEQ.unit_dislocation' href='#JuEQ.unit_dislocation'>#</a>
+<strong><code>JuEQ.unit_dislocation</code></strong> &mdash; <em>Function</em>.</p>
 <p>Dislocation direction: <em>hanging wall</em> - <em>foot wall</em>.</p>
+<p><a id='JuEQ.unit_strain' href='#JuEQ.unit_strain'>#</a>
+<strong><code>JuEQ.unit_strain</code></strong> &mdash; <em>Function</em>.</p>
+<p>Given the axes transformation rule that <span><span class="MathJax_Preview">x ⟶ x_2, \; y ⟶ x_1, \; z ⟶ -x_3</span><script type="math/tex">x ⟶ x_2, \; y ⟶ x_1, \; z ⟶ -x_3</script></span>, the corresponding strain mapping is:</p>
+<div>
+<div class="MathJax_Preview">
+ϵ_{xx} ⟶ ϵ_{22}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{xx} ⟶ ϵ_{22}
+</script>
+</div>
+<div>
+<div class="MathJax_Preview">
+ϵ_{xy} ⟶ ϵ_{12}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{xy} ⟶ ϵ_{12}
+</script>
+</div>
+<div>
+<div class="MathJax_Preview">
+ϵ_{xz} ⟶ -ϵ_{23}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{xz} ⟶ -ϵ_{23}
+</script>
+</div>
+<div>
+<div class="MathJax_Preview">
+ϵ_{yy} ⟶ ϵ_{11}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{yy} ⟶ ϵ_{11}
+</script>
+</div>
+<div>
+<div class="MathJax_Preview">
+ϵ_{yz} ⟶ -ϵ_{13}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{yz} ⟶ -ϵ_{13}
+</script>
+</div>
+<div>
+<div class="MathJax_Preview">
+ϵ_{zz} ⟶ ϵ_{33}
+</div>
+<script type="math/tex; mode=display">
+ϵ_{zz} ⟶ ϵ_{33}
+</script>
+</div>
 <p><a id='JuEQ.parameters' href='#JuEQ.parameters'>#</a>
 <strong><code>JuEQ.parameters</code></strong> &mdash; <em>Constant</em>.</p>
 <p>Global settings.</p>
-<p><a id='JuEQ.@gen_shared_chunk_call-Tuple{Symbol,Any}' href='#JuEQ.@gen_shared_chunk_call-Tuple{Symbol,Any}'>#</a>
+<p><a id='JuEQ.@gen_shared_chunk_call-Tuple{Symbol}' href='#JuEQ.@gen_shared_chunk_call-Tuple{Symbol}'>#</a>
 <strong><code>JuEQ.@gen_shared_chunk_call</code></strong> &mdash; <em>Macro</em>.</p>
 <p>A general pattern parallel SharedArray computation. See <a href="https://docs.julialang.org/en/v1/manual/parallel-computing/#man-shared-arrays-1">here</a> for an example.</p></article></div></div></main><footer class="md-footer"><div class="md-footer-nav"><nav class="md-footer-nav__inner md-grid"><a href="../public_interface/" title="Public" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev"><div class="md-flex__cell md-flex__cell--shrink"><i class="md-icon md-icon--arrow-back md-footer-nav__button"></i></div><div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span class="md-flex__ellipsis"><span class="md-footer-nav__direction">Previous</span>Public</span></div></a><a href="../references/" title="References" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next"><div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span class="md-flex__ellipsis"><span class="md-footer-nav__direction">Next</span>References</span></div><div class="md-flex__cell md-flex__cell--shrink"><i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i></div></a></nav></div><div class="md-footer-meta md-typeset"><div class="md-footer-meta__inner md-grid"><div class="md-footer-copyright"><div class="md-footer-copyright__highlight">Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a></div>powered by <a href="https://www.mkdocs.org">MkDocs</a> and <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs</a></div><div class="md-footer-social"><link rel="stylesheet" href="../assets/fonts/font-awesome.css"> <a href="https://github.com/shipengcheng1230" class="md-footer-social__link fa fa-github"></a>  <a href="https://www.linkedin.com/in/pengcheng-shi-396960148" class="md-footer-social__link fa fa-linkedin"></a>  <a href="https://steamcommunity.com/profiles/76561198054638928/" class="md-footer-social__link fa fa-steam"></a>  <a href="https://live.xbox.com/en-US/Profile?Gamertag=ElyseesKukushka" class="md-footer-social__link fa fa-xbox"></a> </div></div></div></footer></div><script src="../assets/javascripts/application.b260a35d.js"></script><script>app.initialize({version:"1.0.4",url:{base:".."}})</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script><script src="../assets/mathjaxhelper.js"></script></body></html>
