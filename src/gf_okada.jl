@@ -1,9 +1,9 @@
 ## static green's function
-export okada_stress_gf_tensor, okada_strain_gf_tensor, gen_alloc
+export okada_stress_gf_tensor, gen_alloc
 
-## okada displacement green's function
-@gen_shared_chunk_call okada_stress_gf_tensor false
+@gen_shared_chunk_call okada_stress_gf_tensor
 
+## okada displacement - traction green's function, src & recv both on the same fault mesh
 "Okada green's function in 1-D elastic fault in [`LineOkadaMesh`](@ref)."
 function okada_stress_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
@@ -33,7 +33,7 @@ function okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFaul
 end
 
 function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; ax_ratio::Real=12.5) where T
-    ud = unit_dislocation(ft)
+    ud = unit_dislocation(ft, T)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
     pm = Progress(length(subs); dt=0.5, desc="Computing green's function ...", color=:light_cyan)
@@ -46,7 +46,7 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArra
 end
 
 function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault; nrept::Integer=2, buffer_ratio::Integer=0) where T
-    ud = unit_dislocation(ft)
+    ud = unit_dislocation(ft, T)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
@@ -73,10 +73,10 @@ function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, de
 end
 
 "Dislocation direction: *hanging wall* - *foot wall*."
-@inline unit_dislocation(::DIPPING) = [0.0, 1.0, 0.0]
-@inline unit_dislocation(::STRIKING) = [1.0, 0.0, 0.0]
+@inline unit_dislocation(::DIPPING, T=Float64) = [zero(T), one(T), zero(T)]
+@inline unit_dislocation(::STRIKING, T=Float64) = [one(T), zero(T), zero(T)]
 
-"Normal of hanging outwards: (0, \\sin θ, -\\cos θ)."
+"Normal of hanging outwards: ``(0,\\; \\sin{θ},\\; -\\cos{θ})``."
 @inline function shear_traction(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
@@ -167,34 +167,33 @@ end
     end
 end
 
-## okada strain green's function
-"Compute 6 strain components from [`dc3d`](@ref) output."
-@inline function strain_components!(ϵ::T, u::T) where T<:AbstractVector
-    ϵ[1] = u[4]
-    ϵ[2] = (u[5] + u[7]) / 2
-    ϵ[3] = (u[6] + u[10]) / 2
-    ϵ[4] = u[8]
-    ϵ[5] = (u[9] + u[11]) / 2
-    ϵ[6] = u[12]
+## okada displacement - stress green's function, src on the fault but recv in the other volume
+"Compute 6 stress components from [`dc3d`](@ref) output."
+@inline function stress_components!(σ::T, u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
+    ϵkk = u[4] + u[8] + u[12]
+    σ[1] = λ * ϵkk + 2μ * u[4]
+    σ[2] = μ * (u[5] + u[7])
+    σ[3] = μ * (u[6] + u[10])
+    σ[4] = λ * ϵkk + 2μ * u[8]
+    σ[5] = μ * (u[9] + u[11])
+    σ[6] = λ * ϵkk + 2μ * u[12]
 end
 
-function strain_components(u::T) where T
-    ϵ = Vector{eltype(u)}(undef, 6)
-    strain_components!(ϵ, u)
-    return ϵ
+function stress_components(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
+    σ = Vector{eltype(u)}(undef, 6)
+    stress_components!(σ, u, λ, μ)
+    return σ
 end
 
-@gen_shared_chunk_call okada_strain_gf_tensor true
-
-"Compute strain green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
-function okada_strain_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
+"Compute stress green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)"
+function okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; kwargs...) where {T<:Real, I<:Integer}
     @assert comp ⊆ [1, 2, 3, 4, 5, 6] && length(comp) ≤ 6 "Components should be a subset of [1, 2, 3, 4, 5, 6] and its length is no longer than 6."
     st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(length(comp)))
-    okada_strain_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
+    okada_stress_gf_tensor!(st, mf, ma, λ, μ, ft, comp; kwargs...)
     return [sdata(x) for x in st]
 end
 
-function okada_strain_gf_tensor_chunk!(
+function okada_stress_gf_tensor_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
     λ::T, μ::T, ft::PlaneFault, comp::AbstractVector{I}; nrept::Integer=2, buffer_ratio::Integer=0
     ) where {T<:Real, N, I<:Integer}
@@ -202,16 +201,16 @@ function okada_strain_gf_tensor_chunk!(
     lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
     α = (λ + μ) / (λ + 2μ)
     u = Vector{T}(undef, 12)
-    ϵ = Vector{T}(undef, 6)
+    σ = Vector{T}(undef, 6)
     i2s = CartesianIndices((mf.nx, mf.nξ))
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
         q = i2s[j] # return (ix, iξ)
         okada_gf_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
-        strain_components!(ϵ, u)
+        stress_components!(σ, u, λ, μ)
         for (ic, c) in enumerate(comp)
-            st[ic][i,j] = ϵ[c]
+            st[ic][i,j] = σ[c]
         end
     end
 end

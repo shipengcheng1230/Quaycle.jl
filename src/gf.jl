@@ -9,7 +9,7 @@ function get_subs(A::SharedArray)
 end
 
 "A general pattern parallel SharedArray computation. See [here](https://docs.julialang.org/en/v1/manual/parallel-computing/#man-shared-arrays-1) for an example."
-macro gen_shared_chunk_call(name::Symbol, isvector)
+macro gen_shared_chunk_call(name::Symbol)
     namestr = String(name) * "!"
     chunkstr = Symbol(namestr[1:end-1] * "_chunk!")
     namestr = Symbol(namestr)
@@ -22,16 +22,13 @@ macro gen_shared_chunk_call(name::Symbol, isvector)
                 end
             end
         end
-        if $(!isvector)
-            function $(chunkstr)(st::SharedArray, args...; kwargs...)
-                subs = get_subs(st)
-                $(chunkstr)(st, subs, args...; kwargs...)
-            end
-        else
-            function $(chunkstr)(st::NTuple{N, <:SharedArray}, args...; kwargs...) where N
-                subs = get_subs(st[1]) # all SharedArray shall have the same dims
-                $(chunkstr)(st, subs, args...; kwargs...)
-            end
+        function $(chunkstr)(st::SharedArray, args...; kwargs...)
+            subs = get_subs(st)
+            $(chunkstr)(st, subs, args...; kwargs...)
+        end
+        function $(chunkstr)(st::NTuple{N, <:SharedArray}, args...; kwargs...) where N
+            subs = get_subs(st[1]) # all SharedArray shall have the same dims
+            $(chunkstr)(st, subs, args...; kwargs...)
         end
     end)
 end
@@ -45,3 +42,4 @@ foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), r
 
 ## concrete greens function
 include("gf_okada.jl")
+include("gf_sbarbot.jl")
