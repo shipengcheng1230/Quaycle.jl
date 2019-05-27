@@ -36,12 +36,10 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArra
     ud = unit_dislocation(ft, T)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
-    pm = Progress(length(subs); dt=0.5, desc="Computing green's function ...", color=:light_cyan)
     @inbounds @simd for sub in subs
         i, j = sub[1], sub[2]
         u = dc3d(mesh.x, mesh.y[i], mesh.z[i], α, mesh.dep, mesh.dip, ax, mesh.aξ[j], ud)
         st[i,j] = shear_traction_dc3d(ft, u, λ, μ, mesh.dip)
-        next!(pm)
     end
 end
 
@@ -50,12 +48,10 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArra
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
-    pm = Progress(length(subs); dt=0.5, desc="Computing green's function ...", color=:light_cyan)
     for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
         okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
         @inbounds st[i,j,l] = shear_traction_dc3d(ft, u, λ, μ, mesh.dip)
-        next!(pm)
     end
 end
 

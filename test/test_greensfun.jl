@@ -6,19 +6,20 @@ using GmshTools
     @test JuEQ.unit_dislocation(STRIKING()) == [1.0, 0.0, 0.0]
 end
 
-@testset "Okada Stress Green's Function towards SBarbot Mesh Entity" begin
+@testset "Stress Green's Function between SBarbot Mesh Entity and Okada Mesh" begin
     filename = tempname() * ".msh"
-    rfzn = ones(Int64, 10)
-    rfzh = rand(10) |> cumsum
+    rfzn = ones(Int64, 5)
+    rfzh = rand(5) |> cumsum
     normalize!(rfzh, Inf)
-    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 10, 10, 1.5, 2.0, rfzn, rfzh; filename=filename)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 5, 5, 1.5, 2.0, rfzn, rfzh; filename=filename)
     ma = read_gmsh_mesh(Val(:SBarbotHex8), filename)
     λ, μ = 1.0, 1.0
     α = (λ + μ) / (λ + 2μ)
-    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 45.0)
+    ν = λ / 2 / (λ + μ)
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 20.0, 20.0, 45.0)
     s2i = LinearIndices((mf.nx, mf.nξ))
 
-    function __test__(ft)
+    function __test1__(ft)
         ud = JuEQ.unit_dislocation(ft)
         st = okada_stress_gf_tensor(mf, ma, λ, μ, ft; nrept=0, buffer_ratio=0)
         for _ in 1: 10 # random check 10 position
@@ -29,9 +30,22 @@ end
         end
     end
 
-    __test__(STRIKING())
-    __test__(DIPPING())
+    function __test2__(ft, comp)
+        uϵ = JuEQ.unit_strain(Val(comp))
+        st = sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, comp)
+        for _ in 1: 10 # random check 10 position
+            i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
+            σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+            τ = JuEQ.shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+            @test st[s2i[i,k],j] == τ
+        end
+    end
 
+    __test1__(STRIKING())
+    __test1__(DIPPING())
+
+    combs = Iterators.product([STRIKING(), DIPPING()], [:xx, :xy, :xz, :yy, :yz, :zz])
+    map(x -> __test2__(x...), combs)
     rm(filename)
 end
 

@@ -1,3 +1,7 @@
+export sbarbot_stress_gf_tensor
+
+@gen_shared_chunk_call sbarbot_stress_gf_tensor
+
 """
 Given the axes transformation rule that ``x ⟶ x_2, \\; y ⟶ x_1, \\; z ⟶ -x_3``,
 the corresponding strain mapping is:
@@ -34,4 +38,27 @@ end
 
 function shear_traction_sbarbot(::DIPPING, σvec::AbstractVector, λ::T, μ::T, dip::T) where T<:Real
     (σvec[1] - σvec[6])/2 * sind(2dip) + σvec[3] * cosd(2dip)
+end
+
+function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol) where T
+    st = SharedArray{T}(mf.nx * mf.nξ, length(ma.tag))
+    sbarbot_stress_gf_tensor!(st, ma, mf, λ, μ, ft, comp)
+    return st
+end
+
+function sbarbot_stress_gf_tensor_chunk!(
+    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol,
+    ) where T
+
+    ν = λ / 2 / (λ + μ)
+    σ = Vector{T}(undef, 6)
+    uϵ = unit_strain(Val(comp))
+    i2s = CartesianIndices((mf.nx, mf.nξ))
+
+    for sub in subs
+        i, j = sub[1], sub[2] # index of fault, index of volume
+        q = i2s[i]
+        sbarbot_stress_hex8!(σ, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        st[i,j] = shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+    end
 end
