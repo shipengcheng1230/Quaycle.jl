@@ -46,10 +46,10 @@ end
     σ = sbarbot_stress_hex8(args...)
     # construct an equivalent output from `dc3d`, ignoring the first 3 displacement
     u = [0.0, 0.0, 0.0, ϵ[4], ϵ[2], -ϵ[5], ϵ[2], ϵ[1], -ϵ[3], -ϵ[5], -ϵ[3], ϵ[6]]
-    τyz1 = shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
-    τyz2 = shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
+    τyz1 = JuEQ.shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
+    τyz2 = JuEQ.shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
     @test τyz1 ≈ τyz2
-    τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
-    τxy2 = shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
+    τxy1 = JuEQ.shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
+    τxy2 = JuEQ.shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
     @test τxy1 ≈ τxy2
 end
