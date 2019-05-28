@@ -185,7 +185,7 @@ end
 function okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::PlaneFault; kwargs...) where {T<:Real, I<:Integer}
     st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(6))
     okada_stress_gf_tensor!(st, mf, ma, λ, μ, ft; kwargs...)
-    return [sdata(x) for x in st]
+    return ntuple(x -> st[x] |> sdata, 6)
 end
 
 function okada_stress_gf_tensor_chunk!(

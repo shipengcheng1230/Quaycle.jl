@@ -73,11 +73,16 @@ function sbarbot_stress_gf_tensor_chunk!(
     end
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, λ::T, μ::T, comp::Symbol) where T
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}) where {T, N}
+    f = (c) -> sbarbot_stress_gf_tensor(ma, λ, μ, c)
+    map(f, comp)
+end
+
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol) where T
     numelements = length(ma.tag)
     st = ntuple(_ -> SharedArray{T}(numelements, numelements), Val(6))
     sbarbot_stress_gf_tensor!(st, ma, λ, μ, comp)
-    return [sdata(x) for x in st]
+    return ntuple(x -> st[x] |> sdata, 6)
 end
 
 function sbarbot_stress_gf_tensor_chunk!(st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotHex8MeshEntity, λ::T, μ::T, comp::Symbol) where {T, N}
