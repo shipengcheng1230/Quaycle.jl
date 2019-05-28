@@ -30,22 +30,23 @@ end
         end
     end
 
-    function __test2__(ft, comp)
-        uϵ = JuEQ.unit_strain(Val(comp))
-        st = sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, comp)
-        for _ in 1: 10 # random check 10 position
-            i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
-            σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
-            τ = JuEQ.shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
-            @test st[s2i[i,k],j] == τ
+    function __test2__(ft)
+        st = sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, allcomp)
+        for (ic, _st) in enumerate(st)
+            uϵ = JuEQ.unit_strain(Val(allcomp[ic]))
+            for _ in 1: 10 # random check 10 position
+                i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
+                σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+                τ = JuEQ.shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+                @test _st[s2i[i,k],j] == τ
+            end
         end
     end
 
-    __test1__(STRIKING())
-    __test1__(DIPPING())
-
-    combs = Iterators.product([STRIKING(), DIPPING()], [:xx, :xy, :xz, :yy, :yz, :zz])
-    map(x -> __test2__(x...), combs)
+    allfaulttype = [STRIKING(), DIPPING()]
+    allcomp = (:xx, :xy, :xz, :yz, :yy, :zz)
+    foreach(__test1__, allfaulttype)
+    foreach(__test2__, allfaulttype)
     rm(filename)
 end
 

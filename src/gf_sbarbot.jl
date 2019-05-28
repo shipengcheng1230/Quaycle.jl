@@ -40,6 +40,11 @@ function shear_traction_sbarbot(::DIPPING, σvec::AbstractVector, λ::T, μ::T, 
     (σvec[1] - σvec[6])/2 * sind(2dip) + σvec[3] * cosd(2dip)
 end
 
+function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}) where {T, N}
+    f = (c) -> sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, c)
+    map(f, comp)
+end
+
 function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol) where T
     st = SharedArray{T}(mf.nx * mf.nξ, length(ma.tag))
     sbarbot_stress_gf_tensor!(st, ma, mf, λ, μ, ft, comp)
@@ -52,7 +57,7 @@ function sbarbot_stress_gf_tensor_chunk!(
 
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
-    uϵ = unit_strain(Val(comp))
+    uϵ = unit_strain(Val(comp), T)
     i2s = CartesianIndices((mf.nx, mf.nξ))
 
     for sub in subs
