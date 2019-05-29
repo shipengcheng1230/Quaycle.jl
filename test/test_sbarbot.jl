@@ -2,6 +2,7 @@ using Test
 using DelimitedFiles
 using Base.Iterators
 using FastGaussQuadrature
+using GmshTools
 
 # Those corresponding verifiable data are obtained from orginal matlab functions at
 # https://bitbucket.org/sbarbot/bssa-2016237/src/master/
@@ -87,4 +88,58 @@ end
         ftest = (i) -> u_cal[i] ≈ u_truth[i,:]
         @test map(ftest, 1: length(u_cal)) |> all
     end
+end
+
+@testset "SBarbot Hex8 & Tet4 Convergence" begin
+    f1 = tempname() * ".msh"
+    rfzn = ones(Int64, 3)
+    rfzh = ones(length(rfzn)) |> cumsum
+    normalize!(rfzh, Inf)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -50.0, -30.0, -10.0, 100.0, 60.0, 50.0, 5, 3, 1.0, 1.0, rfzn, rfzh; filename=f1)
+
+    f2 = tempname() * ".msh"
+    @gmsh_do begin
+        gmsh.model.occ.addBox(-50.0, -30.0, -60.0, 100.0, 60.0, 50.0, 1)
+        @addOption begin
+            "Mesh.CharacteristicLengthMax", 20.0
+            "Mesh.CharacteristicLengthMin", 20.0
+        end
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(f2)
+    end
+
+    # Both `f1` and `f2` are two identical box shape with characteristic length of 20.
+    # And we test if both displacement and stress are consistent for these two different meshes.
+
+    mc1 = read_gmsh_mesh(Val(:SBarbotHex8), f1; phytag=-1, check=true)
+    mc2 = read_gmsh_mesh(Val(:SBarbotTet4), f2; phytag=-1)
+
+    obs = rand(3)
+    u1, u2 = [zeros(Float64, 3) for _ in 1: 2]
+    σ1, σ2 = [zeros(Float64, 6) for _ in 1: 2]
+    uvec = Vector{Float64}(undef, 3)
+    σvec = Vector{Float64}(undef, 6)
+    ϵ = rand(6)
+    G = 1.0
+    ν = 0.25
+    quadrature = gausslegendre(11)
+
+    @inbounds @fastmath @simd for i in 1: length(mc1.tag)
+        sbarbot_disp_hex8!(uvec, obs..., mc1.q1[i], mc1.q2[i], mc1.q3[i], mc1.L[i], mc1.T[i], mc1.W[i], 0.0, ϵ..., G, ν)
+        sbarbot_stress_hex8!(σvec, obs..., mc1.q1[i], mc1.q2[i], mc1.q3[i], mc1.L[i], mc1.T[i], mc1.W[i], 0.0, ϵ..., G, ν)
+        u1 .+= uvec
+        σ1 .+= σvec
+    end
+
+    @inbounds @fastmath @simd for i in 1: length(mc2.tag)
+        sbarbot_disp_tet4!(uvec, quadrature, obs..., mc2.A[i], mc2.B[i], mc2.C[i], mc2.D[i], ϵ..., ν)
+        sbarbot_stress_tet4!(σvec, quadrature, obs..., mc2.A[i], mc2.B[i], mc2.C[i], mc2.D[i], ϵ..., G, ν)
+        u2 .+= uvec
+        σ2 .+= σvec
+    end
+
+    @test norm(u1 - u2) < 1e-3
+    @test norm(σ1 - σ2) < 1e-3
+    foreach(rm, [f1, f2])
 end

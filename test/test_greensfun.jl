@@ -1,12 +1,13 @@
 using Test
 using GmshTools
+using FastGaussQuadrature
 
-@testset "unit dislocation for plane fault types" begin
+@testset "Unit dislocation for plane fault types" begin
     @test JuEQ.unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
     @test JuEQ.unit_dislocation(STRIKING()) == [1.0, 0.0, 0.0]
 end
 
-@testset "Stress Green's Function between SBarbot Mesh Entity and Okada Mesh" begin
+@testset "Stress green's function between SBarbotMeshEntity and OkadaMesh" begin
     filename = tempname() * ".msh"
     rfzn = ones(Int64, 5)
     rfzh = rand(5) |> cumsum
@@ -83,4 +84,45 @@ end
     τxy1 = JuEQ.shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
     τxy2 = JuEQ.shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
     @test τxy1 ≈ τxy2
+end
+
+@testset "Consistency of shear traction of SBarbot green's function" begin
+    quadrature = gausslegendre(7)
+    mf = gen_mesh(Val(:RectOkada), 100.0, 20.0, 20.0, 10.0, 45.0)
+
+    f1 = tempname() * ".msh"
+    f2 = tempname() * ".msh"
+
+    rfzn = ones(Int64, 2)
+    rfzh = ones(length(rfzn)) |> cumsum
+    normalize!(rfzh, Inf)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -20.0, -20.0, -20.0, 40.0, 40.0, 40.0, 2, 2, 1.0, 1.0, rfzn, rfzh; filename=f1)
+
+    @gmsh_do begin
+        gmsh.model.occ.addBox(-20.0, -20.0, -60.0, 40.0, 40.0, 40.0, 1)
+        @addOption begin
+            "Mesh.CharacteristicLengthMax", 40.0
+            "Mesh.CharacteristicLengthMin", 40.0
+        end
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(f2)
+    end
+
+    mc1 = read_gmsh_mesh(Val(:SBarbotHex8), f1; phytag=-1, check=true)
+    mc2 = read_gmsh_mesh(Val(:SBarbotTet4), f2; phytag=-1)
+
+    comp = rand([:xx, :xy, :xz, :yy, :yz, :zz])
+    ft = rand([DIPPING(), STRIKING()])
+    λ, μ = 1.0, 1.0
+
+    st_hex = sbarbot_stress_gf_tensor(mc1, mf, λ, μ, ft, comp)
+    st_tet = sbarbot_stress_gf_tensor(mc2, mf, λ, μ, ft, comp; quadrature=quadrature)
+
+    ϵ1 = ones(length(mc1.tag))
+    σ1 = st_hex * ϵ1
+    ϵ2 = ones(length(mc2.tag))
+    σ2 = st_tet * ϵ2
+    @test norm(σ1 - σ2) < 1e-3
+    foreach(rm, [f1, f2])
 end

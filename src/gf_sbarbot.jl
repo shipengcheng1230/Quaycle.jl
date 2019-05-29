@@ -45,20 +45,20 @@ function coordinate_sbarbot2okada!(u::AbstractVector)
     u[3], u[5] = -u[5], -u[3]
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}) where {T, N}
-    f = (c) -> sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, c)
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+    f = (c) -> sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, c; kwargs...)
     map(f, comp)
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol) where T
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
     st = SharedArray{T}(mf.nx * mf.nξ, length(ma.tag))
-    sbarbot_stress_gf_tensor!(st, ma, mf, λ, μ, ft, comp)
-    return st
+    sbarbot_stress_gf_tensor!(st, ma, mf, λ, μ, ft, comp; kwargs...)
+    return sdata(st)
 end
 
 function sbarbot_stress_gf_tensor_chunk!(
-    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotHex8MeshEntity, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol,
-    ) where T
+    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol;
+    quadrature::Union{Nothing, NTuple}=nothing) where T
 
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
@@ -68,32 +68,47 @@ function sbarbot_stress_gf_tensor_chunk!(
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of fault, index of volume
         q = i2s[i]
-        sbarbot_stress_hex8!(σ, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        if isa(ma, SBarbotHex8MeshEntity)
+            sbarbot_stress_hex8!(σ, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        elseif isa(ma, SBarbotTet4MeshEntity)
+            sbarbot_stress_tet4!(σ, quadrature, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.A[j], ma.B[j], ma.C[j], ma.D[j], uϵ..., μ, ν)
+        else
+            error("Unsupported mesh entity type: $(typeof(ma)).")
+        end
         st[i,j] = shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
     end
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}) where {T, N}
-    f = (c) -> sbarbot_stress_gf_tensor(ma, λ, μ, c)
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+    f = (c) -> sbarbot_stress_gf_tensor(ma, λ, μ, c; kwargs...)
     map(f, comp)
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol) where T
+function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol; kwargs...) where T
     numelements = length(ma.tag)
     st = ntuple(_ -> SharedArray{T}(numelements, numelements), Val(6))
-    sbarbot_stress_gf_tensor!(st, ma, λ, μ, comp)
+    sbarbot_stress_gf_tensor!(st, ma, λ, μ, comp; kwargs...)
     return ntuple(x -> st[x] |> sdata, 6)
 end
 
-function sbarbot_stress_gf_tensor_chunk!(st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotHex8MeshEntity, λ::T, μ::T, comp::Symbol) where {T, N}
+function sbarbot_stress_gf_tensor_chunk!(
+    st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol;
+    quadrature::Union{Nothing, NTuple}=nothing) where {T, N}
+
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
     uϵ = unit_strain(Val(comp), T)
     indexST = Base.OneTo(6)
 
-    for sub in subs
+    @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of recv, index of src
-        sbarbot_stress_hex8!(σ, ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        if isa(ma, SBarbotHex8MeshEntity)
+            sbarbot_stress_hex8!(σ, ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        elseif isa(ma, SBarbotTet4MeshEntity)
+            sbarbot_stress_tet4!(σ, quadrature, ma.x1[i], ma.x2[i], ma.x3[i], ma.A[j], ma.B[j], ma.C[j], ma.D[j], uϵ..., μ, ν)
+        else
+            error("Unsupported mesh entity type: $(typeof(ma)).")
+        end
         coordinate_sbarbot2okada!(σ)
         for ic in indexST
             st[ic][i,j] = σ[ic]

@@ -22,8 +22,7 @@ function okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::PlaneFaul
         p1 = plan_rfft(x1, flags=parameters["FFT"]["FLAG"])
         st_dft = Array{Complex{T}}(undef, mesh.nx, mesh.nξ, mesh.nξ)
         @inbounds for l = 1: mesh.nξ, j = 1: mesh.nξ
-            # The most tricky part to ensure correct FFT
-            # Ref -> (https://github.com/JuliaMatrices/ToeplitzMatrices.jl/blob/cbe29c344be8363f33eb17090121f8cff600b72e/src/ToeplitzMatrices.jl#L627)
+            # reference: https://github.com/JuliaMatrices/ToeplitzMatrices.jl/blob/cbe29c344be8363f33eb17090121f8cff600b72e/src/ToeplitzMatrices.jl#L627
             st_dft[:,j,l] .= p1 * [st[:,j,l]; reverse(st[2:end,j,l])]
         end
         return st_dft
