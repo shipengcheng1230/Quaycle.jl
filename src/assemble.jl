@@ -54,36 +54,31 @@ function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
     return ODEProblem(op!, u0, tspan, p)
 end
 
-## elastic okada system
-"""
-In-place version of derivative of *velocity* and *state* for a block of fault
-patches. This only supports single *state* variable.
-"""
-@inline function dv_dθ_dt!(::CForm, se::StateEvolutionLaw,
-    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaGFAllocation
-    ) where {T<:AbstractVecOrMat}
+## derivatives
+@inline function dμ_dv_dθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
-        dμ_dθ = p.σ[i] * p.b[i] / θ[i]
-        dμ_dv = p.σ[i] * p.a[i] / v[i]
-        dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
-        dv[i] = dv_dt(alloc.dτ_dt[i], dμ_dv, dμ_dθ, dθ[i], p.η)
+        alloc.dμ_dθ[i] = p.σ[i] * p.b[i] / θ[i]
+        alloc.dμ_dv[i] = p.σ[i] * p.a[i] / v[i]
     end
 end
 
-@inline function dv_dθ_dt!(::RForm, se::StateEvolutionLaw,
-    dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaGFAllocation
-    ) where {T<:AbstractVecOrMat}
+@inline function dμ_dv_dθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
         ψ2 = p.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
-        dμ_dv = p.a[i] * ψ2
-        dμ_dθ = p.b[i] / θ[i] * v[i] * ψ2
-        dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
-        dv[i] = dv_dt(alloc.dτ_dt[i], dμ_dv, dμ_dθ, dθ[i], p.η)
+        alloc.dμ_dv[i] = p.a[i] * ψ2
+        alloc.dμ_dθ[i] = p.b[i] / θ[i] * v[i] * ψ2
     end
 end
 
-@generated function (∂u∂t)(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::OkadaGFAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
+@inline function dv_dθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
+    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
+        dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
+        dv[i] = dv_dt(alloc.dτ_dt[i], alloc.dμ_dv[i], alloc.dμ_dθ[i], dθ[i], p.η)
+    end
+end
+
+@generated function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::OkadaRSFAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
     ) where {T, N}
     quote
         v = selectdim(u, $(N+1), 1)
@@ -92,9 +87,11 @@ end
         dθ = selectdim(du, $(N+1), 2)
         clamp!(θ, zero(T), Inf)
         dτ_dt!(gf, alloc, p.vpl, v)
-        dv_dθ_dt!(flf, se, dv, dθ, v, θ, p, alloc)
+        dμ_dv_dθ!(flf, v, θ, p, alloc)
+        dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)
     end
 end
+
 """
     assemble(fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2}; flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
 

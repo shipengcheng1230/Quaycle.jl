@@ -1,6 +1,4 @@
-abstract type AbstracGreensFunction end
-abstract type AbstractAllocation{dim} end
-
+## Static Green's Function
 "Obtain mapping from local linear index to cartesian index."
 function get_subs(A::SharedArray)
     i2s = CartesianIndices(A)
@@ -35,6 +33,10 @@ end
 
 ## helper function
 heaviside(x::T) where T = x ≤ zero(T) ? zero(T) : one(T)
+xlogy(x::T, y::T) where T = isapprox(x, zero(T)) ? zero(T) : x * log(y)
+xlogy(x, y) = xlogy(promote(x, y)...)
+omega(x::T) where T = heaviside(x + 1/2) - heaviside(x - 1/2)
+S(x::T) where T = omega(x - 1/2)
 
 ## kernel function
 const KERNELDIR = joinpath(@__DIR__, "gf")
@@ -43,3 +45,4 @@ foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), r
 ## concrete greens function
 include("gf_okada.jl")
 include("gf_sbarbot.jl")
+include("gf_operator.jl")

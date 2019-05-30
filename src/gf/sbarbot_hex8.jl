@@ -3052,11 +3052,3 @@ function sbarbot_strain_hex8!(ϵ::AbstractVector,
     end
 
 end
-
-xlogy(x::T, y::T) where T = isapprox(x, zero(T)) ? zero(T) : x * log(y)
-
-xlogy(x, y) = xlogy(promote(x, y)...)
-
-omega(x::T) where T = heaviside(x + 1/2) - heaviside(x - 1/2)
-
-S(x::T) where T = omega(x - 1/2)

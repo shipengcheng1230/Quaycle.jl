@@ -3,7 +3,6 @@
 export gen_gmsh_mesh, read_gmsh_mesh, indice2tag
 
 ## code snippet for mesh generator
-
 "Code snippet for adding a line from (x, y, z) -> (x+dx, y+dy, z+dz)."
 function geo_line(x::T, y::T, z::T, dx::T, dy::T, dz::T, reg::Integer) where T<:Real
     @addPoint begin
@@ -75,7 +74,6 @@ function geo_box_extruded_from_surfaceXY(llx::T, lly::T, llz::T, dx::T, dy::T, d
 end
 
 ## concrete mesh generator
-
 "Generate equivalent [`LineOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
@@ -159,7 +157,6 @@ function gen_gmsh_mesh(mf::RectOkadaMesh, ::Val{:BoxHexExtrudeFromSurface},
 end
 
 ## elements tag mapping
-
 "Compute `[i,j] => tag` from [`RectOkadaMesh`](@ref) to unstructured mesh file."
 function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
     @gmsh_open file begin
@@ -177,7 +174,6 @@ function indice2tag(mesh::LineOkadaMesh, file::AbstractString)
 end
 
 ## mesh IO
-
 macro check_and_get_mesh_entity(ecode)
     esc(quote
         nodes = gmsh.model.mesh.getNodes()
