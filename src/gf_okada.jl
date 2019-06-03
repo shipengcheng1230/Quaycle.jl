@@ -76,13 +76,13 @@ end
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
     τyz = μ * (u[11] + u[9])
-    -((σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip))
+    (σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip)
 end
 
 @inline function shear_traction_dc3d(::STRIKING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σxy = μ * (u[5] + u[7])
     σxz = μ * (u[6] + u[10])
-    σxy * sind(dip) - σxz * cosd(dip)
+    -σxy * sind(dip) + σxz * cosd(dip)
 end
 
 ## okada displacement - stress green's function, src on the fault but recv in the other volume

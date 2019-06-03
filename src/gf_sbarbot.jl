@@ -33,11 +33,11 @@ the corresponding strain mapping is:
 
 "Shear traction from output of SBarbot green's function."
 function shear_traction_sbarbot(::STRIKING, σvec::AbstractVector, λ::T, μ::T, dip::T) where T<:Real
-    σvec[2] * sind(dip) + σvec[5] * cosd(dip)
+    -σvec[2] * sind(dip) - σvec[5] * cosd(dip)
 end
 
 function shear_traction_sbarbot(::DIPPING, σvec::AbstractVector, λ::T, μ::T, dip::T) where T<:Real
-    (σvec[1] - σvec[6])/2 * sind(2dip) + σvec[3] * cosd(2dip)
+    (σvec[6] - σvec[1])/2 * sind(2dip) - σvec[3] * cosd(2dip)
 end
 
 function coordinate_sbarbot2okada!(u::AbstractVector)

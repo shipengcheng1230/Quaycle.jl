@@ -4,7 +4,7 @@ export assemble
 
 ## single degree of freedom
 
-"Just Hook's law."
+"Just Hook's law. Notice `vpl` is the leading velocity."
 @inline dτ_dt(K::T, v::T, vpl::T) where {T<:Number} = K * (vpl - v)
 
 "Derivative of velocity in quai-dynamic rate-and-state governing equation."

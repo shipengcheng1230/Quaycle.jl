@@ -4,6 +4,7 @@ export gen_alloc
 
 abstract type AbstractAllocation{dim} end
 abstract type OkadaRSFAllocation{dim} <: AbstractAllocation{dim} end
+abstract type OkadaSBarbotRSFAllocation{dim} <: AbstractAllocation{dim} end
 
 struct OkadaRSFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaRSFAllocation{1}
     dims::Dims{1}
@@ -23,6 +24,14 @@ struct OkadaRSFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex
     relv_dft::U # relative velocity in discrete fourier domain
     dτ_dt_buffer::T # stress rate including zero-padding zone for fft
     pf::P # fft operator
+end
+
+struct OkadaSBarbotAllocFFTConv{T} <: OkadaSBarbotRSFAllocation{3}
+    dims::Dims
+    okada::OkadaRSFAllocFFTConv # okada fft conv allocation
+    relϵ::T # relative strain rate
+    σ′::T # deviatoric stress
+    σ′_norm::T # norm of deviatoric stress
 end
 
 gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
@@ -50,7 +59,7 @@ end
 "Stress rate in 1-D elastic plane."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::OkadaRSFAllocMatrix, vpl::T, v::AbstractVector) where T<:Number
     @fastmath @threads for i = 1: alloc.dims[1]
-        @inbounds alloc.relv[i] = vpl - v[i]
+        @inbounds alloc.relv[i] = v[i] - vpl
     end
     mul!(alloc.dτ_dt, gf, alloc.relv)
 end
@@ -59,7 +68,7 @@ end
 @inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::OkadaRSFAllocFFTConv, vpl::U, v::AbstractMatrix) where {T<:Complex, U<:Number}
     @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]
-            @inbounds alloc.relv[i,j] = vpl - v[i,j]
+            @inbounds alloc.relv[i,j] = v[i,j] - vpl
         end
     end
     mul!(alloc.relv_dft, alloc.pf, alloc.relv)

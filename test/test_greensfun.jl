@@ -87,7 +87,7 @@ end
 end
 
 @testset "Consistency of shear traction of SBarbot green's function" begin
-    quadrature = gausslegendre(7)
+    quadrature = gausslegendre(15)
     mf = gen_mesh(Val(:RectOkada), 100.0, 20.0, 20.0, 10.0, 45.0)
 
     f1 = tempname() * ".msh"

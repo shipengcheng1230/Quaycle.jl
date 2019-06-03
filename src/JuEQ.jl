@@ -9,6 +9,7 @@ using Parameters
 using Requires
 using FFTW
 using FFTW: Plan
+using PhysicalConstants
 
 using Distributed
 using Base.Threads
@@ -19,6 +20,7 @@ using ProgressMeter
 include("configuration.jl")
 include("property.jl")
 include("rate_state.jl")
+include("rheology.jl")
 include("basic_mesh.jl")
 include("fault.jl")
 include("gf.jl")
