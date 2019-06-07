@@ -3,7 +3,6 @@ export okada_stress_gf_tensor
 @gen_shared_chunk_call okada_stress_gf_tensor
 
 ## okada displacement - traction green's function, src & recv both on the same fault mesh
-
 "Okada green's function in 1-D elastic fault in [`LineOkadaMesh`](@ref)."
 function okada_stress_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::PlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
@@ -71,7 +70,7 @@ end
 @inline unit_dislocation(::DIPPING, T=Float64) = [zero(T), one(T), zero(T)]
 @inline unit_dislocation(::STRIKING, T=Float64) = [one(T), zero(T), zero(T)]
 
-"Normal of hanging outwards: ``(0,\\; \\sin{θ},\\; -\\cos{θ})``."
+"Normal of hanging outwards: ``(0,\\; -\\sin{θ},\\; \\cos{θ})``."
 @inline function shear_traction_dc3d(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
@@ -86,7 +85,6 @@ end
 end
 
 ## okada displacement - stress green's function, src on the fault but recv in the other volume
-
 "Compute 6 stress components from [`dc3d`](@ref) output."
 @inline function stress_components!(σ::T, u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
     ϵkk = u[4] + u[8] + u[12]

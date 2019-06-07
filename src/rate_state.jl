@@ -56,7 +56,3 @@ end
 function friction(::RForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
     a * asinh(v / 2v0 * exp((f0 + b * log(v0 * θ / L)) / a))
 end
-
-friction(flf::FrictionLawForm, v::T, θ::T, p::SingleDofRSFProperty) where T = friction(flf, v, θ, p.a, p.b, p.L, p.f0, p.v0)
-friction(flf::FrictionLawForm, u::AbstractVecOrMat{T}, p::SingleDofRSFProperty) where T<:Real = friction(flf, u[1], u[2], p)
-friction(flf::FrictionLawForm, u::AbstractArray{T}, p::SingleDofRSFProperty) where T<:AbstractVecOrMat = friction.(Ref(flf), u, Ref(p))

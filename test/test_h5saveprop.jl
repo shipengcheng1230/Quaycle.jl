@@ -2,23 +2,18 @@ using Test
 using HDF5
 
 @testset "Property" begin
-
-    @testset "sdof rsf Property" begin
+    function test_equal(p)
         tmpfile = tempname()
-        p = SingleDofRSFProperty(rand(9)...)
         @save_prop tmpfile p
-        p2 = @read_prop tmpfile
-        @test p == p2
-        rm(tmpfile)
+        p′ = @read_prop tmpfile
+        @test p == p′
     end
 
-    @testset "elastic rsf Property" begin
-        tmpfile = tempname()
-        p = ElasticRSFProperty([rand(9) for _ in 1: 4]..., rand(6)...)
-        @save_prop tmpfile p
-        p2 = @read_prop tmpfile
-        @test p == p2
-        rm(tmpfile)
-    end
-
+    ps = [
+        SingleDofRSFProperty(rand(9)...),
+        ElasticRSFProperty([rand(9) for _ in 1: 4]..., rand(6)...),
+        DislocationCreepProperty([rand(5) for _ in 1: 6]...),
+        DiffusionCreepProperty([rand(5) for _ in 1: 7]...),
+        ]
+    map(test_equal, ps)
 end

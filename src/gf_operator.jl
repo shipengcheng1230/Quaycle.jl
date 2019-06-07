@@ -14,7 +14,7 @@ struct OkadaRSFAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: OkadaRSFAllocation{1}
     relv::T # relative velocity
 end
 
-struct OkadaRSFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:Plan} <: OkadaRSFAllocation{2}
+struct OkadaRSFAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Complex}, P<:FFTW.Plan} <: OkadaRSFAllocation{2}
     dims::Dims{2}
     dτ_dt::T # stress rate of interest
     dμ_dv::T
