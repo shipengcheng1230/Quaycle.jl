@@ -1,3 +1,6 @@
+## plastic deformation
+export DislocationCreep, DiffusionCreep, Peierls
+
 abstract type DeformationMechanism end
 
 # Karato 2008, Deformation of Earth Materials

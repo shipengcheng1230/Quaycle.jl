@@ -1,6 +1,7 @@
 ## Property interface
 
-export SingleDofRSFProperty, ElasticRSFProperty
+export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty, DiffusionCreepProperty,
+    CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty
 
 import Base.fieldnames
 import Base.==
@@ -81,6 +82,11 @@ System property for multiple fault patches under rate-state friction.
     @assert vpl > 0
 end
 
+"""
+Compose all three type of plastic deformation, see
+    [(Kohlstedt & Hansen, 2015)](https://www.sciencedirect.com/science/article/pii/B9780444538024000427).
+    Each field is the overall equivalent factor not dependent on stress.
+"""
 @with_kw struct CompositePlasticDeformationProperty{U<:AbstractVector} <: PlasticDeformationProperty
     disl::U
     n::U
@@ -143,7 +149,7 @@ function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, pvs...) where T
     ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie))
 end
 
-const __prop_names__ = Dict(
+const prop_field_names = Dict(
     :SingleDofRSFProperty => ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0"),
     :ElasticRSFProperty => ("a", "b", "L", "σ", "λ", "μ", "η", "vpl", "f0", "v0"),
     :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "Q", "T"),
@@ -152,7 +158,7 @@ const __prop_names__ = Dict(
     :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie"),
     )
 
-for (nn, fn) in __prop_names__
+for (nn, fn) in prop_field_names
     @eval begin
         fieldnames(p::$(nn)) = $(fn)
         description(p::$(nn)) = String($(QuoteNode(nn)))

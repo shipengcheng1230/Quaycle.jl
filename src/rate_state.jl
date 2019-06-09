@@ -1,5 +1,4 @@
 ## rate-and-state friction
-
 export CForm, RForm
 export StateEvolutionLaw, DieterichStateLaw, RuinaStateLaw, PrzStateLaw
 export friction

@@ -7,6 +7,7 @@ using HDF5
         @save_prop tmpfile p
         p′ = @read_prop tmpfile
         @test p == p′
+        rm(tmpfile)
     end
 
     ps = [
