@@ -1,7 +1,7 @@
 using Test
 using Sundials
 
-@testset "without damping" begin
+@testset "sdof without damping" begin
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=1e-4, k=50.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 100.,); se=DieterichStateLaw(), flf=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=5.0)
@@ -16,7 +16,7 @@ using Sundials
     @test isapprox(μ, μ_truth, rtol=1e-8)
 end
 
-@testset "with damping" begin
+@testset "sdof with damping" begin
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=CForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
@@ -31,7 +31,7 @@ end
     @test isapprox(μ, μ_truth, rtol=1e-8)
 end
 
-@testset "stepping loading" begin
+@testset "sdof with stepping loading" begin
     condition = (u, t , integrator) -> t - 10.0
     affect! = (integrator) -> integrator.p.vpl = 10.
     cb = ContinuousCallback(condition, affect!, nothing, save_positions=(false, false))
@@ -75,7 +75,7 @@ end
     end
 end
 
-@testset "variational form" begin
+@testset "sdof of variational form" begin
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
     prob = assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=RForm())
     sol = solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8, saveat=25.)
@@ -90,7 +90,7 @@ end
     @test isapprox(μ, μ_truth, rtol=1e-8)
 end
 
-@testset "info display" begin
+@testset "sdof of info display" begin
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.0, σ=1.0)
     @test_logs (:warn, "Regularized form requires nonzero `η` to avoid `Inf` in dv/dt.") assemble(mp, [1e-6, mp.L/1e-6], (0., 500.,); se=DieterichStateLaw(), flf=RForm())
 end

@@ -1,3 +1,5 @@
+using Test
+
 @testset "rheology property" begin
     p1 = DislocationCreepProperty([rand(5) for _ in 1: 6]...)
     p2 = DiffusionCreepProperty([rand(5) for _ in 1: 7]...)

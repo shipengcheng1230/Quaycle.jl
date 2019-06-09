@@ -135,15 +135,15 @@ composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * ex
 composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(-pv.Q / 𝙍 / pv.T)
 
 function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, pvs...) where T
+    @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
-    @show disl
     for pv in pvs
         if isa(pv, DislocationCreepProperty)
-            disl .+= composite_factor(pv)
-            n .+= pv.n
+            disl .= composite_factor(pv)
+            n .= pv.n
         end
         if isa(pv, DiffusionCreepProperty)
-            diff .+= composite_factor(pv)
+            diff .= composite_factor(pv)
         end
     end
     ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie))
