@@ -55,14 +55,14 @@ function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
 end
 
 ## derivatives
-@inline function dμ_dv_dθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
+@inline function dμ_dv_dθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         alloc.dμ_dθ[i] = p.σ[i] * p.b[i] / θ[i]
         alloc.dμ_dv[i] = p.σ[i] * p.a[i] / v[i]
     end
 end
 
-@inline function dμ_dv_dθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
+@inline function dμ_dv_dθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
         ψ2 = p.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
@@ -71,14 +71,14 @@ end
     end
 end
 
-@inline function dv_dθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::OkadaRSFAllocation) where T
+@inline function dv_dθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
         dv[i] = dv_dt(alloc.dτ_dt[i], alloc.dμ_dv[i], alloc.dμ_dθ[i], dθ[i], p.η)
     end
 end
 
-@generated function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::OkadaRSFAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
+@generated function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
     ) where {T, N}
     quote
         v = selectdim(u, $(N+1), 1)
@@ -86,7 +86,8 @@ end
         dv = selectdim(du, $(N+1), 1)
         dθ = selectdim(du, $(N+1), 2)
         clamp!(θ, zero(T), Inf)
-        dτ_dt!(gf, alloc, p.vpl, v)
+        relative_velocity(alloc, p.vpl, v)
+        dτ_dt!(gf, alloc)
         dμ_dv_dθ!(flf, v, θ, p, alloc)
         dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)
     end
