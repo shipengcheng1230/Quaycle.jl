@@ -49,7 +49,7 @@ end
 gen_alloc(nξ::Integer; T=Float64) = TractionRateAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 4]...)
 
 "Generate 2-D computation allocation for computing traction rate."
-function gen_alloc(nx::I, nξ::I; T=Float64) where {I <: Integer}
+function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
@@ -64,7 +64,7 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where {I <: Integer}
 end
 
 "Generate 3-D computation allocation for computing stress rate."
-function gen_alloc(nume::I, numϵ::I, numσ::I=6, T=Float64) where I<:Integer
+function gen_alloc(nume::I, numϵ::I, numσ::I; T=Float64) where I<:Integer
     relϵ = Matrix{T}(undef, nume, numϵ)
     relϵ = [Vector{T}(undef, nume) for _ in 1: numϵ]
     σ′ = [Vector{T}(undef, nume) for _ in 1: numσ]
@@ -74,7 +74,7 @@ end
 
 gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
 gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
-gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6, eltype(me.x1))
+gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
 gen_alloc(mf::OkadaMesh, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
 
 ## traction & stress rate operators
@@ -101,6 +101,10 @@ end
     end
 end
 
+@inline function deviatoric_stress_norm(alloc::StressRateAllocation, σ::AbstractArray)
+
+end
+
 "Traction rate within 1-D elastic plane."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::TractionRateAllocMatrix) where T<:Number
     mul!(alloc.dτ_dt, gf, alloc.relv)
@@ -125,21 +129,21 @@ end
     end
 end
 
-"Traction rate from 3-D inelastic volume to 2-D plane."
+"Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity."
 @inline function dτ_dt!(gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
     for i = 1: N
         BLAS.gemv!('N', one(T), gf[i], alloc.v.relϵ[i], one(T), vec(alloc.e.dτ_dt))
     end
 end
 
-"Stress rate from 2-D plane to 3-D inelastic volume."
+"Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
 @inline function dσ_dt!(gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
     for i = 1: N
         BLAS.gemv!('N', one(T), gf[i], vec(alloc.e.relvnp), zero(T), alloc.v.dσ′_dt[i])
     end
 end
 
-"Stress rate within 3-D inelastic volume."
+"Stress rate within inelastic entity."
 @inline function dσ_dt!(gf::NTuple{N1, NTuple{N2, <:AbstractMatrix{T}}}, alloc::StressRateAllocMatrix) where {T, N1, N2}
     for j = 1: N1, i = 1: N2
         BLAS.gemv!('N', one(T), gf[j][i], alloc.relϵ[j], one(T), alloc.dσ′_dt[i])

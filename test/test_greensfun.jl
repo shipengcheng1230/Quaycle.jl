@@ -1,10 +1,20 @@
 using Test
 using GmshTools
 using FastGaussQuadrature
+using LinearAlgebra
 
 @testset "Unit dislocation for plane fault types" begin
     @test JuEQ.unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
     @test JuEQ.unit_dislocation(STRIKING()) == [1.0, 0.0, 0.0]
+end
+
+@testset "Unit strain for volume" begin
+    @test JuEQ.unit_strain(Val(:xx)) == [0., 0., 0., 1., 0., 0.]
+    @test JuEQ.unit_strain(Val(:xy)) == [0., 1., 0., 0., 0., 0.]
+    @test JuEQ.unit_strain(Val(:xz)) == [0., 0., 0., 0., -1., 0.]
+    @test JuEQ.unit_strain(Val(:yy)) == [1., 0., 0., 0., 0., 0.]
+    @test JuEQ.unit_strain(Val(:yz)) == [0., 0., -1., 0., 0., 0.]
+    @test JuEQ.unit_strain(Val(:zz)) == [0., 0., 0., 0., 0., 1.]
 end
 
 @testset "Stress green's function between SBarbotMeshEntity and OkadaMesh" begin
@@ -125,4 +135,73 @@ end
     σ2 = st_tet * ϵ2
     @test norm(σ1 - σ2) < 1e-3
     foreach(rm, [f1, f2])
+end
+
+@testset "BLAS update stress/traction rate" begin
+    tmpfile = tempname() * ".msh"
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0)
+    rfzn = ones(4)
+    rfzh = accumulate((x, y) -> x * y, fill(1.2, size(rfzn))) |> cumsum |> x -> normalize!(x, Inf)
+    mv = gen_gmsh_mesh(mf,
+        Val(:BoxHexExtrudeFromSurface), -60.0, -30.0, -60.0, 120.0, 60.0, 60.0,
+        4, 4, 1.0, 3.0, rfzn, rfzh; filename=tmpfile)
+    me = read_gmsh_mesh(Val(:SBarbotHex8), tmpfile; phytag=1)
+    λ, μ = 1.0, 1.0
+    ft = rand([DIPPING(), STRIKING()])
+    comp = (:xx, :xy, :xz, :yy, :yz, :zz)
+
+    gfoo = okada_stress_gf_tensor(mf, λ, μ, ft)
+    gfos = okada_stress_gf_tensor(mf, me, λ, μ, ft)
+    gfso = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
+    gfss = sbarbot_stress_gf_tensor(me, λ, μ, comp)
+    alos = gen_alloc(mf, me, length(comp))
+
+    ϵ = [rand(length(me.tag)) for _ in 1: length(comp)]
+    ϵ₀ = rand(length(comp))
+    v = rand(mf.nx, mf.nξ)
+    vpl = rand()
+
+    @testset "relative velocity" begin
+        JuEQ.relative_velocity(alos.e, vpl, v)
+        @test alos.e.relvnp ≈ v .- vpl
+    end
+
+    @testset "relative strain rate" begin
+        JuEQ.relative_strain(alos.v, ϵ₀, ϵ)
+        for i = 1: length(comp)
+            @test alos.v.relϵ[i] == ϵ[i] .- ϵ₀[i]
+        end
+    end
+
+    @testset "inelastic ⟶ elastic" begin
+        fill!(alos.e.dτ_dt, 0.0)
+        res = zeros(mf.nx * mf.nξ)
+        for i = 1: length(comp)
+            res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.relϵ[i]
+        end
+        JuEQ.dτ_dt!(gfso, alos)
+        @test res ≈ vec(alos.e.dτ_dt)
+    end
+
+    @testset "elastic ⟶ inelastic" begin
+        for i = 1: 6
+            res = gfos[i] * vec(alos.e.relvnp)
+            JuEQ.dσ_dt!(gfos, alos)
+            @test alos.v.dσ′_dt[i] ≈ res
+        end
+    end
+
+    @testset "inelastic ⟷ inelastic" begin
+        res = [zeros(length(me.tag)) for _ in 1: 6]
+        for i = 1: 6
+            res[i] .+= alos.v.dσ′_dt[i]
+            for j = 1: length(comp)
+                res[i] .+= gfss[j][i] * alos.v.relϵ[j]
+            end
+        end
+        JuEQ.dσ_dt!(gfss, alos.v)
+        @test map(i -> res[i] ≈ alos.v.dσ′_dt[i], 1: 6) |> all
+    end
+
+    rm(tmpfile)
 end

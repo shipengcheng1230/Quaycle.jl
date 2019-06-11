@@ -1,6 +1,6 @@
 using Test
 
-@testset "rheology property" begin
+@testset "Rheology property" begin
     p1 = DislocationCreepProperty([rand(5) for _ in 1: 6]...)
     p2 = DiffusionCreepProperty([rand(5) for _ in 1: 7]...)
     pe = ElasticRSFProperty([rand(3, 3) for _ in 1: 4]..., rand(6)...)
