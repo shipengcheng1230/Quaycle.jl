@@ -2,19 +2,26 @@ using Test
 using GmshTools
 using FastGaussQuadrature
 using LinearAlgebra
+using JuEQ:
+    unit_dislocation, unit_strain,
+    shear_traction_sbarbot, shear_traction_dc3d,
+    stress_components, coordinate_sbarbot2okada!,
+    relative_velocity!, relative_strain!,
+    dτ_dt!, dσ_dt!,
+    deviatoric_stress!, stress_norm!
 
 @testset "Unit dislocation for plane fault types" begin
-    @test JuEQ.unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
-    @test JuEQ.unit_dislocation(STRIKING()) == [1.0, 0.0, 0.0]
+    @test unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
+    @test unit_dislocation(STRIKING()) == [1.0, 0.0, 0.0]
 end
 
 @testset "Unit strain for volume" begin
-    @test JuEQ.unit_strain(Val(:xx)) == [0., 0., 0., 1., 0., 0.]
-    @test JuEQ.unit_strain(Val(:xy)) == [0., 1., 0., 0., 0., 0.]
-    @test JuEQ.unit_strain(Val(:xz)) == [0., 0., 0., 0., -1., 0.]
-    @test JuEQ.unit_strain(Val(:yy)) == [1., 0., 0., 0., 0., 0.]
-    @test JuEQ.unit_strain(Val(:yz)) == [0., 0., -1., 0., 0., 0.]
-    @test JuEQ.unit_strain(Val(:zz)) == [0., 0., 0., 0., 0., 1.]
+    @test unit_strain(Val(:xx)) == [0., 0., 0., 1., 0., 0.]
+    @test unit_strain(Val(:xy)) == [0., 1., 0., 0., 0., 0.]
+    @test unit_strain(Val(:xz)) == [0., 0., 0., 0., -1., 0.]
+    @test unit_strain(Val(:yy)) == [1., 0., 0., 0., 0., 0.]
+    @test unit_strain(Val(:yz)) == [0., 0., -1., 0., 0., 0.]
+    @test unit_strain(Val(:zz)) == [0., 0., 0., 0., 0., 1.]
 end
 
 @testset "Stress green's function between SBarbotMeshEntity and OkadaMesh" begin
@@ -31,13 +38,13 @@ end
     s2i = LinearIndices((mf.nx, mf.nξ))
 
     function test_okada2sbarbot_stress(ft)
-        ud = JuEQ.unit_dislocation(ft)
+        ud = unit_dislocation(ft)
         st = okada_stress_gf_tensor(mf, ma, λ, μ, ft; nrept=0, buffer_ratio=0)
         indexST = Base.OneTo(6)
         for _ in 1: 5 # random check 5 position
             i, j, k = rand(1: mf.nx), rand(1: mf.nξ), rand(1: length(ma.tag))
             u = dc3d(ma.x2[k], ma.x1[k], -ma.x3[k], α, 0.0, 45.0, mf.ax[i], mf.aξ[j], ud)
-            σ = JuEQ.stress_components(u, λ, μ)
+            σ = stress_components(u, λ, μ)
             @test map(x -> st[x][k, s2i[i,j]], indexST) == σ
         end
     end
@@ -45,11 +52,11 @@ end
     function test_sbarbot2okada_traction(ft)
         st = sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, allcomp)
         for (ic, _st) in enumerate(st)
-            uϵ = JuEQ.unit_strain(Val(allcomp[ic]))
+            uϵ = unit_strain(Val(allcomp[ic]))
             for _ in 1: 5 # random check 5 position
                 i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
                 σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
-                τ = JuEQ.shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+                τ = shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
                 @test _st[s2i[i,k],j] == τ
             end
         end
@@ -59,11 +66,11 @@ end
         st = sbarbot_stress_gf_tensor(ma, λ, μ, allcomp)
         indexST = Base.OneTo(6)
         for (ic, _st) in enumerate(st)
-            uϵ = JuEQ.unit_strain(Val(allcomp[ic]))
+            uϵ = unit_strain(Val(allcomp[ic]))
             for _ in 1: 5 # random check 5 position
                 i, j = rand(1: length(ma.tag), 2)
                 σ = sbarbot_stress_hex8(ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
-                JuEQ.coordinate_sbarbot2okada!(σ)
+                coordinate_sbarbot2okada!(σ)
                 @test σ == map(x -> _st[x][i,j], indexST)
             end
         end
@@ -88,11 +95,11 @@ end
     σ = sbarbot_stress_hex8(args...)
     # construct an equivalent output from `dc3d`, ignoring the first 3 displacement
     u = [0.0, 0.0, 0.0, ϵ[4], ϵ[2], -ϵ[5], ϵ[2], ϵ[1], -ϵ[3], -ϵ[5], -ϵ[3], ϵ[6]]
-    τyz1 = JuEQ.shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
-    τyz2 = JuEQ.shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
+    τyz1 = shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
+    τyz2 = shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
     @test τyz1 ≈ τyz2
-    τxy1 = JuEQ.shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
-    τxy2 = JuEQ.shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
+    τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
+    τxy2 = shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
     @test τxy1 ≈ τxy2
 end
 
@@ -134,6 +141,7 @@ end
     ϵ2 = ones(length(mc2.tag))
     σ2 = st_tet * ϵ2
     @test norm(σ1 - σ2) < 1e-3
+
     foreach(rm, [f1, f2])
 end
 
@@ -162,12 +170,12 @@ end
     vpl = rand()
 
     @testset "relative velocity" begin
-        JuEQ.relative_velocity(alos.e, vpl, v)
+        relative_velocity!(alos.e, vpl, v)
         @test alos.e.relvnp ≈ v .- vpl
     end
 
     @testset "relative strain rate" begin
-        JuEQ.relative_strain(alos.v, ϵ₀, ϵ)
+        relative_strain!(alos.v, ϵ₀, ϵ)
         for i = 1: length(comp)
             @test alos.v.relϵ[i] == ϵ[i] .- ϵ₀[i]
         end
@@ -179,14 +187,14 @@ end
         for i = 1: length(comp)
             res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.relϵ[i]
         end
-        JuEQ.dτ_dt!(gfso, alos)
+        dτ_dt!(gfso, alos)
         @test res ≈ vec(alos.e.dτ_dt)
     end
 
     @testset "elastic ⟶ inelastic" begin
         for i = 1: 6
             res = gfos[i] * vec(alos.e.relvnp)
-            JuEQ.dσ_dt!(gfos, alos)
+            dσ_dt!(gfos, alos)
             @test alos.v.dσ′_dt[i] ≈ res
         end
     end
@@ -199,9 +207,25 @@ end
                 res[i] .+= gfss[j][i] * alos.v.relϵ[j]
             end
         end
-        JuEQ.dσ_dt!(gfss, alos.v)
+        dσ_dt!(gfss, alos.v)
         @test map(i -> res[i] ≈ alos.v.dσ′_dt[i], 1: 6) |> all
     end
 
     rm(tmpfile)
+end
+
+@testset "Deviatoric stress and norm" begin
+    alv = gen_alloc(10, 3, 6)
+    dσ = rand(10, 6)
+    for i = 1: 6
+        alv.dσ′_dt[i] .= dσ[:,i]
+    end
+    σkk = (dσ[:,1] + dσ[:,4] + dσ[:,6]) / 3
+    dσ[:,1] -= σkk
+    dσ[:,4] -= σkk
+    dσ[:,6] -= σkk
+    deviatoric_stress!(alv)
+    @test map(i -> dσ[:,i] ≈ alv.dσ′_dt[i], 1: 6) |> all
+    stress_norm!(alv)
+    @test alv.dς′_dt ≈ map(x -> norm(dσ[x,:]), 1: size(dσ, 1))
 end

@@ -86,7 +86,7 @@ end
         dv = selectdim(du, $(N+1), 1)
         dθ = selectdim(du, $(N+1), 2)
         clamp!(θ, zero(T), Inf)
-        relative_velocity(alloc, p.vpl, v)
+        relative_velocity!(alloc, p.vpl, v)
         dτ_dt!(gf, alloc)
         dμ_dv_dθ!(flf, v, θ, p, alloc)
         dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)

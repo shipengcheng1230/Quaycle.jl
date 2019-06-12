@@ -1,4 +1,5 @@
 using Test
+using JuEQ: dϵ_dt
 
 @testset "Rheology property" begin
     p1 = DislocationCreepProperty([rand(5) for _ in 1: 6]...)
@@ -11,8 +12,8 @@ using Test
     dϵ1 = @. pvm.pv.disl * τ^(pvm.pv.n - 1) * σ
     dϵ2 = @. pvm.pv.diff * σ
 
-    dϵ1′ = JuEQ.dϵ_dt.(Ref(DislocationCreep()), p1.A, σ, τ, p1.n, p1.fH₂0, p1.r, p1.Q, p1.T)
-    dϵ2′ = JuEQ.dϵ_dt.(Ref(DiffusionCreep()), p2.A, σ, p2.d, p2.m, p2.fH₂0, p2.r, p2.Q, p2.T)
+    dϵ1′ = dϵ_dt.(Ref(DislocationCreep()), p1.A, σ, τ, p1.n, p1.fH₂0, p1.r, p1.Q, p1.T)
+    dϵ2′ = dϵ_dt.(Ref(DiffusionCreep()), p2.A, σ, p2.d, p2.m, p2.fH₂0, p2.r, p2.Q, p2.T)
 
     @test dϵ1 ≈ dϵ1′
     @test dϵ2 ≈ dϵ2′

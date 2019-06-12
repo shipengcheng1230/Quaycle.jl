@@ -27,13 +27,26 @@ struct TractionRateAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Com
     pf::P # real-value-FFT forward operator
 end
 
-struct StressRateAllocMatrix{T, V, I<:Integer} <: StressRateAllocation{-1} # unstructured mesh
+struct StressRateAllocMatrix{dim, T, V, I<:Integer} <: StressRateAllocation{dim} # unstructured mesh
     nume::I # number of unstructured mesh elements
     numϵ::I # number of strain components considered
     numσ::I # number of independent stress components
     relϵ::T # relative strain rate
     dσ′_dt::T # deviatoric stress rate
     dς′_dt::V # norm of deviatoric stress rate
+
+    function StressRateAllocMatrix(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
+        if numσ == 6
+            dim = 3
+        elseif numσ == 3
+            dim = 2 # plane stress
+        elseif numσ == 2
+            dim = 1 # antiplane stress
+        else
+            error("Number of independent stress components should either be 6 (3-D) or 3 (2-D plane) or 2 (2-D antiplane).")
+        end
+        new{dim, typeof(relϵ), typeof(dς′_dt), typeof(nume)}(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
+    end
 end
 
 struct ViscoelasticCompositeAlloc{dim, A, B} <: CompositeAllocation{dim}
@@ -78,13 +91,13 @@ gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), 
 gen_alloc(mf::OkadaMesh, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
 
 ## traction & stress rate operators
-@inline function relative_velocity(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T
+@inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T
     @inbounds @fastmath @threads for i = 1: alloc.dims[1]
         alloc.relv[i] = v[i] - vpl
     end
 end
 
-@inline function relative_velocity(alloc::TractionRateAllocFFTConv, vpl::T, v::AbstractMatrix) where T
+@inline function relative_velocity!(alloc::TractionRateAllocFFTConv, vpl::T, v::AbstractMatrix) where T
     @inbounds @fastmath @threads for j = 1: alloc.dims[2]
         @simd for i = 1: alloc.dims[1]
             alloc.relv[i,j] = v[i,j] - vpl # there are zero paddings in `alloc.relv`
@@ -93,7 +106,7 @@ end
     end
 end
 
-@inline function relative_strain(alloc::StressRateAllocation, ϵ₀::AbstractVector, ϵ::AbstractVecOrMat)
+@inline function relative_strain!(alloc::StressRateAllocation, ϵ₀::AbstractVector, ϵ::AbstractVecOrMat)
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
             alloc.relϵ[j][i] = ϵ[j][i] - ϵ₀[j]
@@ -101,8 +114,23 @@ end
     end
 end
 
-@inline function deviatoric_stress_norm(alloc::StressRateAllocation, σ::AbstractArray)
+@inline function deviatoric_stress!(alloc::StressRateAllocation{3})
+    @inbounds @fastmath @threads for i = 1: alloc.nume
+        σkk = (alloc.dσ′_dt[1][i] + alloc.dσ′_dt[4][i] + alloc.dσ′_dt[6][i]) / 3
+        alloc.dσ′_dt[1][i] -= σkk
+        alloc.dσ′_dt[4][i] -= σkk
+        alloc.dσ′_dt[6][i] -= σkk
+    end
+end
 
+@inline function stress_norm!(alloc::StressRateAllocation)
+    fill!(alloc.dς′_dt, zero(eltype(alloc.dς′_dt)))
+    @inbounds @fastmath @threads for i = 1: alloc.nume
+        @simd for c = 1: alloc.numσ
+            alloc.dς′_dt[i] += alloc.dσ′_dt[c][i]^2 # for higher precision use `hypot` or `norm`
+        end
+        alloc.dς′_dt[i] = sqrt(alloc.dς′_dt[i])
+    end
 end
 
 "Traction rate within 1-D elastic plane."
@@ -131,21 +159,21 @@ end
 
 "Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity."
 @inline function dτ_dt!(gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
-    for i = 1: N
+    @inbounds for i = 1: N
         BLAS.gemv!('N', one(T), gf[i], alloc.v.relϵ[i], one(T), vec(alloc.e.dτ_dt))
     end
 end
 
 "Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
 @inline function dσ_dt!(gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
-    for i = 1: N
+    @inbounds for i = 1: N
         BLAS.gemv!('N', one(T), gf[i], vec(alloc.e.relvnp), zero(T), alloc.v.dσ′_dt[i])
     end
 end
 
 "Stress rate within inelastic entity."
 @inline function dσ_dt!(gf::NTuple{N1, NTuple{N2, <:AbstractMatrix{T}}}, alloc::StressRateAllocMatrix) where {T, N1, N2}
-    for j = 1: N1, i = 1: N2
+    @inbounds for j = 1: N1, i = 1: N2
         BLAS.gemv!('N', one(T), gf[j][i], alloc.relϵ[j], one(T), alloc.dσ′_dt[i])
     end
 end
