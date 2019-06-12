@@ -11,12 +11,12 @@
 <li><a href="./#JuEQ.SBarbotTet4MeshEntity"><code>JuEQ.SBarbotTet4MeshEntity</code></a></li>
 <li><a href="./#JuEQ.dv_dt-Union{Tuple{T}, NTuple{5,T}} where T&lt;:Number"><code>JuEQ.dv_dt</code></a></li>
 <li><a href="./#JuEQ.dv_dθ_dt-Union{Tuple{SE}, Tuple{T}, Tuple{CForm,SE,T,T,T,T,T,T,T,T,T,Vararg{T,N} where N}} where SE&lt;:StateEvolutionLaw where T&lt;:Number"><code>JuEQ.dv_dθ_dt</code></a></li>
-<li><a href="./#JuEQ.dσ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38&lt;:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T"><code>JuEQ.dσ_dt!</code></a></li>
 <li><a href="./#JuEQ.dσ_dt!-Union{Tuple{N2}, Tuple{N1}, Tuple{T}, Tuple{Tuple{Vararg{Tuple{Vararg{#s37,N2}} where #s37&lt;:AbstractArray{T,2},N1}},JuEQ.StressRateAllocMatrix}} where N2 where N1 where T"><code>JuEQ.dσ_dt!</code></a></li>
+<li><a href="./#JuEQ.dσ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38&lt;:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T"><code>JuEQ.dσ_dt!</code></a></li>
 <li><a href="./#JuEQ.dτ_dt-Union{Tuple{T}, Tuple{T,T,T}} where T&lt;:Number"><code>JuEQ.dτ_dt</code></a></li>
 <li><a href="./#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},JuEQ.TractionRateAllocMatrix}} where T&lt;:Number"><code>JuEQ.dτ_dt!</code></a></li>
-<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},JuEQ.TractionRateAllocFFTConv}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
 <li><a href="./#JuEQ.dτ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38&lt;:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T"><code>JuEQ.dτ_dt!</code></a></li>
+<li><a href="./#JuEQ.dτ_dt!-Union{Tuple{U}, Tuple{T}, Tuple{AbstractArray{T,3},JuEQ.TractionRateAllocFFTConv}} where U&lt;:Number where T&lt;:Complex"><code>JuEQ.dτ_dt!</code></a></li>
 <li><a href="./#JuEQ.geo_box_extruded_from_surfaceXY-Union{Tuple{I}, Tuple{T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}, Tuple{T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_box_extruded_from_surfaceXY</code></a></li>
 <li><a href="./#JuEQ.geo_line-Union{Tuple{T}, Tuple{T,T,T,T,T,T,Integer}} where T&lt;:Real"><code>JuEQ.geo_line</code></a></li>
 <li><a href="./#JuEQ.geo_okada_line-Union{Tuple{I}, Tuple{T}, Tuple{T,T,I,I}} where I&lt;:Integer where T&lt;:Real"><code>JuEQ.geo_okada_line</code></a></li>
@@ -60,13 +60,13 @@
 <p>Out-place version of derivative of <em>velocity</em> (or you may call it slip rate) and <em>state</em> (the <em>state</em> in rate-and-state friction) for single degree of freedom system. This for now only support single <em>state</em> variable, which is most-widely used.</p>
 <p><a id='JuEQ.dσ_dt!-Union{Tuple{N2}, Tuple{N1}, Tuple{T}, Tuple{Tuple{Vararg{Tuple{Vararg{#s37,N2}} where #s37<:AbstractArray{T,2},N1}},JuEQ.StressRateAllocMatrix}} where N2 where N1 where T' href='#JuEQ.dσ_dt!-Union{Tuple{N2}, Tuple{N1}, Tuple{T}, Tuple{Tuple{Vararg{Tuple{Vararg{#s37,N2}} where #s37<:AbstractArray{T,2},N1}},JuEQ.StressRateAllocMatrix}} where N2 where N1 where T'>#</a>
 <strong><code>JuEQ.dσ_dt!</code></strong> &mdash; <em>Method</em>.</p>
-<p>Stress rate within 3-D inelastic volume.</p>
+<p>Stress rate within inelastic entity.</p>
 <p><a id='JuEQ.dσ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38<:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T' href='#JuEQ.dσ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38<:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T'>#</a>
 <strong><code>JuEQ.dσ_dt!</code></strong> &mdash; <em>Method</em>.</p>
-<p>Stress rate from 2-D plane to 3-D inelastic volume.</p>
+<p>Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity.</p>
 <p><a id='JuEQ.dτ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38<:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T' href='#JuEQ.dτ_dt!-Union{Tuple{N}, Tuple{T}, Tuple{Tuple{Vararg{#s38,N}} where #s38<:AbstractArray{T,2},JuEQ.ViscoelasticCompositeAlloc}} where N where T'>#</a>
 <strong><code>JuEQ.dτ_dt!</code></strong> &mdash; <em>Method</em>.</p>
-<p>Traction rate from 3-D inelastic volume to 2-D plane.</p>
+<p>Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity.</p>
 <p><a id='JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},JuEQ.TractionRateAllocMatrix}} where T<:Number' href='#JuEQ.dτ_dt!-Union{Tuple{T}, Tuple{AbstractArray{T,2},JuEQ.TractionRateAllocMatrix}} where T<:Number'>#</a>
 <strong><code>JuEQ.dτ_dt!</code></strong> &mdash; <em>Method</em>.</p>
 <p>Traction rate within 1-D elastic plane.</p>
