@@ -4,6 +4,7 @@ using Reexport
 
 @reexport using OrdinaryDiffEq
 @reexport using DiffEqCallbacks
+@reexport using RecursiveArrayTools
 
 using Parameters
 using Requires

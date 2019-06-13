@@ -61,7 +61,7 @@ nothing
 τz = fill(τ0, size(fa.mesh.z))
 θz = @. L / v0 * exp(a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / a / σ)) - f0 / b0)
 vz = fill(vinit, size(fa.mesh.ξ))
-u0 = hcat(vz, θz);
+u0 = ArrayPartition(vz, θz)
 prob, = assemble(fa, prop,  u0, (0.0, tf))
 nothing
 
@@ -71,7 +71,7 @@ plot([a, b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
 
 # Afterwards, solve ODE thanks to [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6)
+sol = solve(prob, TsitPap8(), reltol=1e-6, abstol=1e-6)
 nothing
 
 # !!! tip
@@ -79,7 +79,7 @@ nothing
 
 # Finally, check the results. The first event happens at around 196 year:
 
-maxv = JuEQ.max_velocity(sol)
+maxv = max_velocity(sol)
 plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (log10 (m/s))", xlims=(190, 200), label="")
 
 # !!! note

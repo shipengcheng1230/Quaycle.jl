@@ -78,19 +78,51 @@ end
     end
 end
 
-@generated function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw
+function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    quote
-        v = selectdim(u, $(N+1), 1)
-        θ = selectdim(u, $(N+1), 2)
-        dv = selectdim(du, $(N+1), 1)
-        dθ = selectdim(du, $(N+1), 2)
-        clamp!(θ, zero(T), Inf)
-        relative_velocity!(alloc, p.vpl, v)
-        dτ_dt!(gf, alloc)
-        dμ_dv_dθ!(flf, v, θ, p, alloc)
-        dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)
+    v = u.x[1]
+    θ = u.x[2]
+    dv = du.x[1]
+    dθ = du.x[2]
+    clamp!(θ, zero(T), Inf)
+    clamp!(v, zero(T), Inf)
+    relative_velocity!(alloc, p.vpl, v)
+    dτ_dt!(gf, alloc)
+    dμ_dv_dθ!(flf, v, θ, p, alloc)
+    dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)
+end
+
+@inline function dϵ_dt!(dϵ::AbstractArray, ϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
+    @inbounds @fastmath for j = 1: alloc.numϵ
+        @threads for i = 1: alloc.nume
+            σ = alloc.dσ′_dt[p.ϵind[j]][i]
+            dϵ[j][i] = p.disl[i] * alloc.dς′_dt[i] ^ (p.n[i] - 1) * σ
+            dϵ[j][i] += p.diff[i] * σ
+            dϵ[j][i] += p.peie[i] * σ
+        end
     end
+end
+
+function ∂u∂t(du::ArrayPartition, u::ArrayPartition, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
+    ) where {T, N}
+    v = u.x[1]
+    θ = u.x[2]
+    ϵ = u.x[3]
+    dv = du.x[1]
+    dθ = du.x[2]
+    dϵ = du.x[3]
+    clamp!(θ, 0.0, Inf)
+    relative_velocity!(alloc.e, p.pe.vpl, v)
+    relative_strain!(alloc.v, p.pv.ϵref, ϵ)
+    dτ_dt!(gf.ee, alloc.e) # clear `dτ_dt`
+    dτ_dt!(gf.ve, alloc) # accumulate `dτ_dt`
+    dσ_dt!(gf.ev, alloc) # clear `dσ′_dt`
+    dσ_dt!(gf.vv, alloc.v) # accumulate `dσ′_dt`
+    dμ_dv_dθ!(flf, v, θ, p.pe, alloc.e)
+    dv_dθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
+    deviatoric_stress!(alloc.v)
+    stress_norm!(alloc.v)
+    dϵ_dt!(dϵ, ϵ, p.pv, alloc.v)
 end
 
 """

@@ -35,17 +35,17 @@ struct StressRateAllocMatrix{dim, T, V, I<:Integer} <: StressRateAllocation{dim}
     dσ′_dt::T # deviatoric stress rate
     dς′_dt::V # norm of deviatoric stress rate
 
-    function StressRateAllocMatrix(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
+    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, relϵ::T, dσ′_dt::T, dς′_dt::V) where {I, T, V}
         if numσ == 6
             dim = 3
         elseif numσ == 3
-            dim = 2 # plane stress
+            dim = 2 # plane stress, remain further implementation
         elseif numσ == 2
-            dim = 1 # antiplane stress
+            dim = 1 # antiplane stress, remain further implementation
         else
             error("Number of independent stress components should either be 6 (3-D) or 3 (2-D plane) or 2 (2-D antiplane).")
         end
-        new{dim, typeof(relϵ), typeof(dς′_dt), typeof(nume)}(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
+        new{dim, T, V, I}(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
     end
 end
 
@@ -66,6 +66,7 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
+    dτ_dt =
 
     return TractionRateAllocFFTConv(
         (nx, nξ),

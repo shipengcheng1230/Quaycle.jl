@@ -9,9 +9,9 @@ output are implemented.
 ## Arguments
 - `t::AbstractVector`: vector of time steps
 - `u::AbstractArray`: array of solution
-- `getu::Function`: method for retrieving velocity section at each time step
+- `getu::Function`: method for retrieving velocity section at each time step `i`, its signiture is `getu(u, i)`
 """
-function max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)
+function max_velocity(t::AbstractVector, u::AbstractVector, getu::Function)
     x = similar(t)
     @fastmath @inbounds @simd for i = 1: length(x)
         x[i] = maximum(getu(u, i))
@@ -19,14 +19,8 @@ function max_velocity(t::AbstractVector, u::AbstractArray, getu::Function)
     return x
 end
 
-function max_velocity(t::AbstractVector, u::AbstractArray{T, N}) where {T<:Number, N}
-    @assert N == 3 || N == 4
-    getu = N == 3 ? (u, i) -> view(u,:,1,i) : (u, i) -> view(u,:,:,1,i)
-    max_velocity(t, u, getu)
-end
-
-function max_velocity(t::AbstractVector, u::AbstractArray{<:AbstractArray{T, N}}) where {T<:Number, N}
-    getu = (u, i) -> selectdim(u[i], N, 1)
+function max_velocity(t::AbstractVector, u::AbstractVector{T}) where T<:ArrayPartition
+    getu = (u, i) -> u[i].x[1] # assume velocity is stored in the first entry
     max_velocity(t, u, getu)
 end
 

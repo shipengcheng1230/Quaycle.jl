@@ -46,3 +46,11 @@ foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), r
 include("gf_okada.jl")
 include("gf_sbarbot.jl")
 include("gf_operator.jl")
+
+## composite green's function
+struct ViscoelasticCompositeGreensFunction{T1, T2, T3, T4}
+    ee::T1 # elastic ⟷ elastic
+    ev::T2 # elastic ⟷ inelastic
+    ve::T3 # inelastic ⟷ elastic
+    vv::T4 # inelastic ⟷ inelastic
+end

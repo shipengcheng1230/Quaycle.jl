@@ -87,11 +87,18 @@ Compose all three type of plastic deformation, see
     [(Kohlstedt & Hansen, 2015)](https://www.sciencedirect.com/science/article/pii/B9780444538024000427).
     Each field is the overall equivalent factor not dependent on stress.
 """
-@with_kw struct CompositePlasticDeformationProperty{U<:AbstractVector} <: PlasticDeformationProperty
+@with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
     disl::U
-    n::U
+    n::I
     diff::U
     peie::U
+    ϵref::U
+    ϵind::V
+
+    @assert size(disl) == size(n)
+    @assert size(n) == size(diff)
+    @assert size(diff) == size(peie)
+    @assert size(ϵref) == size(ϵind)
 end
 
 """
@@ -134,7 +141,7 @@ end
 composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(-pv.Q / 𝙍 / pv.T)
 composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(-pv.Q / 𝙍 / pv.T)
 
-function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, pvs...) where T
+function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, ϵref, ϵind, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs
@@ -146,7 +153,7 @@ function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, pvs...) where T
             diff .= composite_factor(pv)
         end
     end
-    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie))
+    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, ϵref, ϵind))
 end
 
 const prop_field_names = Dict(
@@ -155,7 +162,7 @@ const prop_field_names = Dict(
     :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "Q", "T"),
     :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "Q", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
-    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie"),
+    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "ϵref", "ϵind"),
     )
 
 for (nn, fn) in prop_field_names
