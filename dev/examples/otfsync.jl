@@ -68,7 +68,7 @@ plot(p1, p2, layout=(2, 1))
 
 vinit = vpl .* ones(fa.mesh.nx, fa.mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
-u0 = cat(vinit, θ0, dims=3)
+u0 = ArrayPartition(vinit, θ0)
 prob, = assemble(fa, prop, u0, (0., 18.); buffer_ratio=1)
 nothing
 
@@ -82,7 +82,7 @@ nothing
 
 # Afterwards, solve ODEs problem:
 
-sol = solve(prob, Tsit5(), reltol=1e-6, abstol=1e-6)
+sol = solve(prob, VCABM5(), reltol=1e-5, abstol=1e-3)
 nothing
 
 # Last, take a look at the max velocity time series:
@@ -93,7 +93,7 @@ plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (
 # And view some snapshots of ruptures (quasi-dynamic) patterns:
 
 ind = argmax(maxv)
-myplot = (ind) -> heatmap(log10.(sol.u[ind][:,:,1]./ms2mmyr)',
+myplot = (ind) -> heatmap(log10.(sol.u[ind].x[1]./ms2mmyr)',
     xticks=(collect(1: 40: fa.mesh.nx+1), [-40, -20, 0, 20, 40]),
     yticks=(collect(1: 5: fa.mesh.nξ+1), [0, 5, 10, 15, 20]),
     yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")
