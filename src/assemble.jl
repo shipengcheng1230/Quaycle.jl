@@ -112,6 +112,7 @@ function ∂u∂t(du::ArrayPartition, u::ArrayPartition, p::ViscoelasticMaxwellP
     dθ = du.x[2]
     dϵ = du.x[3]
     clamp!(θ, 0.0, Inf)
+    clamp!(v, 0.0, Inf)
     relative_velocity!(alloc.e, p.pe.vpl, v)
     relative_strain!(alloc.v, p.pv.ϵref, ϵ)
     dτ_dt!(gf.ee, alloc.e) # clear `dτ_dt`
