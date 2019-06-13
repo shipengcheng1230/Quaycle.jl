@@ -80,10 +80,8 @@ end
 
 function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v = u.x[1]
-    θ = u.x[2]
-    dv = du.x[1]
-    dθ = du.x[2]
+    v, θ = u.x
+    dv, dθ = du.x
     clamp!(θ, zero(T), Inf)
     clamp!(v, zero(T), Inf)
     relative_velocity!(alloc, p.vpl, v)
@@ -105,12 +103,8 @@ end
 
 function ∂u∂t(du::ArrayPartition, u::ArrayPartition, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v = u.x[1]
-    θ = u.x[2]
-    ϵ = u.x[3]
-    dv = du.x[1]
-    dθ = du.x[2]
-    dϵ = du.x[3]
+    v, θ, ϵ = u.x
+    dv, dθ, dϵ = du.x
     clamp!(θ, 0.0, Inf)
     clamp!(v, 0.0, Inf)
     relative_velocity!(alloc.e, p.pe.vpl, v)
