@@ -17,7 +17,6 @@ using LinearAlgebra
 using SharedArrays
 using ProgressMeter
 
-include("config.jl")
 include("friction.jl")
 include("rheology.jl")
 include("property.jl")
@@ -45,6 +44,8 @@ function __init__()
         using .PyPlot
         include("tools/pyplottools.jl")
     end
+
+    include(joinpath(@__DIR__, "config.jl"))
 end
 
 end # module

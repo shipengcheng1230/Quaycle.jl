@@ -3,9 +3,15 @@
 """Global settings."""
 parameters = Dict(
     "FFT" => Dict(
-        # threads for fft
+        # FFTW threads
         "NUM_THREADS" => Threads.nthreads(),
-        # fft measurement flag
+        # FFTW measurement flag
         "FLAG" => FFTW.MEASURE,
     ),
+    "BLAS" => Dict(
+        # BLAS threads
+        "NUM_THREADS" => Threads.nthreads(),
+    )
 )
+
+BLAS.set_num_threads(parameters["BLAS"]["NUM_THREADS"])
