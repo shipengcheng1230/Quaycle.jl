@@ -54,15 +54,15 @@ function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
     return ODEProblem(op!, u0, tspan, p)
 end
 
-## derivatives
-@inline function dμ_dv_dθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+## inplace derivatives
+@inline function dμ_dvdθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         alloc.dμ_dθ[i] = p.σ[i] * p.b[i] / θ[i]
         alloc.dμ_dv[i] = p.σ[i] * p.a[i] / v[i]
     end
 end
 
-@inline function dμ_dv_dθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+@inline function dμ_dvdθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
         ψ2 = p.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
@@ -71,23 +71,23 @@ end
     end
 end
 
-@inline function dv_dθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+@inline function dvdθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
         dv[i] = dv_dt(alloc.dτ_dt[i], alloc.dμ_dv[i], alloc.dμ_dθ[i], dθ[i], p.η)
     end
 end
 
-function ∂u∂t(du::AbstractArray{T}, u::AbstractArray{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
+function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ = u.x
+    v, θ = u.x # by convention, first is velocity and second is state
     dv, dθ = du.x
     clamp!(θ, zero(T), Inf)
     clamp!(v, zero(T), Inf)
     relative_velocity!(alloc, p.vpl, v)
     dτ_dt!(gf, alloc)
-    dμ_dv_dθ!(flf, v, θ, p, alloc)
-    dv_dθ_dt!(se, dv, dθ, v, θ, p, alloc)
+    dμ_dvdθ!(flf, v, θ, p, alloc)
+    dvdθ_dt!(se, dv, dθ, v, θ, p, alloc)
 end
 
 @inline function dϵ_dt!(dϵ::AbstractArray, ϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
@@ -101,9 +101,9 @@ end
     end
 end
 
-function ∂u∂t(du::ArrayPartition, u::ArrayPartition, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
+function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ, ϵ = u.x
+    v, θ, ϵ = u.x # by convention, strain rate is the last
     dv, dθ, dϵ = du.x
     clamp!(θ, 0.0, Inf)
     clamp!(v, 0.0, Inf)
@@ -113,8 +113,8 @@ function ∂u∂t(du::ArrayPartition, u::ArrayPartition, p::ViscoelasticMaxwellP
     dτ_dt!(gf.ve, alloc) # accumulate `dτ_dt`
     dσ_dt!(gf.ev, alloc) # clear `dσ′_dt`
     dσ_dt!(gf.vv, alloc.v) # accumulate `dσ′_dt`
-    dμ_dv_dθ!(flf, v, θ, p.pe, alloc.e)
-    dv_dθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
+    dμ_dvdθ!(flf, v, θ, p.pe, alloc.e)
+    dvdθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
     deviatoric_stress!(alloc.v)
     stress_norm!(alloc.v)
     dϵ_dt!(dϵ, ϵ, p.pv, alloc.v)
@@ -134,7 +134,7 @@ Assemble the `ODEProblem` for elastic fault using okada's green's function.
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(
-    fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
+    fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...
     )
     gf = okada_stress_gf_tensor(fs.mesh, p.λ, p.μ, fs.ft; kwargs...)
@@ -143,10 +143,22 @@ end
 
 """Assemble the homogeneous elastic system, given green's function `gf::AbstractArray` without recomputing."""
 function assemble(
-    gf::AbstractArray, fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
+    gf::AbstractArray, fs::OkadaFaultSpace, p::ElasticRSFProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
     alloc = gen_alloc(fs.mesh)
+    assemble(p, alloc, gf, u0, tspan, flf, se)
+end
+
+function assemble(
+    gf::ViscoelasticCompositeGreensFunction, fas::OkadaSBarbotFASpace, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
+    )
+    alloc = gen_alloc(fas.me, fas.mv, length(p.v.ϵind))
+    assemble(p, alloc, gf, u0, tspan, flf, se)
+end
+
+function assemble(p::AbstractProperty, alloc::AbstractAllocation, gf, u0, tspan, flf, se)
     f! = (du, u, p, t) -> ∂u∂t(du, u, p, alloc, gf, flf, se)
     return ODEProblem(f!, u0, tspan, p)
 end

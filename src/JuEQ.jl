@@ -17,12 +17,12 @@ using LinearAlgebra
 using SharedArrays
 using ProgressMeter
 
-include("configuration.jl")
-include("rate_state.jl")
+include("config.jl")
+include("friction.jl")
 include("rheology.jl")
 include("property.jl")
-include("basic_mesh.jl")
-include("fault.jl")
+include("mesh.jl")
+include("space.jl")
 include("gf.jl")
 include("assemble.jl")
 

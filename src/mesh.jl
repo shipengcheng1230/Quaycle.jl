@@ -4,8 +4,8 @@ export gen_mesh
 
 abstract type AbstractMesh{dim} end
 abstract type StructuredMesh{dim} <: AbstractMesh{dim} end
-abstract type BasicTransfiniteStructuredMesh{dim} <: StructuredMesh{dim} end
-abstract type OkadaMesh{dim} <: BasicTransfiniteStructuredMesh{dim} end
+abstract type RectLinearMesh{dim} <: StructuredMesh{dim} end
+abstract type OkadaMesh{dim} <: RectLinearMesh{dim} end
 
 """
 Generate a uniform line mesh in accordance with [`dc3d`](@ref) usage, i.e the line sits
