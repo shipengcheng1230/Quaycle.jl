@@ -54,3 +54,11 @@ struct ViscoelasticCompositeGreensFunction{T1, T2, T3, T4}
     ve::T3 # inelastic ⟷ elastic
     vv::T4 # inelastic ⟷ inelastic
 end
+
+function composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
+    ee = okada_stress_gf_tensor(mf, λ, μ, ft)
+    ev = okada_stress_gf_tensor(mf, me, λ, μ, ft)
+    ve = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
+    vv = sbarbot_stress_gf_tensor(me, λ, μ, comp)
+    return ViscoelasticCompositeGreensFunction(ee, ev, ve, vv)
+end
