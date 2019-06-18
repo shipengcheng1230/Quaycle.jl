@@ -109,7 +109,11 @@ System properties for plastic deformation of dislocation creep.
     n::V # power law stress exponent
     fH₂0::V # water content
     r::V # water fugacity exponent
+    α::V # melting constant
+    ϕ::V # melting fraction
     Q::V # activation energy
+    P::V # pressure
+    Ω::V # activation volume
     T::V # temperature
 end
 
@@ -122,7 +126,11 @@ System properties for plastic deformation of diffusion creep.
     m::V # grain size exponent
     fH₂0::V # water content
     r::V # water fugacity exponent
+    α::V # melting constant
+    ϕ::V # melting fraction
     Q::V # activation energy
+    P::V # pressure
+    Ω::V # activation volume
     T::V # temperature
 end
 
@@ -138,8 +146,8 @@ struct ViscoelasticMaxwellProperty{T1, T2} <: AbstractProperty
     end
 end
 
-composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(-pv.Q / 𝙍 / pv.T)
-composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(-pv.Q / 𝙍 / pv.T)
+composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
+composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 
 function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, ϵref, ϵind, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
@@ -159,8 +167,8 @@ end
 const prop_field_names = Dict(
     :SingleDofRSFProperty => ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0"),
     :ElasticRSFProperty => ("a", "b", "L", "σ", "λ", "μ", "η", "vpl", "f0", "v0"),
-    :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "Q", "T"),
-    :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "Q", "T"),
+    :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
+    :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
     :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "ϵref", "ϵind"),
     )

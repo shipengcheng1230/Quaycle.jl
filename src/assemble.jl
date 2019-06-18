@@ -151,7 +151,7 @@ function assemble(
 end
 
 function assemble(
-    gf::ViscoelasticCompositeGreensFunction, fas::OkadaSBarbotFASpace, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
+    gf::ViscoelasticCompositeGreensFunction, fas::OkadaSBarbotLithAsthSpace, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
     alloc = gen_alloc(fas.me, fas.mv, length(p.v.ϵind))

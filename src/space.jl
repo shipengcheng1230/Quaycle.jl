@@ -38,15 +38,16 @@ end
 
 fault(fty::Val{:LineOkada}, ft::STRIKING, ξ::T, Δξ::T) where T = fault(fty, ft, ξ, Δξ, 90*one(T))
 fault(fty::Val{:RectOkada}, ft::STRIKING, x::T, ξ::T, Δx::T, Δξ::T) where T = fault(fty, ft, x, ξ, Δx, Δξ, 90*one(T))
+fault(mesh::OkadaMesh, ft::PlaneFault) = OkadaFaultSpace(mesh, ft)
 
-abstract type FaultAsthenosphereSpace end
+abstract type LithosphereAsthenosphereSpace end
 
-struct OkadaSBarbotFASpace{dim, FT, M1, M2} <: FaultAsthenosphereSpace
+struct OkadaSBarbotLithAsthSpace{dim, FT, M1, M2} <: LithosphereAsthenosphereSpace
     me::M1
     mv::M2
     ft::FT
 
-    function OkadaSBarbotFASpace(me::M1, mv::M2, ft::FT) where {M1<:OkadaMesh{N}, M2<:SBarbotMeshEntity, FT<:PlaneFault} where N
+    function OkadaSBarbotLithAsthSpace(me::M1, mv::M2, ft::FT) where {M1<:OkadaMesh{N}, M2<:SBarbotMeshEntity, FT<:PlaneFault} where N
         new{N+1, FT, M1, M2}(me, mv, ft)
     end
 end
