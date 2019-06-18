@@ -103,6 +103,8 @@ end
 
 """
 System properties for plastic deformation of dislocation creep.
+    Please refer [(Hirth & Kohlstedt, 2003)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06)
+    for concrete units of each factor.
 """
 @with_kw struct DislocationCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -119,6 +121,8 @@ end
 
 """
 System properties for plastic deformation of diffusion creep.
+    Please refer [(Hirth & Kohlstedt, 2003)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06)
+    for concrete units of each factor.
 """
 @with_kw struct DiffusionCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -134,6 +138,9 @@ System properties for plastic deformation of diffusion creep.
     T::V # temperature
 end
 
+"System properties for plastic deformation of Peierls Mechanisms."
+struct PeierlsProperty end
+
 """
 Composite property for viscoelastic rheology of maxwell representation.
 """
@@ -148,6 +155,7 @@ end
 
 composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
+function composite_factor(pv::PeierlsProperty) end
 
 function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, ϵref, ϵind, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
