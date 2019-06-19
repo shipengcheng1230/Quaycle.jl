@@ -88,12 +88,12 @@ Compose all three type of plastic deformation, see
     Each field is the overall equivalent factor not dependent on stress.
 """
 @with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
-    disl::U
-    n::I
-    diff::U
-    peie::U
-    ϵref::U
-    ϵind::V
+    disl::U # dislocation creep
+    n::I # stress exponent in dislocation creep
+    diff::U # diffusion creep
+    peie::U # not support yet, set to ZERO
+    ϵref::U # reference strain rate
+    ϵind::V # ref. strain rate index
 
     @assert size(disl) == size(n)
     @assert size(n) == size(diff)

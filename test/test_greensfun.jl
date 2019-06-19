@@ -164,7 +164,7 @@ end
     gfss = sbarbot_stress_gf_tensor(me, λ, μ, comp)
     alos = gen_alloc(mf, me, length(comp))
 
-    ϵ = [rand(length(me.tag)) for _ in 1: length(comp)]
+    ϵ = rand(length(me.tag), length(comp))
     ϵ₀ = rand(length(comp))
     v = rand(mf.nx, mf.nξ)
     vpl = rand()
@@ -177,7 +177,7 @@ end
     @testset "relative strain rate" begin
         relative_strain!(alos.v, ϵ₀, ϵ)
         for i = 1: length(comp)
-            @test alos.v.relϵ[i] == ϵ[i] .- ϵ₀[i]
+            @test alos.v.relϵ[i] == ϵ[:,i] .- ϵ₀[i]
         end
     end
 

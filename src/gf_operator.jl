@@ -27,15 +27,17 @@ struct TractionRateAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Com
     pf::P # real-value-FFT forward operator
 end
 
-struct StressRateAllocMatrix{dim, T, V, I<:Integer} <: StressRateAllocation{dim} # unstructured mesh
+struct StressRateAllocMatrix{dim, T, V, M, I<:Integer} <: StressRateAllocation{dim} # unstructured mesh
     nume::I # number of unstructured mesh elements
     numϵ::I # number of strain components considered
     numσ::I # number of independent stress components
-    relϵ::T # relative strain rate
-    dσ′_dt::T # deviatoric stress rate
-    dς′_dt::V # norm of deviatoric stress rate
+    relϵ::T # relative strain rate, <vector{vector}>
+    σ′::M # deviatoric stress, <matrix>
+    dσ′_dt::M # deviatoric stress rate, <matrix>
+    ς′::V # norm of deviatoric stress, <vector>
+    dς′_dt::V # norm of deviatoric stress rate, <vector>
 
-    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, relϵ::T, dσ′_dt::T, dς′_dt::V) where {I, T, V}
+    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, relϵ::T, σ′::M, dσ′_dt::M, ς′::V, dς′_dt::V) where {I, T, V}
         if numσ == 6
             dim = 3
         elseif numσ == 3
@@ -45,7 +47,7 @@ struct StressRateAllocMatrix{dim, T, V, I<:Integer} <: StressRateAllocation{dim}
         else
             error("Number of independent stress components should either be 6 (3-D) or 3 (2-D plane) or 2 (2-D antiplane).")
         end
-        new{dim, T, V, I}(nume, numϵ, numσ, relϵ, dσ′_dt, dς′_dt)
+        new{dim, T, V, M, I}(nume, numϵ, numσ, relϵ, σ′, dσ′_dt, ς′, dς′_dt)
     end
 end
 
@@ -66,7 +68,6 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
     FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
-    dτ_dt =
 
     return TractionRateAllocFFTConv(
         (nx, nξ),
@@ -81,9 +82,9 @@ end
 function gen_alloc(nume::I, numϵ::I, numσ::I; T=Float64) where I<:Integer
     relϵ = Matrix{T}(undef, nume, numϵ)
     relϵ = [Vector{T}(undef, nume) for _ in 1: numϵ]
-    σ′ = [Vector{T}(undef, nume) for _ in 1: numσ]
-    ς′ = Vector{T}(undef, nume)
-    return StressRateAllocMatrix(nume, numϵ, numσ, relϵ, σ′, ς′)
+    σ′, dσ′_dt = [Matrix{T}(undef, nume, numσ) for _ in 1: 2]
+    ς′, dς′_dt = [Vector{T}(undef, nume) for _ in 1: 2]
+    return StressRateAllocMatrix(nume, numϵ, numσ, relϵ, σ′, ς′, dς′_dt)
 end
 
 gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
@@ -108,30 +109,29 @@ end
 end
 
 @inline function relative_strain!(alloc::StressRateAllocation, ϵ₀::AbstractVector, ϵ::AbstractVecOrMat)
-    @inbounds @fastmath for j = 1: alloc.numϵ
+    @inbounds @fastmath for j in 1: alloc.numϵ
         @threads for i = 1: alloc.nume
-            alloc.relϵ[j][i] = ϵ[j][i] - ϵ₀[j]
+            alloc.relϵ[j][i] = ϵ[i,j] - ϵ₀[j]
         end
     end
 end
 
-@inline function deviatoric_stress!(alloc::StressRateAllocation{3})
+@inline function deviatoric_stress!(dσ::AbstractVecOrMat, σ::AbstractVecOrMat, alloc::StressRateAllocation{3})
+    BLAS.blascopy!(6nume, σ, 1, alloc.σ′, 1)
+    BLAS.blascopy!(6nume, dσ, 1, alloc.dσ′_dt, 1)
     @inbounds @fastmath @threads for i = 1: alloc.nume
-        σkk = (alloc.dσ′_dt[1][i] + alloc.dσ′_dt[4][i] + alloc.dσ′_dt[6][i]) / 3
-        alloc.dσ′_dt[1][i] -= σkk
-        alloc.dσ′_dt[4][i] -= σkk
-        alloc.dσ′_dt[6][i] -= σkk
+        σkk = (σ[i,1] + σ[i,4] + σ[i,6]) / 3
+        alloc.σ′[i,1] -= σkk
+        alloc.σ′[i,4] -= σkk
+        alloc.σ′[i,6] -= σkk
+        dσkk = (dσ[i,1] + dσ[i,4] + dσ[i,6]) / 3
+        alloc.dσ′_dt[i,1] -= dσkk
+        alloc.dσ′_dt[i,4] -= dσkk
+        alloc.dσ′_dt[i,6] -= dσkk
     end
-end
-
-@inline function stress_norm!(alloc::StressRateAllocation)
-    fill!(alloc.dς′_dt, zero(eltype(alloc.dς′_dt)))
-    @inbounds @fastmath @threads for i = 1: alloc.nume
-        @simd for c = 1: alloc.numσ
-            alloc.dς′_dt[i] += alloc.dσ′_dt[c][i]^2 # for higher precision use `hypot` or `norm`
-        end
-        alloc.dς′_dt[i] = sqrt(alloc.dς′_dt[i])
-    end
+    # could use https://github.com/Jutho/Strided.jl
+    alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
+    alloc.dς′_dt .= sum(alloc.σ′ .* alloc.dσ′_dt; dims=2) ./ alloc.ς′
 end
 
 "Traction rate within 1-D elastic plane."
@@ -166,15 +166,17 @@ end
 end
 
 "Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
-@inline function dσ_dt!(gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
-    @inbounds for i = 1: N
-        BLAS.gemv!('N', one(T), gf[i], vec(alloc.e.relvnp), zero(T), alloc.v.dσ′_dt[i])
+@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::NTuple{N, <:AbstractMatrix{T}}, alloc::ViscoelasticCompositeAlloc) where {T, N}
+    @inbounds for (i, _dσ) in enumerate(eachcol(dσ))
+        BLAS.gemv!('N', one(T), gf[i], vec(alloc.e.relvnp), zero(T), _dσ)
     end
 end
 
 "Stress rate within inelastic entity."
-@inline function dσ_dt!(gf::NTuple{N1, NTuple{N2, <:AbstractMatrix{T}}}, alloc::StressRateAllocMatrix) where {T, N1, N2}
-    @inbounds for j = 1: N1, i = 1: N2
-        BLAS.gemv!('N', one(T), gf[j][i], alloc.relϵ[j], one(T), alloc.dσ′_dt[i])
+@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::NTuple{N1, NTuple{N2, <:AbstractMatrix{T}}}, alloc::StressRateAllocMatrix) where {T, N1, N2}
+    @inbounds for j in 1: N1
+        for (i, _dσ) in enumerate(eachcol(dσ))
+            BLAS.gemv!('N', one(T), gf[j][i], alloc.relϵ[j], one(T), _dσ)
+        end
     end
 end

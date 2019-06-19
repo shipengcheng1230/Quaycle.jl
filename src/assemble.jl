@@ -80,7 +80,7 @@ end
 
 function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ = u.x # by convention, first is velocity and second is state
+    v, θ = u.x # velocity, state
     dv, dθ = du.x
     clamp!(θ, zero(T), Inf)
     clamp!(v, zero(T), Inf)
@@ -90,34 +90,33 @@ function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ElasticRSFProp
     dvdθ_dt!(se, dv, dθ, v, θ, p, alloc)
 end
 
-@inline function dϵ_dt!(dϵ::AbstractArray, ϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
+@inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
-            σ = alloc.dσ′_dt[p.ϵind[j]][i]
-            dϵ[j][i] = p.disl[i] * alloc.dς′_dt[i] ^ (p.n[i] - 1) * σ
-            dϵ[j][i] += p.diff[i] * σ
-            dϵ[j][i] += p.peie[i] * σ
+            ςⁿ⁻² = alloc.ς′[i]^(p.n[i]-2)
+            ςⁿ⁻¹ = ςⁿ⁻² * alloc.ς′[i]
+            dϵ[i,j] = p.disl[i] * ((p.n[i]-1) * ςⁿ⁻² * alloc.dς′_dt[i] * alloc.σ′[i,j] + ςⁿ⁻¹ * alloc.dσ′_dt[i,j])
+            dϵ[i,j] += p.diff[i] * alloc.dσ′_dt[i,j]
         end
     end
 end
 
 function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ, ϵ = u.x # by convention, strain rate is the last
-    dv, dθ, dϵ = du.x
+    v, θ, ϵ, σ = u.x # velocity, state, strain-rate, stress
+    dv, dθ, dϵ, dσ = du.x
     clamp!(θ, 0.0, Inf)
     clamp!(v, 0.0, Inf)
     relative_velocity!(alloc.e, p.pe.vpl, v)
     relative_strain!(alloc.v, p.pv.ϵref, ϵ)
     dτ_dt!(gf.ee, alloc.e) # clear `dτ_dt`
     dτ_dt!(gf.ve, alloc) # accumulate `dτ_dt`
-    dσ_dt!(gf.ev, alloc) # clear `dσ′_dt`
-    dσ_dt!(gf.vv, alloc.v) # accumulate `dσ′_dt`
+    dσ_dt!(dσ, gf.ev, alloc) # clear `dσ_dt`
+    dσ_dt!(dσ, gf.vv, alloc.v) # accumulate `dσ_dt`
     dμ_dvdθ!(flf, v, θ, p.pe, alloc.e)
     dvdθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
-    deviatoric_stress!(alloc.v)
-    stress_norm!(alloc.v)
-    dϵ_dt!(dϵ, ϵ, p.pv, alloc.v)
+    deviatoric_stress!(dσ, σ, alloc.v)
+    dϵ_dt!(dϵ, p.pv, alloc.v)
 end
 
 """
@@ -154,7 +153,7 @@ function assemble(
     gf::ViscoelasticCompositeGreensFunction, fas::OkadaSBarbotLithAsthSpace, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
-    alloc = gen_alloc(fas.me, fas.mv, length(p.v.ϵind))
+    alloc = gen_alloc(fas.me, fas.mv, length(p.pv.ϵind))
     assemble(p, alloc, gf, u0, tspan, flf, se)
 end
 
