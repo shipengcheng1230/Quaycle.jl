@@ -10,6 +10,7 @@ using Parameters
 using Requires
 using FFTW
 using PhysicalConstants
+using BlockArrays
 
 using Distributed
 using Base.Threads

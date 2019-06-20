@@ -1,4 +1,6 @@
 ## Static Green's Function
+export concatenate_gf
+
 "Obtain mapping from local linear index to cartesian index."
 function get_subs(A::SharedArray)
     i2s = CartesianIndices(A)
@@ -48,11 +50,24 @@ include("gf_sbarbot.jl")
 include("gf_operator.jl")
 
 ## composite green's function
-struct ViscoelasticCompositeGreensFunction{T1, T2, T3, T4}
-    ee::T1 # elastic ⟷ elastic
-    ev::T2 # elastic ⟷ inelastic
-    ve::T3 # inelastic ⟷ elastic
-    vv::T4 # inelastic ⟷ inelastic
+struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray}
+    ee::U # elastic ⟷ elastic
+    ev::T # elastic ⟷ inelastic
+    ve::T # inelastic ⟷ elastic
+    vv::T # inelastic ⟷ inelastic
+end
+
+function concatenate_gf(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+    σindex = Base.OneTo(length(ev))
+    ϵindex = Base.OneTo(length(ve))
+    m, n = size(ev[1]) # number of inelastic elements, number of fault patches
+    ev′ = PseudoBlockArray{eltype(ev[1])}(undef, [m for _ in σindex], [n])
+    ve′ = PseudoBlockArray{eltype(ve[1])}(undef, [n], [m for _ in ϵindex])
+    vv′ = PseudoBlockArray{eltype(vv[1][1])}(undef, [m for _ in σindex], [m for _ in ϵindex])
+    foreach(i -> setblock!(ev′, ev[i], i, 1), σindex)
+    foreach(i -> setblock!(ve′, ve[i], 1, i), ϵindex)
+    foreach(x -> setblock!(vv′, vv[x[2]][x[1]], x[1], x[2]), Iterators.product(σindex, ϵindex))
+    ViscoelasticCompositeGreensFunction(ee, Array(ev′), Array(ve′), Array(vv′))
 end
 
 function composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
@@ -60,5 +75,5 @@ function composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T,
     ev = okada_stress_gf_tensor(mf, me, λ, μ, ft)
     ve = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
     vv = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    return ViscoelasticCompositeGreensFunction(ee, ev, ve, vv)
+    return concatenate_gf(ee, ev, ve, vv)
 end

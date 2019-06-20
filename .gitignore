@@ -12,6 +12,8 @@ deps/deps.jl
 .idea/*
 *.msh
 *.bin
+*.jld
+*.jld2
 
 docs/build/
 docs/site/

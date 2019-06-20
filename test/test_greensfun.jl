@@ -6,9 +6,9 @@ using JuEQ:
     unit_dislocation, unit_strain,
     shear_traction_sbarbot, shear_traction_dc3d,
     stress_components, coordinate_sbarbot2okada!,
+    ViscoelasticCompositeGreensFunction,
     relative_velocity!, relative_strain!,
-    dτ_dt!, dσ_dt!,
-    deviatoric_stress!, stress_norm!
+    dτ_dt!, dσ_dt!, deviatoric_stress!
 
 @testset "Unit dislocation for plane fault types" begin
     @test unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
@@ -162,8 +162,16 @@ end
     gfos = okada_stress_gf_tensor(mf, me, λ, μ, ft)
     gfso = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
     gfss = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    alos = gen_alloc(mf, me, length(comp))
+    gg = concatenate_gf(gfoo, gfos, gfso, gfss)
 
+    @testset "concatenate components of green's function" begin
+        @test gg.ee == gfoo
+        @test gg.ev == vcat(gfos...)
+        @test gg.ve == hcat(gfso...)
+        @test gg.vv == hcat([vcat(x...) for x in gfss]...)
+    end
+
+    alos = gen_alloc(mf, me, length(comp))
     ϵ = rand(length(me.tag), length(comp))
     ϵ₀ = rand(length(comp))
     v = rand(mf.nx, mf.nξ)
@@ -176,39 +184,38 @@ end
 
     @testset "relative strain rate" begin
         relative_strain!(alos.v, ϵ₀, ϵ)
-        for i = 1: length(comp)
-            @test alos.v.relϵ[i] == ϵ[:,i] .- ϵ₀[i]
-        end
+        @test alos.v.relϵ == ϵ .- ϵ₀'
     end
 
     @testset "inelastic ⟶ elastic" begin
         fill!(alos.e.dτ_dt, 0.0)
         res = zeros(mf.nx * mf.nξ)
         for i = 1: length(comp)
-            res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.relϵ[i]
+            res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.relϵ[:,i]
         end
-        dτ_dt!(gfso, alos)
+        dτ_dt!(gg.ve, alos)
         @test res ≈ vec(alos.e.dτ_dt)
     end
 
     @testset "elastic ⟶ inelastic" begin
+        dσ = Matrix{Float64}(undef, length(me.tag), 6)
+        dσ_dt!(dσ, gg.ev, alos.e)
         for i = 1: 6
             res = gfos[i] * vec(alos.e.relvnp)
-            dσ_dt!(gfos, alos)
-            @test alos.v.dσ′_dt[i] ≈ res
+            @test dσ[:,i] ≈ res
         end
     end
 
     @testset "inelastic ⟷ inelastic" begin
-        res = [zeros(length(me.tag)) for _ in 1: 6]
+        dσ = rand(length(me.tag), 6)
+        res = zeros(length(me.tag), 6) + dσ
         for i = 1: 6
-            res[i] .+= alos.v.dσ′_dt[i]
             for j = 1: length(comp)
-                res[i] .+= gfss[j][i] * alos.v.relϵ[j]
+                res[:,i] .+= gfss[j][i] * alos.v.relϵ[:,j]
             end
         end
-        dσ_dt!(gfss, alos.v)
-        @test map(i -> res[i] ≈ alos.v.dσ′_dt[i], 1: 6) |> all
+        dσ_dt!(dσ, gg.vv, alos.v)
+        @test res ≈ dσ
     end
 
     rm(tmpfile)
@@ -216,16 +223,22 @@ end
 
 @testset "Deviatoric stress and norm" begin
     alv = gen_alloc(10, 3, 6)
-    dσ = rand(10, 6)
-    for i = 1: 6
-        alv.dσ′_dt[i] .= dσ[:,i]
-    end
-    σkk = (dσ[:,1] + dσ[:,4] + dσ[:,6]) / 3
-    dσ[:,1] -= σkk
-    dσ[:,4] -= σkk
-    dσ[:,6] -= σkk
-    deviatoric_stress!(alv)
-    @test map(i -> dσ[:,i] ≈ alv.dσ′_dt[i], 1: 6) |> all
-    stress_norm!(alv)
-    @test alv.dς′_dt ≈ map(x -> norm(dσ[x,:]), 1: size(dσ, 1))
+    σ, dσ = [rand(10, 6) for _ in 1: 2]
+    σkk = (σ[:,1] + σ[:,4] + σ[:,6]) / 3
+    dσkk = (dσ[:,1] + dσ[:,4] + dσ[:,6]) / 3
+    σ′ = copy(σ)
+    σ′[:,1] -= σkk
+    σ′[:,4] -= σkk
+    σ′[:,6] -= σkk
+    dσ′ = copy(dσ)
+    dσ′[:,1] -= dσkk
+    dσ′[:,4] -= dσkk
+    dσ′[:,6] -= dσkk
+    deviatoric_stress!(dσ, σ, alv)
+    @test alv.σ′ ≈ σ′
+    @test alv.dσ′_dt ≈ dσ′
+    ς′ = map(x -> norm(σ′[x,:]), 1: alv.nume)
+    @test alv.ς′ ≈ ς′
+    dς′ = sum(dσ′ .* σ′ ./ ς′; dims=2) |> vec
+    @test alv.dς′_dt ≈ dς′
 end
