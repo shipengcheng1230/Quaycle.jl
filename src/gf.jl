@@ -1,6 +1,6 @@
-## Static Green's Function
 export concatenate_gf
 
+## Static Green's Function
 "Obtain mapping from local linear index to cartesian index."
 function get_subs(A::SharedArray)
     i2s = CartesianIndices(A)

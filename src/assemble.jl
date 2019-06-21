@@ -93,30 +93,28 @@ end
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
-            ςⁿ⁻² = alloc.ς′[i]^(p.n[i]-2)
-            ςⁿ⁻¹ = ςⁿ⁻² * alloc.ς′[i]
-            dϵ[i,j] = p.disl[i] * ((p.n[i]-1) * ςⁿ⁻² * alloc.dς′_dt[i] * alloc.σ′[i,j] + ςⁿ⁻¹ * alloc.dσ′_dt[i,j])
-            dϵ[i,j] += p.diff[i] * alloc.dσ′_dt[i,j]
+            ςⁿ⁻¹ = alloc.ς′[i]^(p.n[i]-1)
+            dϵ[i,j] = (p.disl[i] * ςⁿ⁻¹ + p.diff[i]) * alloc.σ′[i,j]
         end
     end
 end
 
 function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ, ϵ, σ = u.x # velocity, state, strain-rate, stress
+    v, θ, ϵ, σ = u.x # velocity, state, strain, stress
     dv, dθ, dϵ, dσ = du.x
     clamp!(θ, 0.0, Inf)
     clamp!(v, 0.0, Inf)
     relative_velocity!(alloc.e, p.pe.vpl, v)
-    relative_strain!(alloc.v, p.pv.ϵref, ϵ)
+    deviatoric_stress!(σ, alloc.v)
+    dϵ_dt!(dϵ, p.pv, alloc.v)
+    relative_strain_rate!(alloc.v, p.pv.dϵref, dϵ)
     dτ_dt!(gf.ee, alloc.e) # clear `dτ_dt`
     dτ_dt!(gf.ve, alloc) # accumulate `dτ_dt`
-    dσ_dt!(dσ, gf.ev, alloc) # clear `dσ_dt`
+    dσ_dt!(dσ, gf.ev, alloc.e) # clear `dσ_dt`
     dσ_dt!(dσ, gf.vv, alloc.v) # accumulate `dσ_dt`
     dμ_dvdθ!(flf, v, θ, p.pe, alloc.e)
     dvdθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
-    deviatoric_stress!(dσ, σ, alloc.v)
-    dϵ_dt!(dϵ, p.pv, alloc.v)
 end
 
 """
@@ -153,7 +151,7 @@ function assemble(
     gf::ViscoelasticCompositeGreensFunction, fas::OkadaSBarbotLithAsthSpace, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
-    alloc = gen_alloc(fas.me, fas.mv, length(p.pv.ϵind))
+    alloc = gen_alloc(fas.me, fas.mv, length(p.pv.dϵref))
     assemble(p, alloc, gf, u0, tspan, flf, se)
 end
 

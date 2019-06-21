@@ -1,8 +1,7 @@
-## Property interface
-
 export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty, DiffusionCreepProperty,
     CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty
-
+    
+## Property interface
 import Base.fieldnames
 import Base.==
 
@@ -92,13 +91,12 @@ Compose all three type of plastic deformation, see
     n::I # stress exponent in dislocation creep
     diff::U # diffusion creep
     peie::U # not support yet, set to ZERO
-    ϵref::U # reference strain rate
-    ϵind::V # ref. strain rate index
+    dϵref::V # reference strain rate
 
     @assert size(disl) == size(n)
     @assert size(n) == size(diff)
     @assert size(diff) == size(peie)
-    @assert size(ϵref) == size(ϵind)
+    @assert length(dϵref) ≤ 6 # no more than 6 in 3D space
 end
 
 """
@@ -157,7 +155,7 @@ composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * ex
 composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 function composite_factor(pv::PeierlsProperty) end
 
-function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, ϵref, ϵind, pvs...) where T
+function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs
@@ -169,7 +167,7 @@ function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, ϵref, ϵind, pv
             diff .= composite_factor(pv)
         end
     end
-    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, ϵref, ϵind))
+    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, dϵref))
 end
 
 const prop_field_names = Dict(
@@ -178,7 +176,7 @@ const prop_field_names = Dict(
     :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
-    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "ϵref", "ϵind"),
+    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "dϵref"),
     )
 
 for (nn, fn) in prop_field_names

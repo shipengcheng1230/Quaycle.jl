@@ -7,7 +7,7 @@ using JuEQ:
     shear_traction_sbarbot, shear_traction_dc3d,
     stress_components, coordinate_sbarbot2okada!,
     ViscoelasticCompositeGreensFunction,
-    relative_velocity!, relative_strain!,
+    relative_velocity!, relative_strain_rate!,
     dτ_dt!, dσ_dt!, deviatoric_stress!
 
 @testset "Unit dislocation for plane fault types" begin
@@ -183,15 +183,15 @@ end
     end
 
     @testset "relative strain rate" begin
-        relative_strain!(alos.v, ϵ₀, ϵ)
-        @test alos.v.relϵ == ϵ .- ϵ₀'
+        relative_strain_rate!(alos.v, ϵ₀, ϵ)
+        @test alos.v.reldϵ == ϵ .- ϵ₀'
     end
 
     @testset "inelastic ⟶ elastic" begin
         fill!(alos.e.dτ_dt, 0.0)
         res = zeros(mf.nx * mf.nξ)
         for i = 1: length(comp)
-            res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.relϵ[:,i]
+            res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.reldϵ[:,i]
         end
         dτ_dt!(gg.ve, alos)
         @test res ≈ vec(alos.e.dτ_dt)
@@ -211,7 +211,7 @@ end
         res = zeros(length(me.tag), 6) + dσ
         for i = 1: 6
             for j = 1: length(comp)
-                res[:,i] .+= gfss[j][i] * alos.v.relϵ[:,j]
+                res[:,i] .+= gfss[j][i] * alos.v.reldϵ[:,j]
             end
         end
         dσ_dt!(dσ, gg.vv, alos.v)
@@ -223,22 +223,14 @@ end
 
 @testset "Deviatoric stress and norm" begin
     alv = gen_alloc(10, 3, 6)
-    σ, dσ = [rand(10, 6) for _ in 1: 2]
+    σ = rand(10, 6)
     σkk = (σ[:,1] + σ[:,4] + σ[:,6]) / 3
-    dσkk = (dσ[:,1] + dσ[:,4] + dσ[:,6]) / 3
     σ′ = copy(σ)
     σ′[:,1] -= σkk
     σ′[:,4] -= σkk
     σ′[:,6] -= σkk
-    dσ′ = copy(dσ)
-    dσ′[:,1] -= dσkk
-    dσ′[:,4] -= dσkk
-    dσ′[:,6] -= dσkk
-    deviatoric_stress!(dσ, σ, alv)
+    deviatoric_stress!(σ, alv)
     @test alv.σ′ ≈ σ′
-    @test alv.dσ′_dt ≈ dσ′
     ς′ = map(x -> norm(σ′[x,:]), 1: alv.nume)
     @test alv.ς′ ≈ ς′
-    dς′ = sum(dσ′ .* σ′ ./ ς′; dims=2) |> vec
-    @test alv.dς′_dt ≈ dς′
 end
