@@ -11,6 +11,7 @@ using Requires
 using FFTW
 using PhysicalConstants
 using BlockArrays
+using Strided
 
 using Distributed
 using Base.Threads

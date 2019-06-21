@@ -113,18 +113,6 @@ end
     end
 end
 
-@inline function deviatoric_stress!(σ::AbstractVecOrMat, alloc::StressRateAllocation{3})
-    BLAS.blascopy!(6alloc.nume, σ, 1, alloc.σ′, 1)
-    @inbounds @fastmath @threads for i = 1: alloc.nume
-        σkk = (σ[i,1] + σ[i,4] + σ[i,6]) / 3
-        alloc.σ′[i,1] -= σkk
-        alloc.σ′[i,4] -= σkk
-        alloc.σ′[i,6] -= σkk
-    end
-    # could use https://github.com/Jutho/Strided.jl
-    alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
-end
-
 "Traction rate within 1-D elastic plane."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::TractionRateAllocMatrix) where T<:Number
     mul!(alloc.dτ_dt, gf, alloc.relv)

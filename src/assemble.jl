@@ -90,6 +90,17 @@ function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ElasticRSFProp
     dvdθ_dt!(se, dv, dθ, v, θ, p, alloc)
 end
 
+@inline function deviatoric_stress!(σ::AbstractVecOrMat, alloc::StressRateAllocation{3})
+    BLAS.blascopy!(6alloc.nume, σ, 1, alloc.σ′, 1)
+    @inbounds @fastmath @threads for i = 1: alloc.nume
+        σkk = (σ[i,1] + σ[i,4] + σ[i,6]) / 3
+        alloc.σ′[i,1] -= σkk
+        alloc.σ′[i,4] -= σkk
+        alloc.σ′[i,6] -= σkk
+    end
+    @strided alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
+end
+
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
