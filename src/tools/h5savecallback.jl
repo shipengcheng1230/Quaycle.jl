@@ -117,7 +117,7 @@ h5savebufferzone(u::AbstractArray, nstep::Integer) = Array{eltype(u)}(undef, siz
 h5savebufferzone(u::ArrayPartition, nstep, names) = h5savebufferzone(u.x, nstep, names)
 h5savebufferzone(u::Tuple, nstep, names) = Dict(names[i] => h5savebufferzone(u[i], nstep) for i in 1: length(u))
 
-function h5savebuffercallback_kernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
+function h5savebuffercbkernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
     ptrs = getu(u, t, integrator, b)
     _trigger_copy(b, ptrs, t)
     (t == b.tstop || b.count > b.nstep) && _trigger_save(b, ptrs, t)
