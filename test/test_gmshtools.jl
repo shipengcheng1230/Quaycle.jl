@@ -1,7 +1,6 @@
 using Test
 using GmshTools
 using LinearAlgebra
-using FastGaussQuadrature
 
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"

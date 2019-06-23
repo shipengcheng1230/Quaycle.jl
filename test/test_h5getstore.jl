@@ -4,8 +4,8 @@ using HDF5
 @testset "Property" begin
     function test_equal(p)
         tmpfile = tempname()
-        @save_prop tmpfile p
-        p′ = @read_prop tmpfile
+        @store tmpfile p
+        p′ = @getprop tmpfile
         @test p == p′
         rm(tmpfile)
     end

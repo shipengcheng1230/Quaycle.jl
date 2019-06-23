@@ -4,7 +4,8 @@ export @h5savecallback
     @h5savecallback(filename, tend, nsteps, usize, T)
 
 Construct a `FunctionCallingCallback` for incrementally stored output into HDF5 file.
-It is suggested to use this macro at top-level scope since it contains `eval`.
+    This callback function only works for naive output arrays whose shape look like `A[..., :, :, :, ...]`.
+    It is suggested to use this macro at top-level scope since it contains `eval`.
 
 ## Arguments
 - `filename`: file name to be stored
@@ -72,4 +73,81 @@ macro h5savecallback(filename, tend, nsteps, usize, T)
             FunctionCallingCallback($(callback); func_everystep=true)
         end
     end)
+end
+
+mutable struct H5SaveBuffer{
+    S<:AbstractString, D<:AbstractDict, I<:Integer, A<:AbstractArray, R<:Real,
+    V1<:AbstractVector, V2<:Tuple, V3<:Tuple, UT<:AbstractUnitRange}
+    file::S
+    buffer::D
+    nstep::I
+    count::I
+    total::I
+    uiter::UT
+    ustrs::V1
+    ushapes::V2
+    idxs::V3
+    du::A
+    tstop::R
+    tstr::S
+end
+
+function create_h5buffer(file::AbstractString, u::ArrayPartition, nstep::Integer, tstop::Real, ustrs, tstr)
+    @assert tstr ∉ ustrs "Duplicate name of $(tstr) in $(ustrs)."
+    @assert length(ustrs) == length(u.x) "Unmatched length between array partitions and names."
+    buffer = h5savebufferzone(u, nstep, ustrs)
+    buffer[tstr] = Vector{eltype(u)}(undef, nstep)
+    count, total = 1, 0
+    uiter = Base.OneTo(length(u.x))
+    ushapes = map(size, u.x)
+    f = x -> map(Base.Slice, axes(x))
+    idxs = map(f, u.x)
+    du = similar(u)
+    h5open(file, "w") do f
+        d_create(f, tstr, datatype(typeof(tstop)), ((nstep,), (-1,)), "chunk", (nstep,))
+        for i ∈ uiter
+            accusize = (ushapes[i]..., nstep)
+            d_create(f, ustrs[i], datatype(eltype(u.x[i])), (accusize, (ushapes[i]..., -1,)), "chunk", accusize)
+        end
+    end
+    return H5SaveBuffer(file, buffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr)
+end
+
+h5savebufferzone(u::AbstractArray, nstep::Integer) = Array{eltype(u)}(undef, size(u)..., nstep)
+h5savebufferzone(u::ArrayPartition, nstep, names) = h5savebufferzone(u.x, nstep, names)
+h5savebufferzone(u::Tuple, nstep, names) = Dict(names[i] => h5savebufferzone(u[i], nstep) for i in 1: length(u))
+
+function h5savebuffercallback_kernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
+    ptrs = getu(u, t, integrator, b)
+    _trigger_copy(b, ptrs, t)
+    (t == b.tstop || b.count > b.nstep) && _trigger_save(b, ptrs, t)
+end
+
+function _trigger_copy(b::H5SaveBuffer, ptrs, t)
+    b.buffer[b.tstr][b.count[1]] = t
+    for i ∈ b.uiter
+        b.buffer[b.ustrs[i]][b.idxs[i]..., b.count] .= ptrs[i]
+    end
+    b.count += 1
+end
+
+function _trigger_save(b::H5SaveBuffer, ptrs, t)
+    h5open(b.file, "r+") do f
+        ht = d_open(f, b.tstr)
+        set_dims!(ht, (b.total + b.count - 1,))
+        ht[b.total+1: b.total+b.count-1] = b.count > b.nstep ? b.buffer[b.tstr] : selectdim(b.buffer[b.tstr], 1, 1: b.count-1)
+        for i ∈ b.uiter
+            hd = d_open(f, b.ustrs[i])
+            set_dims!(hd, (b.ushapes[i]..., b.total + b.count - 1))
+            hd[b.idxs[i]..., b.total+1: b.total+b.count-1] = b.count > b.nstep ? b.buffer[b.ustrs[i]] :
+                view(b.buffer[b.ustrs[i]], b.idxs[i]..., 1: b.count-1)
+        end
+    end
+    b.total += b.count - 1
+    b.count = 1
+end
+
+function GET_VSSAR(u, t, integrator, buffer::H5SaveBuffer)
+    get_du!(buffer.du, integrator)
+    return (u.x[1], u.x[2], buffer.du.x[3])
 end

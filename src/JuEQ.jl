@@ -12,6 +12,7 @@ using FFTW
 using PhysicalConstants
 using BlockArrays
 using Strided
+using WriteVTK
 
 using Distributed
 using Base.Threads
@@ -34,7 +35,7 @@ function __init__()
     @require HDF5="f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f" begin
         using .HDF5
         include("tools/h5savecallback.jl")
-        include("tools/h5saveprop.jl")
+        include("tools/h5getstore.jl")
     end
 
     @require GmshTools="82e2f556-b1bd-5f1a-9576-f93c0da5f0ee" begin

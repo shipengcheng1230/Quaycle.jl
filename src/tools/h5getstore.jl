@@ -1,7 +1,7 @@
-export @read_prop, @save_prop, save_prop
+export @getprop, @store, store
 
 "Read property stored in HDF5."
-macro read_prop(filename)
+macro getprop(filename)
     esc(quote
         h5open($(filename), "r") do f
             key = names(f)[1] # only one property at top group
@@ -13,7 +13,7 @@ macro read_prop(filename)
 end
 
 "Store property in HDF5."
-function save_prop(filename::AbstractString, p::AbstractProperty)
+function store(filename::AbstractString, p::AbstractProperty)
     h5open(filename, "w") do f
         g = g_create(f, description(p))
         for field in fieldnames(p)
@@ -23,8 +23,8 @@ function save_prop(filename::AbstractString, p::AbstractProperty)
 end
 
 "Store property in HDF5."
-macro save_prop(filename, p)
+macro store(filename, p)
     quote
-        save_prop($(esc(filename)), $(esc(p)))
+        store($(esc(filename)), $(esc(p)))
     end
 end
