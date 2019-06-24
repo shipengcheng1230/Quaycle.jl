@@ -1,6 +1,6 @@
 # most of the macro are expected to use at top-level scope
 
-export gen_gmsh_mesh, read_gmsh_mesh, indice2tag
+export gen_gmsh_mesh, read_gmsh_mesh, indice2tag, tag2linearindice, gmsh_vtu_output_cache
 
 ## code snippet for mesh generator
 "Code snippet for adding a line from (x, y, z) -> (x+dx, y+dy, z+dz)."
