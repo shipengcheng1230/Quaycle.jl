@@ -1,6 +1,5 @@
 using Test
 using HDF5
-using JuEQ: create_h5buffer, h5savebuffercbkernel
 
 @testset "h5savecallback" begin
     @testset "vector output" begin
@@ -62,16 +61,14 @@ using JuEQ: create_h5buffer, h5savebuffercbkernel
         sol = solve(prob, Tsit5())
         ustrs = ["u1", "u2", "u3"]
         tmp = tempname()
-        B = create_h5buffer(tmp, u0, 100, tspan[2], ustrs, "t")
-        getu = (u, t, integrator, b) -> (u.x[1], u.x[2], u.x[3])
-        callback = (u, t, integrator) -> h5savebuffercbkernel(u, t, integrator, B, getu)
-        fcb = FunctionCallingCallback(callback)
-        solve(prob, Tsit5(); callback=fcb)
+        getu = (u, t, integrator) -> (u.x[1], u.x[2], u.x[3])
+        wsolve(prob, Tsit5(), tmp, 50, getu, ["u1", "u2", "u3"], "t")
         @test h5read(tmp, "t") == sol.t
         for m in 1: length(u0.x)
             x = Array(VectorOfArray([sol.u[i].x[m] for i in 1: length(sol.t)]))
             @test h5read(tmp, ustrs[m]) == x
         end
+        @test h5readattr(tmp, "t")["retcode"] == "Success"
         rm(tmp)
     end
 end

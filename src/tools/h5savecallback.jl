@@ -1,4 +1,4 @@
-export @h5savecallback
+export @h5savecallback, wsolve, 𝐕𝚯𝐄′, 𝐕𝚯
 
 """
     @h5savecallback(filename, tend, nsteps, usize, T)
@@ -92,33 +92,31 @@ mutable struct H5SaveBuffer{
     tstr::S
 end
 
-function create_h5buffer(file::AbstractString, u::ArrayPartition, nstep::Integer, tstop::Real, ustrs, tstr)
+function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, nstep::Integer, tstop::Real, ustrs, tstr)
     @assert tstr ∉ ustrs "Duplicate name of $(tstr) in $(ustrs)."
-    @assert length(ustrs) == length(u.x) "Unmatched length between array partitions and names."
-    buffer = h5savebufferzone(u, nstep, ustrs)
-    buffer[tstr] = Vector{eltype(u)}(undef, nstep)
+    @assert length(ustrs) == length(ptrs) "Unmatched length between solution components and names."
+    buffer = h5savebufferzone(ptrs, nstep, ustrs)
+    buffer[tstr] = Vector{eltype(du)}(undef, nstep)
     count, total = 1, 0
-    uiter = Base.OneTo(length(u.x))
-    ushapes = map(size, u.x)
+    uiter = Base.OneTo(length(ptrs))
+    ushapes = map(size, ptrs)
     f = x -> map(Base.Slice, axes(x))
-    idxs = map(f, u.x)
-    du = similar(u)
+    idxs = map(f, ptrs)
     h5open(file, "w") do f
         d_create(f, tstr, datatype(typeof(tstop)), ((nstep,), (-1,)), "chunk", (nstep,))
         for i ∈ uiter
             accusize = (ushapes[i]..., nstep)
-            d_create(f, ustrs[i], datatype(eltype(u.x[i])), (accusize, (ushapes[i]..., -1,)), "chunk", accusize)
+            d_create(f, ustrs[i], datatype(eltype(du)), (accusize, (ushapes[i]..., -1,)), "chunk", accusize)
         end
     end
     return H5SaveBuffer(file, buffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr)
 end
 
 h5savebufferzone(u::AbstractArray, nstep::Integer) = Array{eltype(u)}(undef, size(u)..., nstep)
-h5savebufferzone(u::ArrayPartition, nstep, names) = h5savebufferzone(u.x, nstep, names)
 h5savebufferzone(u::Tuple, nstep, names) = Dict(names[i] => h5savebufferzone(u[i], nstep) for i in 1: length(u))
 
 function h5savebuffercbkernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
-    ptrs = getu(u, t, integrator, b)
+    ptrs = getu(u, t, integrator)
     _trigger_copy(b, ptrs, t)
     (t == b.tstop || b.count > b.nstep) && _trigger_save(b, ptrs, t)
 end
@@ -135,19 +133,33 @@ function _trigger_save(b::H5SaveBuffer, ptrs, t)
     h5open(b.file, "r+") do f
         ht = d_open(f, b.tstr)
         set_dims!(ht, (b.total + b.count - 1,))
-        ht[b.total+1: b.total+b.count-1] = b.count > b.nstep ? b.buffer[b.tstr] : selectdim(b.buffer[b.tstr], 1, 1: b.count-1)
+        ht[b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.buffer[b.tstr], selectdim(b.buffer[b.tstr], 1, 1: b.count-1))
         for i ∈ b.uiter
             hd = d_open(f, b.ustrs[i])
             set_dims!(hd, (b.ushapes[i]..., b.total + b.count - 1))
-            hd[b.idxs[i]..., b.total+1: b.total+b.count-1] = b.count > b.nstep ? b.buffer[b.ustrs[i]] :
-                view(b.buffer[b.ustrs[i]], b.idxs[i]..., 1: b.count-1)
+            hd[b.idxs[i]..., b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.buffer[b.ustrs[i]],
+                view(b.buffer[b.ustrs[i]], b.idxs[i]..., 1: b.count-1))
         end
     end
     b.total += b.count - 1
     b.count = 1
 end
 
-function GET_VSSAR(u, t, integrator, buffer::H5SaveBuffer)
-    get_du!(buffer.du, integrator)
-    return (u.x[1], u.x[2], buffer.du.x[3])
+# https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/785
+function 𝐕𝚯𝐄′(u::A, t, integrator) where A<:AbstractArray
+    return (u.x[1], u.x[2], integrator.fsallast.x[3])
+end
+
+𝐕𝚯(u::ArrayPartition, args...) = (u.x[1], u.x[2])
+
+function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; kwargs...)
+    integrator = init(prob, alg)
+    du = similar(prob.u0)
+    ptrs = getu(prob.u0, prob.tspan[1], integrator)
+    bf = create_h5buffer(file, ptrs, du, nstep, prob.tspan[2], ustrs, tstr)
+    cb = (u, t, integrator) -> h5savebuffercbkernel(u, t, integrator, bf, getu)
+    fcb = FunctionCallingCallback(cb)
+    sol = solve(prob, alg; save_everystep=false, callback=fcb, kwargs...)
+    h5writeattr(file, tstr, Dict("retcode" => string(sol.retcode)))
+    return sol
 end
