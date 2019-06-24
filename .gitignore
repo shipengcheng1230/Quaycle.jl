@@ -15,6 +15,11 @@ deps/deps.jl
 *.jld
 *.jld2
 *.h5
+*.vtk
+*.vti
+*.vtu
+*.vtm
+*.pvd
 
 docs/build/
 docs/site/

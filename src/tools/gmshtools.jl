@@ -99,6 +99,9 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
     end
 end
 
+gen_gmsh_mesh(mf::LineOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:LineOkada), mf.nξ * mf.Δξ, mf.Δξ, mf.dip; kwargs...)
+gen_gmsh_mesh(mf::RectOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:RectOkada), mf.nx * mf.Δx, mf.nξ * mf.Δξ, mf.Δx, mf.Δξ, mf.dip; kwargs...)
+
 """
     gen_gmsh_mesh(::Val{:BoxHexByExtrude},
         llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
@@ -172,6 +175,8 @@ function indice2tag(mesh::LineOkadaMesh, file::AbstractString)
         map(p -> gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[p], mesh.z[p], 1)[1] |> Int, pos)
     end
 end
+
+tag2linearindice(tags::AbstractVecOrMat) = Dict(tags[k] => k for k in 1: length(tags))
 
 ## mesh IO
 macro check_and_get_mesh_entity(ecode)
@@ -273,5 +278,31 @@ function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=
             D[i][3] = -nodes[2][3*td]
         end
         SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
+    end
+end
+
+## paraview
+function gmsh_vtu_output_cache(file::AbstractString, mf::OkadaMesh{N}, phygrouptag::Integer=-1, datatype=Float64) where N
+    tag = indice2tag(mf, file)
+    tagmap = tag2linearindice(tag)
+    @gmsh_open file begin
+        nodes = gmsh.model.mesh.getNodes()
+        pts = reshape(nodes[2], 3, :)
+        if length(gmsh.model.getPhysicalGroups()) == 0 # no physical group assigned
+            entag = -1
+        else
+            entag = gmsh.model.getEntitiesForPhysicalGroup(N, phygrouptag)
+            @assert length(entag) == 1 "Multiple entities associated with physical group $(phytag), please distinguish them!"
+        end
+        es = gmsh.model.mesh.getElements(N, entag[1])
+        @assert length(es[1][1]) == 1 "More than one type of elements found!"
+        celltype = gmshcelltype2vtkcelltype[es[1][1]]
+        nnode = gmsh.model.mesh.getElementProperties(es[1][1])[4]
+        nume = length(es[2][1])
+        conn = reshape(es[3][1], Int(nnode), :)
+        cells = [MeshCell(celltype, view(conn, :, i)) for i in 1: nume]
+        dat = Vector{datatype}(undef, nume)
+        lidx = Base.OneTo(nume)
+        VTUStructuredCellDataCache(tagmap, es[2][1], dat, cells, pts, lidx)
     end
 end

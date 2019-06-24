@@ -120,3 +120,19 @@ end
     end
     rm(fname)
 end
+
+@testset "paraview cache" begin
+    tmp = tempname() * ".msh"
+
+    mf = gen_mesh(Val(:LineOkada), 80.0e3, 1e3, 45.0)
+    gen_gmsh_mesh(mf; filename=tmp)
+    vcache = gmsh_vtu_output_cache(tmp, mf, 1)
+    @test vcache.dat |> length == mf.nξ
+
+    mf = gen_mesh(Val(:RectOkada), 80.0e3, 10.0e3, 1e3, 1e3, 30.0)
+    gen_gmsh_mesh(mf; filename=tmp)
+    vcache = gmsh_vtu_output_cache(tmp, mf, 1)
+    @test vcache.dat |> length == mf.nx * mf.nξ
+
+    rm(tmp)
+end

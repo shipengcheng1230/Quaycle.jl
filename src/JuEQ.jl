@@ -13,12 +13,13 @@ using PhysicalConstants
 using BlockArrays
 using Strided
 using WriteVTK
+using Formatting
+using ProgressMeter
 
 using Distributed
 using Base.Threads
 using LinearAlgebra
 using SharedArrays
-using ProgressMeter
 
 include("friction.jl")
 include("rheology.jl")
@@ -27,6 +28,7 @@ include("mesh.jl")
 include("space.jl")
 include("gf.jl")
 include("assemble.jl")
+include("visualize.jl")
 
 include("tools/maxvelocity.jl")
 include("tools/mmapsave.jl")
