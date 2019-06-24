@@ -1,4 +1,4 @@
-export @h5savecallback, wsolve, 𝐕𝚯𝐄′, 𝐕𝚯
+export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝐄′, 𝐕𝚯𝚬𝚺
 
 """
     @h5savecallback(filename, tend, nsteps, usize, T)
@@ -77,9 +77,10 @@ end
 
 mutable struct H5SaveBuffer{
     S<:AbstractString, D<:AbstractDict, I<:Integer, A<:AbstractArray, R<:Real,
-    V1<:AbstractVector, V2<:Tuple, V3<:Tuple, UT<:AbstractUnitRange}
+    V<:AbstractVector, V1<:AbstractVector, V2<:Tuple, V3<:Tuple, UT<:AbstractUnitRange}
     file::S
-    buffer::D
+    ubuffer::D
+    tbuffer::V
     nstep::I
     count::I
     total::I
@@ -95,8 +96,8 @@ end
 function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, nstep::Integer, tstop::Real, ustrs, tstr)
     @assert tstr ∉ ustrs "Duplicate name of $(tstr) in $(ustrs)."
     @assert length(ustrs) == length(ptrs) "Unmatched length between solution components and names."
-    buffer = h5savebufferzone(ptrs, nstep, ustrs)
-    buffer[tstr] = Vector{eltype(du)}(undef, nstep)
+    ubuffer = h5savebufferzone(ptrs, nstep, ustrs)
+    tbuffer = Vector{eltype(du)}(undef, nstep)
     count, total = 1, 0
     uiter = Base.OneTo(length(ptrs))
     ushapes = map(size, ptrs)
@@ -109,7 +110,7 @@ function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, n
             d_create(f, ustrs[i], datatype(eltype(du)), (accusize, (ushapes[i]..., -1,)), "chunk", accusize)
         end
     end
-    return H5SaveBuffer(file, buffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr)
+    return H5SaveBuffer(file, ubuffer, tbuffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr)
 end
 
 h5savebufferzone(u::AbstractArray, nstep::Integer) = Array{eltype(u)}(undef, size(u)..., nstep)
@@ -122,9 +123,9 @@ function h5savebuffercbkernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
 end
 
 function _trigger_copy(b::H5SaveBuffer, ptrs, t)
-    b.buffer[b.tstr][b.count[1]] = t
+    b.tbuffer[b.count[1]] = t
     for i ∈ b.uiter
-        b.buffer[b.ustrs[i]][b.idxs[i]..., b.count] .= ptrs[i]
+        b.ubuffer[b.ustrs[i]][b.idxs[i]..., b.count] .= ptrs[i]
     end
     b.count += 1
 end
@@ -133,12 +134,12 @@ function _trigger_save(b::H5SaveBuffer, ptrs, t)
     h5open(b.file, "r+") do f
         ht = d_open(f, b.tstr)
         set_dims!(ht, (b.total + b.count - 1,))
-        ht[b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.buffer[b.tstr], selectdim(b.buffer[b.tstr], 1, 1: b.count-1))
+        ht[b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.tbuffer, selectdim(b.tbuffer, 1, 1: b.count-1))
         for i ∈ b.uiter
             hd = d_open(f, b.ustrs[i])
             set_dims!(hd, (b.ushapes[i]..., b.total + b.count - 1))
-            hd[b.idxs[i]..., b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.buffer[b.ustrs[i]],
-                view(b.buffer[b.ustrs[i]], b.idxs[i]..., 1: b.count-1))
+            hd[b.idxs[i]..., b.total+1: b.total+b.count-1] = ifelse(b.count > b.nstep, b.ubuffer[b.ustrs[i]],
+                view(b.ubuffer[b.ustrs[i]], b.idxs[i]..., 1: b.count-1))
         end
     end
     b.total += b.count - 1
@@ -146,10 +147,9 @@ function _trigger_save(b::H5SaveBuffer, ptrs, t)
 end
 
 # https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/785
-function 𝐕𝚯𝐄′(u::A, t, integrator) where A<:AbstractArray
-    return (u.x[1], u.x[2], integrator.fsallast.x[3])
-end
-
+𝐕𝚯𝐄′(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3])
+𝐕𝚯𝚬𝚺(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3], u.x[4])
+𝐕𝚯𝚬(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3])
 𝐕𝚯(u::ArrayPartition, args...) = (u.x[1], u.x[2])
 
 function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; kwargs...)
