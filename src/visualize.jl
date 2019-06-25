@@ -9,7 +9,7 @@ const gmshcelltype2vtkcelltype = Dict(
 
 abstract type ParaviewOutputCache end
 
-struct VTUStructuredCellDataCache{D, V, A, C, P, L} <: ParaviewOutputCache
+struct VTKStructuredScalarConversionCache{D, V, A, C, P, L} <: ParaviewOutputCache
     tagmap::D
     etag::V
     dat::A
@@ -18,42 +18,39 @@ struct VTUStructuredCellDataCache{D, V, A, C, P, L} <: ParaviewOutputCache
     lidx::L
 end
 
-function vtu_output(f, u::AbstractVecOrMat, ustr::AbstractString, cache::VTUStructuredCellDataCache)
-    vtkfile = vtk_grid(f, cache.pts, cache.cells)
-    map(i -> cache.dat[i] = u[cache.tagmap[cache.etag[i]]], cache.lidx)
+struct VTKUnStructuredCache{C, P} <: ParaviewOutputCache
+    cells::C
+    pts::P
+end
+
+_map_data(cache::VTKStructuredScalarConversionCache, u::AbstractArray) = map(i -> cache.dat[i] = u[cache.tagmap[cache.etag[i]]], cache.lidx)
+
+function _write_cell_data(vtkfile, u, ustr, cache::VTKStructuredScalarConversionCache)
+    _map_data(cache, u)
     vtk_cell_data(vtkfile, cache.dat, ustr)
-    vtk_save(vtkfile)
-    return vtkfile
 end
 
-function vtu_output(f, u::AbstractVector{<:AbstractVecOrMat}, ustr::AbstractVector{<:AbstractString}, cache::VTUStructuredCellDataCache)
-    vtkfile = vtk_grid(f, cache.pts, cache.cells)
-    for (_u, _ustr) in zip(u, ustr)
-        map(i -> cache.dat[i] = _u[cache.tagmap[cache.etag[i]]], cache.lidx)
-        vtk_cell_data(vtkfile, cache.dat, _ustr)
-    end
-    vtk_save(vtkfile)
-    return vtkfile
-end
+_write_cell_data(vtkfile, u, ustr, cache::VTKUnStructuredCache) = vtk_cell_data(vtkfile, u, ustr)
 
-function vtu_output(f, t::AbstractVector, u::AbstractArray{<:Number}, ustr::AbstractString, cache::VTUStructuredCellDataCache)
-    fmt = "%0$(ndigits(length(t)))d"
-    paraview_collection(f) do pvd
-        for i = 1: length(t)
-            uslice = selectdim(u, ndims(u), i)
-            vtkfile = vtu_output(f * sprintf1(fmt, i), uslice, ustr, cache)
-            collection_add_timestep(pvd, vtkfile, t[i])
+function vtk_output(f, u::AbstractVector{<:AbstractVecOrMat}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
+    vtk_grid(f, cache.pts, cache.cells) do vtk
+        for (_u, _ustr) in zip(u, ustr)
+            _write_cell_data(vtk, _u, _ustr, cache)
         end
     end
 end
 
-function vtu_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, ustr::AbstractVector{<:AbstractString}, cache::VTUStructuredCellDataCache)
+function vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
     fmt = "%0$(ndigits(length(t)))d"
     paraview_collection(f) do pvd
         for i = 1: length(t)
             us = [selectdim(_u, ndims(_u), i) for _u in u]
-            vtkfile = vtu_output(f * sprintf1(fmt, i), us, ustr, cache)
-            collection_add_timestep(pvd, vtkfile, t[i])
+            vtk_grid(f * sprintf1(fmt, i), cache.pts, cache.cells) do vtk
+                for (_u, _ustr) in zip(us, ustr)
+                    _write_cell_data(vtk, _u, _ustr, cache)
+                end
+                collection_add_timestep(pvd, vtk, t[i])
+            end
         end
     end
 end

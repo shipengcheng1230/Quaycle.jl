@@ -1,6 +1,6 @@
-# most of the macro are expected to use at top-level scope
+export gen_gmsh_mesh, read_gmsh_mesh, indice2tag, tag2linearindice, gmsh_vtk_output_cache
 
-export gen_gmsh_mesh, read_gmsh_mesh, indice2tag, tag2linearindice, gmsh_vtu_output_cache
+# most of the macro are expected to use at top-level scope
 
 ## code snippet for mesh generator
 "Code snippet for adding a line from (x, y, z) -> (x+dx, y+dy, z+dz)."
@@ -282,27 +282,39 @@ function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=
 end
 
 ## paraview
-function gmsh_vtu_output_cache(file::AbstractString, mf::OkadaMesh{N}, phygrouptag::Integer=-1, datatype=Float64) where N
-    tag = indice2tag(mf, file)
-    tagmap = tag2linearindice(tag)
+function gmsh_write_vtk_cache(file, phydim, phytag)
     @gmsh_open file begin
         nodes = gmsh.model.mesh.getNodes()
         pts = reshape(nodes[2], 3, :)
         if length(gmsh.model.getPhysicalGroups()) == 0 # no physical group assigned
             entag = -1
         else
-            entag = gmsh.model.getEntitiesForPhysicalGroup(N, phygrouptag)
+            entag = gmsh.model.getEntitiesForPhysicalGroup(phydim, phytag)
             @assert length(entag) == 1 "Multiple entities associated with physical group $(phytag), please distinguish them!"
         end
-        es = gmsh.model.mesh.getElements(N, entag[1])
+        es = gmsh.model.mesh.getElements(phydim, entag[1])
         @assert length(es[1][1]) == 1 "More than one type of elements found!"
+        etag = es[2][1]
         celltype = gmshcelltype2vtkcelltype[es[1][1]]
         nnode = gmsh.model.mesh.getElementProperties(es[1][1])[4]
         nume = length(es[2][1])
         conn = reshape(es[3][1], Int(nnode), :)
         cells = [MeshCell(celltype, view(conn, :, i)) for i in 1: nume]
-        dat = Vector{datatype}(undef, nume)
-        lidx = Base.OneTo(nume)
-        VTUStructuredCellDataCache(tagmap, es[2][1], dat, cells, pts, lidx)
+        return (pts, cells, etag)
     end
+end
+
+function gmsh_vtk_output_cache(file::AbstractString, mf::OkadaMesh{N}, phytag::Integer=-1, datatype=Float64) where N
+    tag = indice2tag(mf, file)
+    tagmap = tag2linearindice(tag)
+    pts, cells, etag = gmsh_write_vtk_cache(file, N, phytag)
+    nume = length(cells)
+    dat = Vector{datatype}(undef, nume)
+    lidx = Base.OneTo(nume)
+    VTKStructuredScalarConversionCache(tagmap, etag, dat, cells, pts, lidx)
+end
+
+function gmsh_vtk_output_cache(file, phydim, phytag)
+    pts, cells, _ = gmsh_write_vtk_cache(file, phydim, phytag)
+    VTKUnStructuredCache(cells, pts)
 end
