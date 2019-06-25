@@ -31,49 +31,49 @@ end
     @test isapprox(μ, μ_truth, rtol=1e-8)
 end
 
-# @testset "SDOF with stepping loading" begin
-#     condition = (u, t , integrator) -> t - 10.0
-#     affect! = (integrator) -> integrator.p.vpl = 10.
-#     cb = ContinuousCallback(condition, affect!, nothing, save_positions=(false, false))
-#
-#     @testset "Ruina" begin
-#         mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
-#         prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=RuinaStateLaw(), flf=CForm())
-#         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
-#         μ = friction(CForm(), sol.u, mp)
-#         μ_truth = [
-#             0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
-#             0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
-#             0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.61451424,
-#             0.61239234, 0.61152559, 0.61133979, 0.61138186, 0.61145348,
-#             0.61149781, 0.61151494, 0.61151781, 0.61151612, 0.61151421,
-#             0.61151317, 0.61151282, 0.61151279, 0.61151285, 0.61151290,
-#             0.61151292, 0.61151293, 0.61151293, 0.61151293, 0.61151293,
-#             0.61151293, 0.61151293, 0.61151293, 0.61151293, 0.61151293,
-#             0.61151293,
-#         ]
-#         @test isapprox(μ, μ_truth, rtol=1e-8)
-#     end
-#
-#     @testset "PRZ" begin
-#         mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
-#         prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=PrzStateLaw(), flf=CForm())
-#         sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
-#         μ = friction(CForm(), sol.u, mp)
-#         μ_truth = [
-#             0.60000000, 0.60001736, 0.60006450, 0.60013523, 0.60022460,
-#             0.60032861, 0.60044398, 0.60056796, 0.60069827, 0.60083298,
-#             0.60097045, 0.60958894, 0.61636558, 0.61928354, 0.61785150,
-#             0.61592716, 0.61505648, 0.61483759, 0.61485737, 0.61491944,
-#             0.61496151, 0.61497911, 0.61498283, 0.61498167, 0.61497997,
-#             0.61497897, 0.61497860, 0.61497855, 0.61497859, 0.61497863,
-#             0.61497866, 0.61497866, 0.61497866, 0.61497866, 0.61497866,
-#             0.61497866, 0.61497866, 0.61497866, 0.61497866, 0.61497866,
-#             0.61497866,
-#         ]
-#         @test isapprox(μ, μ_truth, rtol=1e-8)
-#     end
-# end
+@testset "SDOF with stepping loading" begin
+    condition = (u, t , integrator) -> t - 10.0
+    affect! = (integrator) -> integrator.p.vpl = 10.
+    cb = ContinuousCallback(condition, affect!, nothing, save_positions=(false, false))
+
+    @testset "Ruina" begin
+        mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=RuinaStateLaw(), flf=CForm())
+        sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
+        μ = friction(CForm(), sol.u, mp)
+        μ_truth = [
+            0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
+            0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.60000000,
+            0.60000000, 0.60000000, 0.60000000, 0.60000000, 0.61451424,
+            0.61239234, 0.61152559, 0.61133979, 0.61138186, 0.61145348,
+            0.61149781, 0.61151494, 0.61151781, 0.61151612, 0.61151421,
+            0.61151317, 0.61151282, 0.61151279, 0.61151285, 0.61151290,
+            0.61151292, 0.61151293, 0.61151293, 0.61151293, 0.61151293,
+            0.61151293, 0.61151293, 0.61151293, 0.61151293, 0.61151293,
+            0.61151293,
+        ]
+        @test isapprox(μ, μ_truth, rtol=1e-8)
+    end
+
+    @testset "PRZ" begin
+        mp = SingleDofRSFProperty(a=0.01, b=0.005, L=10., k=1e-3, vpl=1.0, f0=0.6, v0=1., η=0., σ=1.0)
+        prob = assemble(mp, [1.0, mp.L/1.0], (0., 40.,); se=PrzStateLaw(), flf=CForm())
+        sol = solve(prob, CVODE_BDF(), reltol=1e-8, abstol=1e-8, callback=cb, saveat=1.0)
+        μ = friction(CForm(), sol.u, mp)
+        μ_truth = [
+            0.60000000, 0.60001736, 0.60006450, 0.60013523, 0.60022460,
+            0.60032861, 0.60044398, 0.60056796, 0.60069827, 0.60083298,
+            0.60097045, 0.60958894, 0.61636558, 0.61928354, 0.61785150,
+            0.61592716, 0.61505648, 0.61483759, 0.61485737, 0.61491944,
+            0.61496151, 0.61497911, 0.61498283, 0.61498167, 0.61497997,
+            0.61497897, 0.61497860, 0.61497855, 0.61497859, 0.61497863,
+            0.61497866, 0.61497866, 0.61497866, 0.61497866, 0.61497866,
+            0.61497866, 0.61497866, 0.61497866, 0.61497866, 0.61497866,
+            0.61497866,
+        ]
+        @test isapprox(μ, μ_truth, rtol=1e-8)
+    end
+end
 
 @testset "SDOF of variational form" begin
     mp = SingleDofRSFProperty(a=0.001, b=0.0015, L=3e-5, k=10.0, vpl=1e-5, f0=0.6, v0=1e-6, η=0.5, σ=1.0)
