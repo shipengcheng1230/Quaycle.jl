@@ -1,4 +1,4 @@
-export vtu_output
+export vtk_output, vtm_output
 
 const gmshcelltype2vtkcelltype = Dict(
     1 => VTKCellTypes.VTK_LINE,
@@ -50,6 +50,35 @@ function vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, us
                     _write_cell_data(vtk, _u, _ustr, cache)
                 end
                 collection_add_timestep(pvd, vtk, t[i])
+            end
+        end
+    end
+end
+
+function vtm_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
+    vtk_multiblock(f) do vtm
+        for (_u, _ustr, _cache) in zip(u, ustr, cache)
+            vtkfile = vtk_grid(vtm, _cache.pts, _cache.cells)
+            for (u′, ustr′) in zip(_u, _ustr)
+                _write_cell_data(vtkfile, u′, ustr′, _cache)
+            end
+        end
+    end
+end
+
+function vtm_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
+    fmt = "%0$(ndigits(length(t)))d"
+    paraview_collection(f) do pvd
+        for i = 1: length(t)
+            vtk_multiblock(f * sprintf1(fmt, i)) do vtm
+                for (_u, _ustr, _cache) in zip(u, ustr, cache)
+                    u′ = [selectdim(x, ndims(x), i) for x in _u]
+                    vtkfile = vtk_grid(vtm, _cache.pts, _cache.cells)
+                    for (u′′, ustr′′) in zip(u′, _ustr)
+                        _write_cell_data(vtkfile, u′′, ustr′′, _cache)
+                    end
+                end
+                collection_add_timestep(pvd, vtm, t[i])
             end
         end
     end
