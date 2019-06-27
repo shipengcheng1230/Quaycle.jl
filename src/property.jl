@@ -1,6 +1,8 @@
-export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty, DiffusionCreepProperty,
-    CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty
-    
+export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty,
+    DiffusionCreepProperty, PeierlsProperty,
+    CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty,
+    relaxation_property, composite_factor
+
 ## Property interface
 import Base.fieldnames
 import Base.==
@@ -9,9 +11,10 @@ abstract type AbstractProperty end
 abstract type PlasticDeformationProperty <: AbstractProperty end
 
 # https://github.com/jw3126/Setfield.jl
-"""
+@doc raw"""
 System property for single degree of freedom under rate-state friction.
 
+## Fields
 - `a`: contrib from velocity
 - `b`: contrib from state
 - `L`: critical distance
@@ -44,9 +47,10 @@ System property for single degree of freedom under rate-state friction.
     @assert v0 > 0
 end
 
-"""
+@doc raw"""
 System property for multiple fault patches under rate-state friction.
 
+## Fields
 - `a`: contrib from velocity
 - `b`: contrib from state
 - `L`: critical distance
@@ -81,10 +85,17 @@ System property for multiple fault patches under rate-state friction.
     @assert vpl > 0
 end
 
-"""
-Compose all three type of plastic deformation, see
+@doc raw"""
+Compose all three type of plastic deformation and other strain-related system properties, see
     [(Kohlstedt & Hansen, 2015)](https://www.sciencedirect.com/science/article/pii/B9780444538024000427).
     Each field is the overall equivalent factor not dependent on stress.
+
+## Fields
+- `disl`: dislocation creep
+- `n`: stress exponent in dislocation creep
+- `diff`: diffusion creep
+- `peie`: Peierls mechanisms
+- `dϵref`: reference strain rate whose length must equal strain components considered
 """
 @with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
     disl::U # dislocation creep
@@ -99,10 +110,22 @@ Compose all three type of plastic deformation, see
     @assert length(dϵref) ≤ 6 # no more than 6 in 3D space
 end
 
-"""
-System properties for plastic deformation of dislocation creep.
+@doc raw"""
+System properties for plastic deformation of *dislocation creep*.
     Please refer [(Hirth & Kohlstedt, 2003)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06)
     for concrete units of each factor.
+
+## Fields
+- `A`: prefactor
+- `n`: power law stress exponent
+- `fH₂0`: water content
+- `r`: water fugacity exponent
+- `α`: melting constant
+- `ϕ`: melting fraction
+- `Q`: activation energy
+- `P`: pressure
+- `Ω`: activation volume
+- `T`: temperature
 """
 @with_kw struct DislocationCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -117,10 +140,23 @@ System properties for plastic deformation of dislocation creep.
     T::V # temperature
 end
 
-"""
-System properties for plastic deformation of diffusion creep.
+@doc raw"""
+System properties for plastic deformation of *diffusion creep*.
     Please refer [(Hirth & Kohlstedt, 2003)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06)
     for concrete units of each factor.
+
+## Fields
+- `A`: prefactor
+- `d`: grain size
+- `m`: grain size exponent
+- `fH₂0`: water content
+- `r`: water fugacity exponent
+- `α`: melting constant
+- `ϕ`: melting fraction
+- `Q`: activation energy
+- `P`: pressure
+- `Ω`: activation volume
+- `T`: temperature
 """
 @with_kw struct DiffusionCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -136,11 +172,15 @@ System properties for plastic deformation of diffusion creep.
     T::V # temperature
 end
 
-"System properties for plastic deformation of Peierls Mechanisms."
-struct PeierlsProperty end
+@doc raw"System properties for plastic deformation of *Peierls Mechanisms*. Not implemented yet."
+struct PeierlsProperty <: PlasticDeformationProperty end
 
-"""
+@doc raw"""
 Composite property for viscoelastic rheology of maxwell representation.
+
+# Fields
+- `pe::ElasticRSFProperty`: elastic rate-and-state system property
+- `pv::CompositePlasticDeformationProperty`: composite plastic deformation system property
 """
 struct ViscoelasticMaxwellProperty{T1, T2} <: AbstractProperty
     pe::T1
@@ -151,11 +191,29 @@ struct ViscoelasticMaxwellProperty{T1, T2} <: AbstractProperty
     end
 end
 
+"""
+    composite_factor(pv::PlasticDeformationProperty)
+
+Compute an equivalent factor for levarage recomputing during ODE solving.
+
+## Arguments
+- `pv::PlasticDeformationProperty`: plastic deformation system property
+"""
 composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 function composite_factor(pv::PeierlsProperty) end
 
-function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+"""
+    relaxation_property(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+
+Create maxwell viscoelastic system property.
+
+## Arguments
+- `pe::ElasticRSFProperty{T}`: elastic rate-and-state system property
+- `dϵref`: reference strain rate whose length must equal strain components considered
+- `pvs...`: different type of plastic deformation system properties but no more than three
+"""
+function relaxation_property(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs

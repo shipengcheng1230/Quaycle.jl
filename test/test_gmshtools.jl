@@ -1,6 +1,7 @@
 using Test
 using GmshTools
 using LinearAlgebra
+using JuEQ: indice2tag
 
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
@@ -133,6 +134,9 @@ end
     gen_gmsh_mesh(mf; filename=tmp)
     vcache = gmsh_vtk_output_cache(tmp, mf, 1)
     @test vcache.dat |> length == mf.nx * mf.nξ
+
+    vcache = gmsh_vtk_output_cache(tmp, 2, 1)
+    @test vcache.cells |> length == mf.nx * mf.nξ
 
     rm(tmp)
 end

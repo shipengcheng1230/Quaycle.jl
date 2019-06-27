@@ -23,16 +23,29 @@ struct VTKUnStructuredCache{C, P} <: ParaviewOutputCache
     pts::P
 end
 
+# This works only for scalar data
 _map_data(cache::VTKStructuredScalarConversionCache, u::AbstractArray) = map(i -> cache.dat[i] = u[cache.tagmap[cache.etag[i]]], cache.lidx)
 
-function _write_cell_data(vtkfile, u, ustr, cache::VTKStructuredScalarConversionCache)
+function _write_cell_data(vtkfile, u::AbstractVecOrMat, ustr, cache::VTKStructuredScalarConversionCache)
     _map_data(cache, u)
     vtk_cell_data(vtkfile, cache.dat, ustr)
 end
 
 _write_cell_data(vtkfile, u, ustr, cache::VTKUnStructuredCache) = vtk_cell_data(vtkfile, u, ustr)
 
-function vtk_output(f, u::AbstractVector{<:AbstractVecOrMat}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
+"""
+    vtk_output(f, u::AbstractVector{<:AbstractVecOrMat},
+        ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
+
+Write results to single-block VTK file.
+
+## Arguments
+- `f`: output file name
+- `u::AbstractVector{<:AbstractArray}`, list of results to be written
+- `ustr::AbstractVector{<:AbstractString}`: list results names to be assigned
+- `cache`: cache of data conversion, cell information and nodes information
+"""
+function vtk_output(f, u::AbstractVector{<:AbstractArray}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
     vtk_grid(f, cache.pts, cache.cells) do vtk
         for (_u, _ustr) in zip(u, ustr)
             _write_cell_data(vtk, _u, _ustr, cache)
@@ -40,6 +53,19 @@ function vtk_output(f, u::AbstractVector{<:AbstractVecOrMat}, ustr::AbstractVect
     end
 end
 
+"""
+    vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractVecOrMat},
+        ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
+
+Write time-series results to single-block paraview collection file.
+
+## Arguments
+- `f`: output file name
+- `t::AbstractVector`: time stamp vector
+- `u::AbstractVector{<:AbstractArray}`, list of results to be written
+- `ustr::AbstractVector{<:AbstractString}`: list results names to be assigned
+- `cache`: cache of data conversion, cell information and nodes information
+"""
 function vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
     fmt = "%0$(ndigits(length(t)))d"
     paraview_collection(f) do pvd
@@ -55,6 +81,19 @@ function vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, us
     end
 end
 
+"""
+    vtm_output(f, u, ustr, cache::ParaviewOutputCache)
+
+Write results to multiple-block paraview collection file.
+
+## Arguments
+- `f`: output file name
+- `u`, list of block to be written, each contains a list of results
+    in that block
+- `ustr`: list of block to be assigned, each contains a list of results names
+    to data in that block
+- `cache`: list cache corresponding to each block
+"""
 function vtm_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
     vtk_multiblock(f) do vtm
         for (_u, _ustr, _cache) in zip(u, ustr, cache)
@@ -66,6 +105,20 @@ function vtm_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
     end
 end
 
+"""
+    vtm_output(f, t, u, ustr, cache::ParaviewOutputCache)
+
+Write results to multiple-block VTK file.
+
+## Arguments
+- `f`: output file name
+- `t::AbstractVector`: time stamp vector
+- `u`, list of different block data to be written, each contains a list of results
+    in that block
+- `ustr`: list of block names to be assigned, each contains a list of results names
+    to data in that block
+- `cache`: list cache corresponding to each block
+"""
 function vtm_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
     fmt = "%0$(ndigits(length(t)))d"
     paraview_collection(f) do pvd

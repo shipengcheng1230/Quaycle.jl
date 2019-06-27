@@ -1,4 +1,4 @@
-export concatenate_gf
+export cat_greensfun
 
 ## Static Green's Function
 "Obtain mapping from local linear index to cartesian index."
@@ -57,7 +57,21 @@ struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray}
     vv::T # inelastic ⟷ inelastic
 end
 
-function concatenate_gf(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+"""
+    cat_greensfun(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+
+Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
+    a way to update traction/stress rate using only one BLAS call. It does nothing
+    to the elastic Green's function and specifically used for the outputs from
+    [`okada_stress_gf_tensor`](@ref) and [`sbarbot_stress_gf_tensor`](@ref).
+
+## Arguments
+- `ee`: traction Green's function within the elastic fault
+- `ev`: stress Green's function from elastic fault to inelastic asthenosphere
+- `ve`: traction Green's function inelastic asthenosphere to elastic fault
+- `vv`: stress Green's function within inelastic asthenosphere
+"""
+function cat_greensfun(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
     σindex = Base.OneTo(length(ev))
     ϵindex = Base.OneTo(length(ve))
     m, n = size(ev[1]) # number of inelastic elements, number of fault patches
@@ -70,10 +84,18 @@ function concatenate_gf(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
     ViscoelasticCompositeGreensFunction(ee, Array(ev′), Array(ve′), Array(vv′))
 end
 
+"""
+    composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity,
+        λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
+
+Shortcut function for computing all 4 Green's function for viscoelastic relaxation.
+    Arguments stays the same as [`okada_stress_gf_tensor`](@ref) and
+    [`sbarbot_stress_gf_tensor`](@ref).
+"""
 function composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
     ee = okada_stress_gf_tensor(mf, λ, μ, ft)
     ev = okada_stress_gf_tensor(mf, me, λ, μ, ft)
     ve = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
     vv = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    return concatenate_gf(ee, ev, ve, vv)
+    return cat_greensfun(ee, ev, ve, vv)
 end

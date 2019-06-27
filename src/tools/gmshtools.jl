@@ -1,6 +1,5 @@
-export gen_gmsh_mesh, read_gmsh_mesh, indice2tag, tag2linearindice, gmsh_vtk_output_cache
-
 # most of the macro are expected to use at top-level scope
+export gen_gmsh_mesh, read_gmsh_mesh, gmsh_vtk_output_cache
 
 ## code snippet for mesh generator
 "Code snippet for adding a line from (x, y, z) -> (x+dx, y+dy, z+dz)."
@@ -74,7 +73,18 @@ function geo_box_extruded_from_surfaceXY(llx::T, lly::T, llz::T, dx::T, dy::T, d
 end
 
 ## concrete mesh generator
-"Generate equivalent [`LineOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
+"""
+    gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T;
+        filename::AbstractString="temp.msh", reg::Integer=1) where T
+
+Generate equivalent [`LineOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine.
+
+## Extra Arguments
+- `filename::AbstractString="temp.msh"`: name of the generated mesh file. The file ext will be automatically handled by Gmsh.
+- `reg::Integer=1`: the starting tag for entity of any dimension
+
+The rest arguments stay the same as [`gen_mesh`](@ref).
+"""
 function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
         dy, dz = -ξ * cosd(dip), -ξ * sind(dip)
@@ -86,7 +96,18 @@ function gen_gmsh_mesh(::Val{:LineOkada}, ξ::T, Δξ::T, dip::T; filename::Abst
     end
 end
 
-"Generate equivalent [`RectOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine."
+"""
+    gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T;
+        filename::AbstractString="temp.msh", reg::Integer=1) where T
+
+Generate equivalent [`RectOkadaMesh`](@ref) via [Gmsh](http://gmsh.info/) buildin engine.
+
+## Extra Arguments
+- `filename::AbstractString="temp.msh"`: name of the generated mesh file. The file ext will be automatically handled by Gmsh.
+- `reg::Integer=1`: the starting tag for entity of any dimension
+
+The rest arguments stay the same as [`gen_mesh`](@ref).
+"""
 function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; filename::AbstractString="temp.msh", reg::Integer=1) where T
     @gmsh_do begin
         y, z = -ξ * cosd(dip), -ξ * sind(dip)
@@ -99,6 +120,15 @@ function gen_gmsh_mesh(::Val{:RectOkada}, x::T, ξ::T, Δx::T, Δξ::T, dip::T; 
     end
 end
 
+"""
+    gen_gmsh_mesh(mf::OkadaMesh; kwargs...)
+
+Generate an equivalent unstructured mesh as `mf::OkadaMesh`
+
+## Arguments
+- `mf::OkadaMesh`: the structured mesh
+- `kwargs...`: stay the same as other methods for [`gen_gmsh_mesh`](@ref)
+"""
 gen_gmsh_mesh(mf::LineOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:LineOkada), mf.nξ * mf.Δξ, mf.Δξ, mf.dip; kwargs...)
 gen_gmsh_mesh(mf::RectOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:RectOkada), mf.nx * mf.Δx, mf.nξ * mf.Δξ, mf.Δx, mf.Δξ, mf.dip; kwargs...)
 
@@ -115,7 +145,7 @@ Gernate a box for [Asthenosphere](https://en.wikipedia.org/wiki/Asthenosphere) u
 - `llx`, `lly`, `llz`: coordinates of low-left corner on the top surface
 - `dx`, `dy`, `dz`: x-, y-, z-extension
 - `nx`, `ny`: number of cells along x-, y-axis
-- `rfx`, `rfy`: refinement coefficients along x-, y-axis using ["Bump"] algorithm, please refer `gmsh.model.geo.mesh.setTransfiniteCurve`
+- `rfx`, `rfy`: refinement coefficients along x-, y-axis using **Bump** algorithm, please refer `gmsh.model.geo.mesh.setTransfiniteCurve`
 - `rfzn`: number of cells along z-axis, please refer `numElements` in `gmsh.model.geo.extrude`
 - `rfzh`: accumulated height of cells along z-axis, please refer `heights` in `gmsh.model.geo.extrude`
 """
@@ -132,7 +162,15 @@ function gen_gmsh_mesh(::Val{:BoxHexExtrudeFromSurface},
     end
 end
 
-"Adding a combination of [`RectOkadaMesh`](@ref) and `BoxHexExtrudeFromSurface` mesh for asthenosphere."
+"""
+    gen_gmsh_mesh(mf::RectOkadaMesh,
+        ::Val{:BoxHexByExtrude},
+        llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
+        rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
+        filename::AbstractString="temp.msh") where {T, I}
+Generate a mesh combinating [`RectOkadaMesh`](@ref) and `BoxHexExtrudeFromSurface` mesh for asthenosphere.
+    The first argument is the corresponding [`RectOkadaMesh`](@ref), the rest ones stay the same.
+"""
 function gen_gmsh_mesh(mf::RectOkadaMesh, ::Val{:BoxHexExtrudeFromSurface},
     llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I, rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
     filename="temp.msh", reg::Integer=1,
@@ -198,14 +236,17 @@ macro check_and_get_mesh_entity(ecode)
 end
 
 """
-    read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
+    read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString;
+        phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
 
 Read the mesh and construct mesh entity infomation for SBarbot Hex8 Green's function use.
 
 ## Arguments
 - `f`: mesh file name
-- `phytag`: physical tag for targeting volume entity. If < 0, retrieve all elements in all 3-dimensional entities.
-- `rotate`: the angle of strike direction, see [`sbarbot_disp_hex8!`](@ref)
+- `phytag`: physical tag for targeting volume entity. If smaller than `0`, retrieve all elements in all 3-dimensional entities. If in
+    this case, your mesh must contain only one element type.
+- `rotate`: the angle of strike direction, see [`sbarbot_disp_hex8!`](@ref). If your meshing box isn't parallel to x, y-axis, your must
+    provide your strike angle manually. By default, the strike angle is zero
 - `reverse`: if `true`, reverse the along-x, y-node tag during read. By default, 1→4 in x-axis, 1→2 in y-axis, 1→5 in z-axis
 - `check`: if `true`, check that number of distinctive `q1` equals that of `x1`, same for `q2` and `x2` at orthogonal direction,
     which should hold for transfinite mesh.
@@ -256,7 +297,8 @@ Read the mesh and construct mesh entity infomation for SBarbot Tet4 Green's func
 
 ## Arguments
 - `f`: mesh file name
-- `phytag`: physical tag for targeting volume entity. If < 0, retrieve all elements in all 3-dimensional entities.
+- `phytag`: physical tag for targeting volume entity. If smaller than `0`, retrieve all elements in all 3-dimensional entities. If in
+    this case, your mesh must contain only one element type.
 """
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
     @gmsh_open f begin
@@ -304,6 +346,22 @@ function gmsh_write_vtk_cache(file, phydim, phytag)
     end
 end
 
+"""
+    gmsh_vtk_output_cache(file::AbstractString, mf::OkadaMesh{N}, phytag::Integer=-1, datatype=Float64) where N
+
+Create cache of structured [`OkadaMesh`](@ref) for VTK output, which handles the data mapping from structured data
+    to unstructured mesh. It's worth mention that currently [WriteVTK](https://github.com/jipolanco/WriteVTK.jl)
+    cannot write inlined plane in 3D space. As a workround, it seeks transfering from Gmsh unstructured (transfinite)
+    mesh.
+
+## Arguments
+- `file::AbstractString`: mesh file containing fault mesh (transfinite)
+- `mf::OkadaMesh{N}`: equivalent structured mesh, must match unstructured mesh in the file above
+- `phytag::Integer=-1`: physical group tag associated with fault mesh in the mesh file. If smaller than 0,
+    retrieve all entities in physical group whose dimension is determined by `mf`. If in this case, only one
+    such entity, assumed to be the fault, shall exist.
+- `datatype=Float64`: data type for temporary array storing the mapped data
+"""
 function gmsh_vtk_output_cache(file::AbstractString, mf::OkadaMesh{N}, phytag::Integer=-1, datatype=Float64) where N
     tag = indice2tag(mf, file)
     tagmap = tag2linearindice(tag)
@@ -313,8 +371,20 @@ function gmsh_vtk_output_cache(file::AbstractString, mf::OkadaMesh{N}, phytag::I
     lidx = Base.OneTo(nume)
     VTKStructuredScalarConversionCache(tagmap, etag, dat, cells, pts, lidx)
 end
+"""
+    gmsh_vtk_output_cache(file::AbstractString, phydim::I, phytag::I) where I<:Integer
 
-function gmsh_vtk_output_cache(file, phydim, phytag)
+Create cache of unstructured mesh for VTK output.
+
+## Arguments
+- `file::AbstractString`: mesh file
+- `phydim`: physical group dimension, which you will querry
+- `phytag`: physical group tag associated with `phydim`. If smaller than 0,
+    retrieve all entities in physical group whose dimension is `phydim`. If in this case, only one
+    such entity, binded with that physical group, shall exist. If you would like to write multi-block data,
+    create VTK output caches for each physical group.
+"""
+function gmsh_vtk_output_cache(file::AbstractString, phydim::I, phytag::I) where I<:Integer
     pts, cells, _ = gmsh_write_vtk_cache(file, phydim, phytag)
     VTKUnStructuredCache(cells, pts)
 end

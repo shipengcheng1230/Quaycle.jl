@@ -8,7 +8,7 @@ using JuEQ:
     stress_components, coordinate_sbarbot2okada!,
     ViscoelasticCompositeGreensFunction,
     relative_velocity!, relative_strain_rate!,
-    dτ_dt!, dσ_dt!, deviatoric_stress!
+    dτ_dt!, dσ_dt!, deviatoric_stress!, gen_alloc
 
 @testset "Unit dislocation for plane fault types" begin
     @test unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
@@ -162,7 +162,7 @@ end
     gfos = okada_stress_gf_tensor(mf, me, λ, μ, ft)
     gfso = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
     gfss = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    gg = concatenate_gf(gfoo, gfos, gfso, gfss)
+    gg = cat_greensfun(gfoo, gfos, gfso, gfss)
 
     @testset "concatenate components of green's function" begin
         @test gg.ee == gfoo

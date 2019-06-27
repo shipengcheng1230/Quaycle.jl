@@ -24,8 +24,7 @@ H = 15.0 # vw zone [km]
 h = 3.0 # vw-vs changing zone [km]
 Wf = 40.0 # fault depth [km]
 Δz = 100.0e-3 # grid size interval [km]
-tf = 200.0; # simulation time [yr]
-nothing
+tf = 200.0; nothing # simulation time [yr]
 
 # !!! warning
 #     Make sure your units are consistent across the whole variable space.
@@ -35,44 +34,41 @@ nothing
 μ = vs^2 * ρ / 1e5 / 1e6 # shear modulus [bar·km/mm]
 λ = μ # poisson material
 η = μ / 2(vs * 1e-3 * 365 * 86400)
-ngrid = round(Int, Wf / Δz); # number of grids
-nothing
+ngrid = round(Int, Wf / Δz); nothing # number of grids
 
-# First, create a **fault space** by specifying fault type, depth
-# and with the desired discretization interval.
-# !!! tip
-#     Here, we do not need to provide `dip` for strike-slip fault as it automatically choose `90`. See [`fault`](@ref).
+# First, set up a fault type which is strike-slip, and create a **fault mesh**
+# by specifying depth and the desired discretization interval.
 
-fa = fault(Val(:LineOkada), STRIKING(), 40.0, Δz)
-nothing
+ft = STRIKING()
+mesh = gen_mesh(Val(:LineOkada), 40.0, Δz, 90.0); nothing
+
+# Computing the Green's function for this setting.
+gf = okada_stress_gf_tensor(mesh, λ, μ, ft); nothing
 
 # Then, provide the material properties w.r.t. our 'fault space'.
-a = a0 .* ones(fa.mesh.nξ)
-a[-fa.mesh.z .≥ (H + h)] .= amax
-a[H .< -fa.mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
-b = b0 .* ones(fa.mesh.nξ)
-L = L0 .* ones(fa.mesh.nξ)
-σ = σ0 .* ones(fa.mesh.nξ)
-prop = ElasticRSFProperty(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η)
-nothing
+a = a0 .* ones(mesh.nξ)
+a[-mesh.z .≥ (H + h)] .= amax
+a[H .< -mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / Δz))
+b = b0 .* ones(mesh.nξ)
+L = L0 .* ones(mesh.nξ)
+σ = σ0 .* ones(mesh.nξ)
+prop = ElasticRSFProperty(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η); nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.
 τ0 = σ0 * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
-τz = fill(τ0, size(fa.mesh.z))
+τz = fill(τ0, size(mesh.z))
 θz = @. L / v0 * exp(a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / a / σ)) - f0 / b0)
-vz = fill(vinit, size(fa.mesh.ξ))
+vz = fill(vinit, size(mesh.ξ))
 u0 = ArrayPartition(vz, θz)
-prob, = assemble(fa, prop,  u0, (0.0, tf))
-nothing
+prob = assemble(mesh, gf, prop,  u0, (0.0, tf)); nothing
 
 # Check our depth profile now.
 
-plot([a, b], fa.mesh.z, label=["a", "b"], yflip=true, ylabel="Depth (km)")
+plot(a .- b, mesh.z, label="a - b", yflip=true, ylabel="Depth (km)")
 
 # Afterwards, solve ODE thanks to [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 
-sol = solve(prob, TsitPap8(), reltol=1e-6, abstol=1e-6)
-nothing
+sol = solve(prob, TsitPap8(), reltol=1e-6, abstol=1e-6); nothing
 
 # !!! tip
 #     Raise the accuracy option or switch to other algorithms if you get instability when solving these ODEs.

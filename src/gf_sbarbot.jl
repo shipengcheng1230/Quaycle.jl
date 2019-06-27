@@ -45,6 +45,24 @@ function coordinate_sbarbot2okada!(u::AbstractVector)
     u[3], u[5] = -u[5], -u[3]
 end
 
+"""
+    sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault,
+        comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+
+Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref) to [`RectOkadaMesh`](@ref)
+
+## Arguments
+- `ma::SBarbotMeshEntity{3}`: asthenosphere mesh
+- `mf::RectOkadaMesh`: fault mesh
+- `λ::T`: Lamé's first parameter
+- `μ::T`: shear modulus
+- `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
+- `comp`: the strain component(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
+    `:yy`, `:yz`, `:zz` or tuple of a few ones
+
+## Output
+A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault
+"""
 function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, c; kwargs...)
     map(f, comp)
@@ -79,6 +97,23 @@ function sbarbot_stress_gf_tensor_chunk!(
     end
 end
 
+"""
+    sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol};
+        kwargs...) where {T, N}
+
+Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
+
+## Arguments
+- `ma::SBarbotMeshEntity{3}`: asthenosphere mesh
+- `λ::T`: Lamé's first parameter
+- `μ::T`: shear modulus
+- `comp`: the strain component(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
+    `:yy`, `:yz`, `:zz` or tuple of a few ones
+
+## Output
+A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain to the stress components,
+    each of which is a matrix, within asthenosphere
+"""
 function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> sbarbot_stress_gf_tensor(ma, λ, μ, c; kwargs...)
     map(f, comp)

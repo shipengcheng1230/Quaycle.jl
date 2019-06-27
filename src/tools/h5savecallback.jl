@@ -147,11 +147,34 @@ function _trigger_save(b::H5SaveBuffer, ptrs, t)
 end
 
 # https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/785
+"Retrieve **velocity**, **state** and **strain rate**."
 𝐕𝚯𝐄′(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3])
+"Retrieve **velocity**, **state**, **strain** and **stress**."
 𝐕𝚯𝚬𝚺(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3], u.x[4])
+"Retrieve **velocity**, **state** and **strain**."
 𝐕𝚯𝚬(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3])
+"Retrieve **velocity** and **state**."
 𝐕𝚯(u::ArrayPartition, args...) = (u.x[1], u.x[2])
 
+"""
+    wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm,
+        file, nstep, getu, ustrs, tstr; kwargs...)
+
+Write the solution to HDF5 file while solving the ODE. The interface
+    is exactly the same as
+    [`solve` an `ODEProblem`](http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html)
+    except a few more about the saving procedure. Notice, it will set
+    `save_everystep=false` so to avoid memory blow up. The return code
+    will be written as an attribute in `tstr` data group.
+
+## Extra Arguments
+- `file::AbstractString`: name of file to be saved
+- `nstep::Integer`: number of steps after which a saving operation will be performed
+- `getu::Function`: function handler to extract desired solution for saving
+- `ustr::AbstractVector`: list of names to be assigned for each components, whose
+    length must equal the length of `getu` output
+- `tstr::AbstractString`: name of time data
+"""
 function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; kwargs...)
     integrator = init(prob, alg)
     du = similar(prob.u0)

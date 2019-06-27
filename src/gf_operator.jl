@@ -1,5 +1,3 @@
-export gen_alloc
-
 ## Allocation for inplace operations
 abstract type AbstractAllocation{dim} end
 abstract type TractionRateAllocation{dim} <: AbstractAllocation{dim} end

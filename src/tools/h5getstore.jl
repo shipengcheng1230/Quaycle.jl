@@ -1,6 +1,14 @@
 export @getprop, @store, store
 
-"Read property stored in HDF5."
+"""
+    @getprop filename
+
+Read property stored in HDF5.
+
+## Arguments
+- `filename`: file name. Assume it
+    has one and only one kind of property group.
+"""
 macro getprop(filename)
     esc(quote
         h5open($(filename), "r") do f
@@ -12,7 +20,15 @@ macro getprop(filename)
     end)
 end
 
-"Store property in HDF5."
+"""
+    store(filename::AbstractString, p::AbstractProperty)
+
+Store property in HDF5.
+
+## Arguments
+- `filename::AbstractString`: file name to be used
+- `p::AbstractProperty`: property to be saved
+"""
 function store(filename::AbstractString, p::AbstractProperty)
     h5open(filename, "w") do f
         g = g_create(f, description(p))
@@ -22,7 +38,15 @@ function store(filename::AbstractString, p::AbstractProperty)
     end
 end
 
-"Store property in HDF5."
+"""
+    @store filename::AbstractString p::AbstractProperty
+
+Macro shortcut for storing property in HDF5.
+
+## Arguments
+- `filename::AbstractString`: file name to be used
+- `p::AbstractProperty`: property to be saved
+"""
 macro store(filename, p)
     quote
         store($(esc(filename)), $(esc(p)))

@@ -6,7 +6,7 @@ using JuEQ: dϵ_dt
     p2 = DiffusionCreepProperty([rand(5) for _ in 1: 11]...)
     pe = ElasticRSFProperty([rand(3, 3) for _ in 1: 4]..., rand(6)...)
 
-    pvm = ViscoelasticMaxwellProperty(pe, rand(3), p1, p2)
+    pvm = relaxation_property(pe, rand(3), p1, p2)
     σ, τ = [rand(5) for _ in 1: 2]
 
     dϵ1 = @. pvm.pv.disl * τ^(pvm.pv.n - 1) * σ

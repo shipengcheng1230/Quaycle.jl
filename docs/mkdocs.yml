@@ -80,11 +80,16 @@ docs_dir: 'build'
 nav:
   - Home: 'index.md'
   - 'Quasi Dynamic Simulation using BEM':
-    - 'Basic Theory': 'quasi_dynamic_intro.md'
     - 'Example 1D': 'examples/generated/bp1.md'
     - 'Example 2D': 'examples/generated/otfsync.md'
-  - Library:
-    - Public: 'public_interface.md'
-    - Private: 'private_interface.md'
-  - References: 'references.md'
+  - Interface:
+    - Assemble: 'interface_assemble.md'
+    - Friction: 'interface_friction.md'
+    - Greens Function: 'interface_greensfun.md'
+    - HDF5 Utility: 'interface_HDF5.md'
+    - Mesh: 'interface_mesh.md'
+    - Simulation Property: 'interface_property.md'
+    - Rheology: 'interface_rheology.md'
+    - Visualize: 'interface_visualize.md'
+  - Acknowledge: 'acknowledge.md'
   - License: 'LICENSE.md'

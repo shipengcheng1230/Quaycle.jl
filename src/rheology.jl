@@ -4,8 +4,25 @@ export DislocationCreep, DiffusionCreep, Peierls
 abstract type DeformationMechanism end
 
 # Karato 2008, Deformation of Earth Materials
+@doc raw"""
+```math
+\dot{ϵ} = A σ′ d^{-m} f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{(αϕ)} \exp{(- \frac{Q + PV}{RT})}
+```
+"""
 struct DiffusionCreep <: DeformationMechanism end
+
+@doc raw"""
+```math
+\dot{ϵ} = A τ^{n-1} σ′ f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{(αϕ)} \exp{(- \frac{Q + PV}{RT})}
+```
+"""
 struct DislocationCreep <: DeformationMechanism end
+
+@doc raw"""
+```math
+\dot{ϵ} = \dot{ϵ_{P}}\left(\frac{σ}{G}\right)^{2} \exp{\left(-\frac{ΔF_{k}^{o}}{RT}\left(1 - \left(\frac{σ}{σ_{P}}\right)^{r}\right)^{s}\right)}
+```
+"""
 struct Peierls <: DeformationMechanism end # high stress / low temperature
 
 const 𝙍 = float(PhysicalConstants.CODATA2014.R).val # ideal gas constant

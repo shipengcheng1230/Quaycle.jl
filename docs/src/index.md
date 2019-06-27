@@ -5,14 +5,15 @@ This is a suite for numerically simulating earthquake sequences in [Julia](https
 
 Features of this package currently:
 
-- [x] Rate-State Friction Law
+- [x] Rate-State Friction
+- [x] Plastic Deformation
 - [x] Boundary Element Method (Quasi-dynamic)
+- [x] Viscoelastic Relaxation
+- [x] Integration with [Gmsh](http://gmsh.info/) and [Paraview](https://www.paraview.org/)
 
 Features to be implemented:
-- [ ] Viscoelastic relaxation
 - [ ] Fully elastodynamics
-- [ ] Finite element method
-
+- [ ] Finite element method via [Fenics](https://fenicsproject.org/)
 
 ## Installation
 Get the latest version with Julia's package manager:

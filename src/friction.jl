@@ -11,13 +11,25 @@ Currently support:
 """
 abstract type StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - \\frac{V θ}{L}``"
+@doc raw"""
+```math
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
+```
+"""
 struct DieterichStateLaw <: StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = -\\frac{V θ}{L} * \\log{\\frac{V θ}{L}}``"
+@doc raw"""
+```math
+\frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\left(\frac{V θ}{L}\right)}
+```
+"""
 struct RuinaStateLaw <: StateEvolutionLaw end
 
-"``\\frac{\\mathrm{d}θ}{\\mathrm{d}t} = 1 - (\\frac{V θ}{2L})^2``"
+@doc raw"""
+```math
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \left(\frac{V θ}{2L}\right)^2
+```
+"""
 struct PrzStateLaw <: StateEvolutionLaw end
 
 dθ_dt(::DieterichStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - v * θ / L
@@ -30,22 +42,23 @@ end
 dθ_dt(::PrzStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - (v * θ / 2L) ^ 2
 
 abstract type FrictionLawForm end
+
 "Conventional form, see [`friction`](@ref)"
 struct CForm <: FrictionLawForm end # conventinal form
 "Regularized form, see [`friction`](@ref)"
 struct RForm <: FrictionLawForm end # regularized form
 
-"""
+@doc raw"""
     friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
 
 Calculate friction given by the form of fomula as well as other necessary parameters.
 - Conventional Form:
 ```math
-f(V, θ) = f_0 + a \\ln{\\frac{V}{V_0}} + b \\ln{\\left(\\frac{V_0 θ}{L}\\right)}
+f(V, θ) = f_0 + a \ln{\left(\frac{V}{V_0}\right)} + b \ln{\left(\frac{V_0 θ}{L}\right)}
 ```
 - Regularized Form:
 ```math
-f(V, θ) = a \\sinh ^{-1}{\\left[\\frac{V}{2V_0} \\exp{\\frac{f_0 + b \\ln{\\left(V_0 θ/L\\right)}}{a}}\\right]}
+f(V, θ) = a \sinh ^{-1}{\left(\frac{V}{2V_0} \exp{\left(\frac{f_0 + b \ln{\left(V_0 θ/L\right)}}{a}\right)}\right)}
 ```
 """
 function friction(::CForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
