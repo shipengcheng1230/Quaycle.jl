@@ -84,7 +84,7 @@ end
 """
     vtm_output(f, u, ustr, cache::ParaviewOutputCache)
 
-Write results to multiple-block paraview collection file.
+Write results to multiple-block VTM file.
 
 ## Arguments
 - `f`: output file name
@@ -108,7 +108,7 @@ end
 """
     vtm_output(f, t, u, ustr, cache::ParaviewOutputCache)
 
-Write results to multiple-block VTK file.
+Write results to multiple-block paraview collection file.
 
 ## Arguments
 - `f`: output file name
