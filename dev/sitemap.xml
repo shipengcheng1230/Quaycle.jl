@@ -2,42 +2,67 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
      <loc>https://github.com/shipengcheng1230/JuEQ.jl/</loc>
-     <lastmod>2019-06-25</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/quasi_dynamic_intro/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/bp1/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/otfsync/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/public_interface/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_assemble/</loc>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/private_interface/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_friction/</loc>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/references/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_greensfun/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_HDF5/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_mesh/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_property/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_rheology/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_visualize/</loc>
+     <lastmod>2019-06-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://github.com/shipengcheng1230/JuEQ.jl/acknowledge/</loc>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://github.com/shipengcheng1230/JuEQ.jl/LICENSE/</loc>
-     <lastmod>2019-06-25</lastmod>
+     <lastmod>2019-06-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>

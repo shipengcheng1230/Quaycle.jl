@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/LICENSE/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_HDF5/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>License - JuEQ.jl</title>
+        <title>HDF5 Utility - JuEQ.jl</title>
       
     
     
@@ -93,6 +93,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#hdf5-utilities" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -115,7 +119,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                License
+                HDF5 Utility
               
             </span>
           
@@ -284,10 +288,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
       Interface
@@ -339,11 +345,49 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../interface_HDF5/" title="HDF5 Utility" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        HDF5 Utility
+      </label>
+    
+    <a href="./" title="HDF5 Utility" class="md-nav__link md-nav__link--active">
       HDF5 Utility
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" title="Public Interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -416,18 +460,11 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-    
-    <a href="./" title="License" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../LICENSE/" title="License" class="md-nav__link">
       License
     </a>
-    
   </li>
 
     
@@ -438,21 +475,140 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" title="Public Interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/LICENSE.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_HDF5.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>License</h1>
-                
-                <p>MIT License</p>
-<p>Copyright &copy; 2018-2019 Shi Pengcheng</p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+                <p><a id='HDF5-Utilities-1'></a></p>
+<h1 id="hdf5-utilities">HDF5 Utilities<a class="headerlink" href="#hdf5-utilities" title="Permanent link">&para;</a></h1>
+<p>To use <a href="https://github.com/JuliaIO/HDF5.jl">HDF5</a> functionality,</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">pkg</span><span class="o">&gt;</span> <span class="n">add</span> <span class="n">HDF5</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">JuEQ</span>
+<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">HDF5</span>
+</pre></div>
+</td></tr></table>
+
+<p>This package provides a bunch of utilities, such as storing simulation properties   and writing ODE solution on the fly to HDF5 format file for postprocessing on   different platform and package version. We currently don't support automatically saving   green's function to HDF5 due to its limitation of natively storing complex number.</p>
+<p>It's worth mention that <a href="https://github.com/JuliaIO/JLD.jl">JLD</a> and <a href="https://github.com/JuliaIO/JLD2.jl">JLD2</a> are also excellent alternatives but they storing the whole type information that may broke read when this package changes or remove certain type definitions. Users may choose them as auxiliary tools.</p>
+<p><a id='Public-Interface-1'></a></p>
+<h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
+<p><a id='JuEQ.store-Tuple{AbstractString,JuEQ.AbstractProperty}' href='#JuEQ.store-Tuple{AbstractString,JuEQ.AbstractProperty}'>#</a>
+<strong><code>JuEQ.store</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">store</span><span class="p">(</span><span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">,</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Store property in HDF5.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>filename::AbstractString</code>: file name to be used</li>
+<li><code>p::AbstractProperty</code>: property to be saved</li>
+</ul>
+<p><a id='JuEQ.@getprop-Tuple{Any}' href='#JuEQ.@getprop-Tuple{Any}'>#</a>
+<strong><code>JuEQ.@getprop</code></strong> &mdash; <em>Macro</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@getprop</span> <span class="n">filename</span>
+</pre></div>
+</td></tr></table>
+
+<p>Read property stored in HDF5.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>filename</code>: file name. Assume it   has one and only one kind of property group.</li>
+</ul>
+<p><a id='JuEQ.@store-Tuple{Any,Any}' href='#JuEQ.@store-Tuple{Any,Any}'>#</a>
+<strong><code>JuEQ.@store</code></strong> &mdash; <em>Macro</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@store</span> <span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span>
+</pre></div>
+</td></tr></table>
+
+<p>Macro shortcut for storing property in HDF5.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>filename::AbstractString</code>: file name to be used</li>
+<li><code>p::AbstractProperty</code>: property to be saved</li>
+</ul>
+<p><a id='JuEQ.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}' href='#JuEQ.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}'>#</a>
+<strong><code>JuEQ.wsolve</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">wsolve</span><span class="p">(</span><span class="n">prob</span><span class="o">::</span><span class="n">ODEProblem</span><span class="p">,</span> <span class="n">alg</span><span class="o">::</span><span class="n">OrdinaryDiffEqAlgorithm</span><span class="p">,</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">nstep</span><span class="p">,</span> <span class="n">getu</span><span class="p">,</span> <span class="n">ustrs</span><span class="p">,</span> <span class="n">tstr</span><span class="p">;</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Write the solution to HDF5 file while solving the ODE. The interface     is exactly the same as     <a href="http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html"><code>solve</code> an <code>ODEProblem</code></a>     except a few more about the saving procedure. Notice, it will set     <code>save_everystep=false</code> so to avoid memory blow up. The return code     will be written as an attribute in <code>tstr</code> data group.</p>
+<p><strong>Extra Arguments</strong></p>
+<ul>
+<li><code>file::AbstractString</code>: name of file to be saved</li>
+<li><code>nstep::Integer</code>: number of steps after which a saving operation will be performed</li>
+<li><code>getu::Function</code>: function handler to extract desired solution for saving</li>
+<li><code>ustr::AbstractVector</code>: list of names to be assigned for each components, whose   length must equal the length of <code>getu</code> output</li>
+<li><code>tstr::AbstractString</code>: name of time data</li>
+</ul>
+<p><a id='JuEQ.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>JuEQ.𝐕𝚯</code></strong> &mdash; <em>Method</em>.</p>
+<p>Retrieve <strong>velocity</strong> and <strong>state</strong>.</p>
+<p><a id='JuEQ.𝐕𝚯𝐄′-Tuple{ArrayPartition,Any,Any}' href='#JuEQ.𝐕𝚯𝐄′-Tuple{ArrayPartition,Any,Any}'>#</a>
+<strong><code>JuEQ.𝐕𝚯𝐄′</code></strong> &mdash; <em>Method</em>.</p>
+<p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain rate</strong>.</p>
+<p><a id='JuEQ.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>JuEQ.𝐕𝚯𝚬</code></strong> &mdash; <em>Method</em>.</p>
+<p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain</strong>.</p>
+<p><a id='JuEQ.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>JuEQ.𝐕𝚯𝚬𝚺</code></strong> &mdash; <em>Method</em>.</p>
+<p>Retrieve <strong>velocity</strong>, <strong>state</strong>, <strong>strain</strong> and <strong>stress</strong>.</p>
+<p><a id='JuEQ.@h5savecallback-NTuple{5,Any}' href='#JuEQ.@h5savecallback-NTuple{5,Any}'>#</a>
+<strong><code>JuEQ.@h5savecallback</code></strong> &mdash; <em>Macro</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@h5savecallback</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tend</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">usize</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Construct a <code>FunctionCallingCallback</code> for incrementally stored output into HDF5 file.     This callback function only works for naive output arrays whose shape look like <code>A[..., :, :, :, ...]</code>.     It is suggested to use this macro at top-level scope since it contains <code>eval</code>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>filename</code>: file name to be stored</li>
+<li><code>tend</code>: end time of simulation</li>
+<li><code>nsteps</code>: after <code>nsteps</code> steps, a saving operation is performed otherwise caching them</li>
+<li><code>T</code>: type of stored data</li>
+</ul>
                 
                   
                 
@@ -473,7 +629,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../acknowledge/" title="Acknowledge" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../interface_greensfun/" title="Greens Function" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -482,11 +638,25 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Acknowledge
+                Greens Function
               </span>
             </div>
           </a>
         
+        
+          <a href="../interface_mesh/" title="Mesh" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Mesh
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>

@@ -306,18 +306,6 @@
 
 
   <li class="md-nav__item">
-    <a href="quasi_dynamic_intro/" title="Basic Theory" class="md-nav__link">
-      Basic Theory
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
     <a href="examples/generated/bp1/" title="Example 1D" class="md-nav__link">
       Example 1D
     </a>
@@ -351,11 +339,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
     
     <label class="md-nav__link" for="nav-3">
-      Library
+      Interface
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-3">
-        Library
+        Interface
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -366,8 +354,8 @@
 
 
   <li class="md-nav__item">
-    <a href="public_interface/" title="Public" class="md-nav__link">
-      Public
+    <a href="interface_assemble/" title="Assemble" class="md-nav__link">
+      Assemble
     </a>
   </li>
 
@@ -378,8 +366,80 @@
 
 
   <li class="md-nav__item">
-    <a href="private_interface/" title="Private" class="md-nav__link">
-      Private
+    <a href="interface_friction/" title="Friction" class="md-nav__link">
+      Friction
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_greensfun/" title="Greens Function" class="md-nav__link">
+      Greens Function
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_HDF5/" title="HDF5 Utility" class="md-nav__link">
+      HDF5 Utility
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_mesh/" title="Mesh" class="md-nav__link">
+      Mesh
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_property/" title="Simulation Property" class="md-nav__link">
+      Simulation Property
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_rheology/" title="Rheology" class="md-nav__link">
+      Rheology
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="interface_visualize/" title="Visualize" class="md-nav__link">
+      Visualize
     </a>
   </li>
 
@@ -395,8 +455,8 @@
 
 
   <li class="md-nav__item">
-    <a href="references/" title="References" class="md-nav__link">
-      References
+    <a href="acknowledge/" title="Acknowledge" class="md-nav__link">
+      Acknowledge
     </a>
   </li>
 
@@ -473,14 +533,16 @@
 <p>This is a suite for numerically simulating earthquake sequences in <a href="https://julialang.org/">Julia</a>. The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.</p>
 <p>Features of this package currently:</p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Rate-State Friction Law</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Rate-State Friction</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Plastic Deformation</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Boundary Element Method (Quasi-dynamic)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Viscoelastic Relaxation</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Integration with <a href="http://gmsh.info/">Gmsh</a> and <a href="https://www.paraview.org/">Paraview</a></li>
 </ul>
 <p>Features to be implemented:</p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Viscoelastic relaxation</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Fully elastodynamics</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Finite element method</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Finite element method via <a href="https://fenicsproject.org/">Fenics</a></li>
 </ul>
 <p><a id='Installation-1'></a></p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
@@ -514,13 +576,13 @@
       <nav class="md-footer-nav__inner md-grid">
         
         
-          <a href="quasi_dynamic_intro/" title="Basic Theory" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="examples/generated/bp1/" title="Example 1D" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Basic Theory
+                Example 1D
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

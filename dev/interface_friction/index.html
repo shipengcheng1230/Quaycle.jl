@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/LICENSE/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_friction/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>License - JuEQ.jl</title>
+        <title>Friction - JuEQ.jl</title>
       
     
     
@@ -93,6 +93,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#friction" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -115,7 +119,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                License
+                Friction
               
             </span>
           
@@ -284,10 +288,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
       Interface
@@ -315,11 +321,56 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../interface_friction/" title="Friction" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Friction
+      </label>
+    
+    <a href="./" title="Friction" class="md-nav__link md-nav__link--active">
       Friction
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" title="Public Interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" title="References" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -416,18 +467,11 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-    
-    <a href="./" title="License" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../LICENSE/" title="License" class="md-nav__link">
       License
     </a>
-    
   </li>
 
     
@@ -438,21 +482,135 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" title="Public Interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" title="References" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/LICENSE.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_friction.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>License</h1>
-                
-                <p>MIT License</p>
-<p>Copyright &copy; 2018-2019 Shi Pengcheng</p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+                <p><a id='Friction-1'></a></p>
+<h1 id="friction">Friction<a class="headerlink" href="#friction" title="Permanent link">&para;</a></h1>
+<p>This package adopts what is called <strong>rate-and-state</strong> friction as one of the essential components for modeling fault dynamics. Currently, we only support single state variable <span><span class="MathJax_Preview">θ</span><script type="math/tex">θ</script></span>.</p>
+<p><a id='Public-Interface-1'></a></p>
+<h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
+<p><a id='JuEQ.CForm' href='#JuEQ.CForm'>#</a>
+<strong><code>JuEQ.CForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Conventional form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
+<p><a id='JuEQ.DieterichStateLaw' href='#JuEQ.DieterichStateLaw'>#</a>
+<strong><code>JuEQ.DieterichStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<div>
+<div class="MathJax_Preview">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
+</div>
+<script type="math/tex; mode=display">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
+</script>
+</div>
+<p><a id='JuEQ.PrzStateLaw' href='#JuEQ.PrzStateLaw'>#</a>
+<strong><code>JuEQ.PrzStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<div>
+<div class="MathJax_Preview">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \left(\frac{V θ}{2L}\right)^2
+</div>
+<script type="math/tex; mode=display">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \left(\frac{V θ}{2L}\right)^2
+</script>
+</div>
+<p><a id='JuEQ.RForm' href='#JuEQ.RForm'>#</a>
+<strong><code>JuEQ.RForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Regularized form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
+<p><a id='JuEQ.RuinaStateLaw' href='#JuEQ.RuinaStateLaw'>#</a>
+<strong><code>JuEQ.RuinaStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<div>
+<div class="MathJax_Preview">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\left(\frac{V θ}{L}\right)}
+</div>
+<script type="math/tex; mode=display">
+\frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\left(\frac{V θ}{L}\right)}
+</script>
+</div>
+<p><a id='JuEQ.StateEvolutionLaw' href='#JuEQ.StateEvolutionLaw'>#</a>
+<strong><code>JuEQ.StateEvolutionLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p>Currently support:</p>
+<ul>
+<li><a href="./#JuEQ.DieterichStateLaw"><code>DieterichStateLaw</code></a></li>
+<li><a href="./#JuEQ.RuinaStateLaw"><code>RuinaStateLaw</code></a></li>
+<li><a href="./#JuEQ.PrzStateLaw"><code>PrzStateLaw</code></a></li>
+</ul>
+<p><a id='JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T' href='#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T'>#</a>
+<strong><code>JuEQ.friction</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">friction</span><span class="p">(</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="p">,</span> <span class="n">v</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">θ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">L</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">a</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">b</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">f0</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">v0</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="o">&lt;:</span><span class="kt">Number</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Calculate friction given by the form of fomula as well as other necessary parameters.</p>
+<ul>
+<li>Conventional Form:</li>
+</ul>
+<div>
+<div class="MathJax_Preview">
+f(V, θ) = f_0 + a \ln{\left(\frac{V}{V_0}\right)} + b \ln{\left(\frac{V_0 θ}{L}\right)}
+</div>
+<script type="math/tex; mode=display">
+f(V, θ) = f_0 + a \ln{\left(\frac{V}{V_0}\right)} + b \ln{\left(\frac{V_0 θ}{L}\right)}
+</script>
+</div>
+<ul>
+<li>Regularized Form:</li>
+</ul>
+<div>
+<div class="MathJax_Preview">
+f(V, θ) = a \sinh ^{-1}{\left(\frac{V}{2V_0} \exp{\left(\frac{f_0 + b \ln{\left(V_0 θ/L\right)}}{a}\right)}\right)}
+</div>
+<script type="math/tex; mode=display">
+f(V, θ) = a \sinh ^{-1}{\left(\frac{V}{2V_0} \exp{\left(\frac{f_0 + b \ln{\left(V_0 θ/L\right)}}{a}\right)}\right)}
+</script>
+</div>
+<p><a id='References-1'></a></p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Dieterich, J. (1979). Modeling of rock friction: 1. Experimental results and constitutive equations. Journal of Geophysical Research: Solid Earth, 84(B5), 2161–2168. <a href="https://doi.org/10.1029/JB084iB05p02161">https://doi.org/10.1029/JB084iB05p02161</a></p>
+<p>Ruina, A. (1983). Slip instability and state variable friction laws. Journal of Geophysical Research: Solid Earth, 88(B12), 10359–10370. <a href="https://doi.org/10.1029/JB088iB12p10359">https://doi.org/10.1029/JB088iB12p10359</a></p>
+<p>Rubin, A. M., &amp; Ampuero, J.-P. (2005). Earthquake nucleation on (aging) rate and state faults. Journal of Geophysical Research: Solid Earth, 110(B11). <a href="https://doi.org/10.1029/2005JB003686">https://doi.org/10.1029/2005JB003686</a></p>
                 
                   
                 
@@ -473,7 +631,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../acknowledge/" title="Acknowledge" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../interface_assemble/" title="Assemble" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -482,11 +640,25 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Acknowledge
+                Assemble
               </span>
             </div>
           </a>
         
+        
+          <a href="../interface_greensfun/" title="Greens Function" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Greens Function
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
