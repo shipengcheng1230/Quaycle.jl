@@ -31,6 +31,14 @@ ft = STRIKING()
 mesh = gen_mesh(Val(:RectOkada), 80., 10., 0.5, 0.5, 90.0)
 gf = okada_stress_gf_tensor(mesh, λ, μ, ft; buffer_ratio=1); nothing
 
+# !!! tip
+#     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
+#     to immitate *zero* dislocation at the ridge region.
+#     Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.
+
+#     Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of `bufferratio/2*fa[:x]`.
+#     Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.
+
 # Next, establish frictional and fault space parameters:
 a = ones(mesh.nx, mesh.nξ) .* 0.015
 b = ones(mesh.nx, mesh.nξ) .* 0.0115
@@ -69,14 +77,6 @@ vinit = vpl .* ones(mesh.nx, mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
 u0 = ArrayPartition(vinit, θ0)
 prob = assemble(mesh, gf, prop, u0, (0., 18.)); nothing
-
-# !!! tip
-#     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges
-#     to immitate *zero* dislocation at the ridge region.
-#     Basically, it affects how the stiffness tensor are periodically summed. To what extent it alters the results remains further testing.
-
-#     Under the hood, it shall impose buffer areas on both sides of along-strike, each of which has a length of `bufferratio/2*fa[:x]`.
-#     Thus, the stiffness contributions falling into those buffer zone shall be neglected, which is equivalent to impose zero-slip correspondingly.
 
 # Afterwards, solve ODEs problem:
 

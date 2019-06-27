@@ -5,7 +5,7 @@ We attribute one struct of all necessary properties for each type of simulation 
 ## Public Interface
 ```@docs
 SingleDofRSFProperty
-ElasticRSFProperty
+RateStateQuasiDynamicProperty
 DislocationCreepProperty
 DiffusionCreepProperty
 PeierlsProperty
