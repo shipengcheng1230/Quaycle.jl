@@ -610,6 +610,19 @@
 <li><code>pe::ElasticRSFProperty</code>: elastic rate-and-state system property</li>
 <li><code>pv::CompositePlasticDeformationProperty</code>: composite plastic deformation system property</li>
 </ul>
+<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T'>#</a>
+<strong><code>JuEQ.compose</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">ElasticRSFProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+</pre></div>
+</td></tr></table>
+
+<p>Create maxwell viscoelastic system given both elastic and plastic properties.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>pe::ElasticRSFProperty{T}</code>: elastic rate-and-state system property</li>
+<li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
+<li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
+</ul>
 <p><a id='JuEQ.composite_factor-Tuple{DislocationCreepProperty}' href='#JuEQ.composite_factor-Tuple{DislocationCreepProperty}'>#</a>
 <strong><code>JuEQ.composite_factor</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">composite_factor</span><span class="p">(</span><span class="n">pv</span><span class="o">::</span><span class="n">PlasticDeformationProperty</span><span class="p">)</span>
@@ -620,19 +633,6 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>pv::PlasticDeformationProperty</code>: plastic deformation system property</li>
-</ul>
-<p><a id='JuEQ.relaxation_property-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T' href='#JuEQ.relaxation_property-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T'>#</a>
-<strong><code>JuEQ.relaxation_property</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">relaxation_property</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">ElasticRSFProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
-</pre></div>
-</td></tr></table>
-
-<p>Create maxwell viscoelastic system property.</p>
-<p><strong>Arguments</strong></p>
-<ul>
-<li><code>pe::ElasticRSFProperty{T}</code>: elastic rate-and-state system property</li>
-<li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
-<li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
 </ul>
                 
                   

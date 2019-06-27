@@ -669,7 +669,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Create cache of structured <a href="@ref"><code>OkadaMesh</code></a> for VTK output, which handles the data mapping from structured data     to unstructured mesh. It's worth mention that currently <a href="https://github.com/jipolanco/WriteVTK.jl">WriteVTK</a>     cannot write inlined plane in 3D space. As a workround, it seeks transfering from Gmsh unstructured (transfinite)     mesh.</p>
+<p>Create cache of structured <a href="@ref"><code>OkadaMesh</code></a> for VTK output, which handles the data mapping from structured data     to unstructured mesh. It's worth mention that currently <a href="https://github.com/jipolanco/WriteVTK.jl">WriteVTK</a>     cannot write inclined plane in 3D space. As a workround, it seeks transfering from Gmsh unstructured (transfinite)     mesh.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>file::AbstractString</code>: mesh file containing fault mesh (transfinite)</li>
@@ -710,6 +710,24 @@
 <ul>
 <li><code>f</code>: mesh file name</li>
 <li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type.</li>
+</ul>
+<p><a id='JuEQ.DIPPING' href='#JuEQ.DIPPING'>#</a>
+<strong><code>JuEQ.DIPPING</code></strong> &mdash; <em>Type</em>.</p>
+<p>Dipping, indicate dislocation occurs at y-z plane in <a href="../interface_greensfun/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> use.</p>
+<p><a id='JuEQ.STRIKING' href='#JuEQ.STRIKING'>#</a>
+<strong><code>JuEQ.STRIKING</code></strong> &mdash; <em>Type</em>.</p>
+<p>Striking, indicate dislocation occurs at x-direction in <a href="../interface_greensfun/#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> use.</p>
+<p><a id='JuEQ.compose-Union{Tuple{N}, Tuple{JuEQ.AbstractMesh,JuEQ.SBarbotMeshEntity{N}}} where N' href='#JuEQ.compose-Union{Tuple{N}, Tuple{JuEQ.AbstractMesh,JuEQ.SBarbotMeshEntity{N}}} where N'>#</a>
+<strong><code>JuEQ.compose</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">me</span><span class="o">::</span><span class="n">AbstractMesh</span><span class="p">,</span> <span class="n">me</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">{</span><span class="n">N</span><span class="p">})</span>
+</pre></div>
+</td></tr></table>
+
+<p>Create a composite space consisting of both fault mesh and asthenosphere mesh.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>me::AbstractMesh</code>: fault mesh</li>
+<li><code>me::SBarbotMeshEntity{N}</code>: asthenosphere mesh</li>
 </ul>
 <p><a id='References-1'></a></p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>

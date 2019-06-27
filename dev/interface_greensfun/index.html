@@ -532,10 +532,12 @@
 <h1 id="greens-function">Green's Function<a class="headerlink" href="#greens-function" title="Permanent link">&para;</a></h1>
 <p>The interactions among fault patches, asthenosphere elements as well as   between fault and asthenosphere are computed via convolution of Green's   Function. Currently supported Green's Function:</p>
 <ul>
-<li>1D/2D elastic dislocation</li>
-<li>3D inelastic element of Hex8 or Tet4</li>
+<li>1D elastic line dislocation</li>
+<li>2D elastic rectangular dislocation</li>
+<li>3D inelastic strain in Hex8 or Tet4 elements</li>
 </ul>
 <p>Other types, such as 2D inelastic (plane stress or antiplane stress), curved dislocation, are WIP.</p>
+<p>Also notice that coordinate system in <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> is different from   <a href="./#JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R"><code>sbarbot_disp_hex8</code></a>, <a href="./#JuEQ.sbarbot_disp_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R}} where Q where U where R"><code>sbarbot_disp_tet4</code></a> or their auxiliary   stress/strain computing function.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
 <p><a id='JuEQ.cat_greensfun-Tuple{AbstractArray,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N}' href='#JuEQ.cat_greensfun-Tuple{AbstractArray,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N}'>#</a>
@@ -567,7 +569,7 @@
 <li><code>ma::SBarbotMeshEntity{3}</code>: mesh of asthenosphere</li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
-<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="@ref"><code>DIPPING()</code></a> or <a href="@ref"><code>STRIKING()</code></a></li>
+<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
 </ul>
 <p><strong>Output</strong></p>
 <p>The output is a tuple of 6 matrix, each corresponds <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>,     <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span></p>
@@ -580,10 +582,10 @@
 <p>Compute traction Green function in 1-D elastic fault in <a href="@ref"><code>LineOkadaMesh</code></a>.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>mesh::LineOkadaMesh</code>: the line mesh coupled with <a href="@ref"><code>dc3d</code></a></li>
+<li><code>mesh::LineOkadaMesh</code>: the line mesh coupled with <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a></li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
-<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="@ref"><code>DIPPING()</code></a> or <a href="@ref"><code>STRIKING()</code></a></li>
+<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
 </ul>
 <p><strong>KWARGS Arguments</strong></p>
 <ul>
@@ -600,10 +602,10 @@
 <p>Compute traction Green's function in 2-D elastic fault in <a href="@ref"><code>RectOkadaMesh</code></a>. Translational symmetry is considered.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>mesh::RectOkadaMesh</code>: the line mesh coupled with <a href="@ref"><code>dc3d</code></a></li>
+<li><code>mesh::RectOkadaMesh</code>: the line mesh coupled with <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a></li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
-<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="@ref"><code>DIPPING()</code></a> or <a href="@ref"><code>STRIKING()</code></a></li>
+<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
 </ul>
 <p><strong>KWARGS Arguments</strong></p>
 <ul>
@@ -626,7 +628,7 @@
 <li><code>mf::RectOkadaMesh</code>: fault mesh</li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
-<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="@ref"><code>DIPPING()</code></a> or <a href="@ref"><code>STRIKING()</code></a></li>
+<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
 <li><code>comp</code>: the strain component(s) to be considered. Either a singleton of <code>:xx</code>, <code>:xy</code>, <code>:xz</code>,   <code>:yy</code>, <code>:yz</code>, <code>:zz</code> or tuple of a few ones</li>
 </ul>
 <p><strong>Output</strong></p>
@@ -649,6 +651,143 @@
 </ul>
 <p><strong>Output</strong></p>
 <p>A tuple of <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> tuple of matrix, each tuple represents interaction from one strain to the stress components,     each of which is a matrix, within asthenosphere</p>
+<p><a id='JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number' href='#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A<:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T<:Number'>#</a>
+<strong><code>JuEQ.dc3d</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">dc3d</span><span class="p">(</span><span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">α</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dep</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">,</span>
+    <span class="n">al</span><span class="o">::</span><span class="kt">Union</span><span class="p">{</span><span class="n">A</span><span class="p">,</span> <span class="kt">SubArray</span><span class="p">},</span> <span class="n">aw</span><span class="o">::</span><span class="kt">Union</span><span class="p">{</span><span class="n">A</span><span class="p">,</span> <span class="kt">SubArray</span><span class="p">},</span> <span class="n">disl</span><span class="o">::</span><span class="n">A</span>
+    <span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span> <span class="o">&lt;:</span> <span class="kt">Number</span><span class="p">,</span> <span class="n">A</span> <span class="o">&lt;:</span> <span class="kt">AbstractVecOrMat</span><span class="p">{</span><span class="n">T</span><span class="p">}}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Calculate displacements and gradient of displacements due to a rectangular dislocation     in an elastic isotropic halfspace.</p>
+<p>Please see <a href="http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html">dc3d</a> for details.     Also this fault coordinate system is widely used in this package.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>x</code>, <code>y</code>, <code>z</code>: observational position</li>
+<li><code>α</code>: elastic constant</li>
+<li><code>dep</code>: depth of fault origin</li>
+<li><code>dip</code>: dip angle in degree</li>
+<li><code>al</code>: a vector of 2 numbers, indicating along strike (x-axis) spanning</li>
+<li><code>aw</code>: a vector of 2 numbers, indicating along downdip (y-z plane) spanning</li>
+<li><code>disl</code>: a vector of 3 numbers, indicating dislocation in along-strike,   along-downdip and tensile respectively.</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>A vector of 12 numbers, each is <span><span class="MathJax_Preview">u_{x}</span><script type="math/tex">u_{x}</script></span>, <span><span class="MathJax_Preview">u_{y}</span><script type="math/tex">u_{y}</script></span>, <span><span class="MathJax_Preview">u_{z}</span><script type="math/tex">u_{z}</script></span>, <span><span class="MathJax_Preview">u_{x,x}</span><script type="math/tex">u_{x,x}</script></span>,     <span><span class="MathJax_Preview">u_{y,x}</span><script type="math/tex">u_{y,x}</script></span>, <span><span class="MathJax_Preview">u_{z,x}</span><script type="math/tex">u_{z,x}</script></span>, <span><span class="MathJax_Preview">u_{x,y}</span><script type="math/tex">u_{x,y}</script></span>, <span><span class="MathJax_Preview">u_{y,y}</span><script type="math/tex">u_{y,y}</script></span>, <span><span class="MathJax_Preview">u_{z,y}</span><script type="math/tex">u_{z,y}</script></span>, <span><span class="MathJax_Preview">u_{x,z}</span><script type="math/tex">u_{x,z}</script></span>     <span><span class="MathJax_Preview">u_{y,z}</span><script type="math/tex">u_{y,z}</script></span>, <span><span class="MathJax_Preview">u_{z,z}</span><script type="math/tex">u_{z,z}</script></span>.</p>
+<p><a id='JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R' href='#JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R'>#</a>
+<strong><code>JuEQ.sbarbot_disp_hex8</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">sbarbot_disp_hex8</span><span class="p">(</span>
+    <span class="n">x1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">L</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">W</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">theta</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">epsv11p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv12p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv13p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv22p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv23p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv33p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">G</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="p">)</span> <span class="n">where</span> <span class="n">R</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute displacement arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position</li>
+<li><code>q1</code>, <code>q2</code>, <code>q3</code>: Hex8 element position</li>
+<li><code>L</code>, <code>T</code>, <code>W</code>: Hex8 element length, thickness and width</li>
+<li><code>theta</code>: strike angle</li>
+<li><code>epsv**</code>: strain components, each is <span><span class="MathJax_Preview">ϵ_{11}</span><script type="math/tex">ϵ_{11}</script></span>, <span><span class="MathJax_Preview">ϵ_{12}</span><script type="math/tex">ϵ_{12}</script></span>, <span><span class="MathJax_Preview">ϵ_{13}</span><script type="math/tex">ϵ_{13}</script></span>,   <span><span class="MathJax_Preview">ϵ_{22}</span><script type="math/tex">ϵ_{22}</script></span>, <span><span class="MathJax_Preview">ϵ_{23}</span><script type="math/tex">ϵ_{23}</script></span>, <span><span class="MathJax_Preview">ϵ_{33}</span><script type="math/tex">ϵ_{33}</script></span></li>
+<li><code>G</code>: shear modulus</li>
+<li><code>nu</code>: poisson ratio</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>A vector of 3 numbers, each represents <span><span class="MathJax_Preview">u_{1}</span><script type="math/tex">u_{1}</script></span>, <span><span class="MathJax_Preview">u_{2}</span><script type="math/tex">u_{2}</script></span>, <span><span class="MathJax_Preview">u_{3}</span><script type="math/tex">u_{3}</script></span></p>
+<p><strong>Notice</strong></p>
+<ul>
+<li>Inplace version: <code>sbarbot_disp_hex8!(u, args...)</code> where u is a vector of 3 numbers.</li>
+</ul>
+<p><a id='JuEQ.sbarbot_stress_hex8-Union{Tuple{R}, NTuple{18,R}} where R' href='#JuEQ.sbarbot_stress_hex8-Union{Tuple{R}, NTuple{18,R}} where R'>#</a>
+<strong><code>JuEQ.sbarbot_stress_hex8</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">sbarbot_stress_hex8</span><span class="p">(</span>
+    <span class="n">x1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">q3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">L</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">W</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">theta</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">epsv11p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv12p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv13p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv22p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv23p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">epsv33p</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="n">G</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">R</span><span class="p">,</span>
+    <span class="p">)</span> <span class="n">where</span> <span class="n">R</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute stress arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details.</p>
+<p><strong>Arguments</strong></p>
+<p>The same as <a href="./#JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R"><code>sbarbot_disp_hex8</code></a></p>
+<p><strong>Output</strong></p>
+<p>A vector of 6 numbers, each represents <span><span class="MathJax_Preview">σ_{11}</span><script type="math/tex">σ_{11}</script></span>, <span><span class="MathJax_Preview">σ_{12}</span><script type="math/tex">σ_{12}</script></span>, <span><span class="MathJax_Preview">σ_{13}</span><script type="math/tex">σ_{13}</script></span>,     <span><span class="MathJax_Preview">σ_{22}</span><script type="math/tex">σ_{22}</script></span>, <span><span class="MathJax_Preview">σ_{23}</span><script type="math/tex">σ_{23}</script></span>, <span><span class="MathJax_Preview">σ_{33}</span><script type="math/tex">σ_{33}</script></span></p>
+<p><strong>Notice</strong></p>
+<ul>
+<li>Inplace version: <code>sbarbot_stress_hex8!(u, args...)</code> where u is a vector of 6 numbers.</li>
+</ul>
+<p><a id='JuEQ.sbarbot_disp_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R}} where Q where U where R' href='#JuEQ.sbarbot_disp_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R}} where Q where U where R'>#</a>
+<strong><code>JuEQ.sbarbot_disp_tet4</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">sbarbot_disp_tet4</span><span class="p">(</span><span class="n">quadrature</span><span class="o">::</span><span class="n">Q</span><span class="p">,</span>
+    <span class="n">x1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">A</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">B</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">C</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">D</span><span class="o">::</span><span class="n">U</span><span class="p">,</span>
+    <span class="n">e11</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e12</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e13</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e22</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e23</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e33</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">R</span>
+    <span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">R</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Q</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute displacement arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>quadrature</code>: quadrature rule for integration, see   <a href="https://github.com/JuliaApproximation/FastGaussQuadrature.jl">FastGaussQuadrature.jl</a></li>
+<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position</li>
+<li><code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>: a list of 3 numbers for each, each of which represents   coordinates of the vertex</li>
+<li><code>epsv**</code>: strain components, each is <span><span class="MathJax_Preview">ϵ_{11}</span><script type="math/tex">ϵ_{11}</script></span>, <span><span class="MathJax_Preview">ϵ_{12}</span><script type="math/tex">ϵ_{12}</script></span>, <span><span class="MathJax_Preview">ϵ_{13}</span><script type="math/tex">ϵ_{13}</script></span>,   <span><span class="MathJax_Preview">ϵ_{22}</span><script type="math/tex">ϵ_{22}</script></span>, <span><span class="MathJax_Preview">ϵ_{23}</span><script type="math/tex">ϵ_{23}</script></span>, <span><span class="MathJax_Preview">ϵ_{33}</span><script type="math/tex">ϵ_{33}</script></span></li>
+<li><code>nu</code>: poisson ratio</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>A vector of 3 numbers, each represents <span><span class="MathJax_Preview">u_{1}</span><script type="math/tex">u_{1}</script></span>, <span><span class="MathJax_Preview">u_{2}</span><script type="math/tex">u_{2}</script></span>, <span><span class="MathJax_Preview">u_{3}</span><script type="math/tex">u_{3}</script></span></p>
+<p><strong>Notice</strong></p>
+<ul>
+<li>Inplace version: <code>sbarbot_disp_tet4!(u, args...)</code> where u is a vector of 3 numbers.</li>
+</ul>
+<p><a id='JuEQ.sbarbot_stress_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R,R}} where Q where U where R' href='#JuEQ.sbarbot_stress_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R,R}} where Q where U where R'>#</a>
+<strong><code>JuEQ.sbarbot_stress_tet4</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2
+3
+4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">sbarbot_stress_tet4</span><span class="p">(</span><span class="n">quadrature</span><span class="o">::</span><span class="n">Q</span><span class="p">,</span>
+    <span class="n">x1</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x2</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">x3</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">A</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">B</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">C</span><span class="o">::</span><span class="n">U</span><span class="p">,</span> <span class="n">D</span><span class="o">::</span><span class="n">U</span><span class="p">,</span>
+    <span class="n">e11</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e12</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e13</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e22</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e23</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">e33</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">G</span><span class="o">::</span><span class="n">R</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">R</span>
+    <span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">R</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Q</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute stress arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>quadrature</code>: quadrature rule for integration, see   <a href="https://github.com/JuliaApproximation/FastGaussQuadrature.jl">FastGaussQuadrature.jl</a></li>
+<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position</li>
+<li><code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>: a list of 3 numbers for each, each of which represents   coordinates of the vertex</li>
+<li><code>epsv**</code>: strain components, each is <span><span class="MathJax_Preview">ϵ_{11}</span><script type="math/tex">ϵ_{11}</script></span>, <span><span class="MathJax_Preview">ϵ_{12}</span><script type="math/tex">ϵ_{12}</script></span>, <span><span class="MathJax_Preview">ϵ_{13}</span><script type="math/tex">ϵ_{13}</script></span>,   <span><span class="MathJax_Preview">ϵ_{22}</span><script type="math/tex">ϵ_{22}</script></span>, <span><span class="MathJax_Preview">ϵ_{23}</span><script type="math/tex">ϵ_{23}</script></span>, <span><span class="MathJax_Preview">ϵ_{33}</span><script type="math/tex">ϵ_{33}</script></span></li>
+<li><code>G</code>: shear modulus</li>
+<li><code>nu</code>: poisson ratio</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>A vector of 6 numbers, each represents <span><span class="MathJax_Preview">σ_{11}</span><script type="math/tex">σ_{11}</script></span>, <span><span class="MathJax_Preview">σ_{12}</span><script type="math/tex">σ_{12}</script></span>, <span><span class="MathJax_Preview">σ_{13}</span><script type="math/tex">σ_{13}</script></span>,     <span><span class="MathJax_Preview">σ_{22}</span><script type="math/tex">σ_{22}</script></span>, <span><span class="MathJax_Preview">σ_{23}</span><script type="math/tex">σ_{23}</script></span>, <span><span class="MathJax_Preview">σ_{33}</span><script type="math/tex">σ_{33}</script></span></p>
+<p><strong>Notice</strong></p>
+<ul>
+<li>Inplace version: <code>sbarbot_stress_tet4!(u, args...)</code> where u is a vector of 6 numbers.</li>
+</ul>
 <p><a id='References-1'></a></p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <p>Okada, Y. (1992). Internal deformation due to shear and tensile faults in a half-space. Bulletin of the Seismological Society of America, 82(2), 1018–1040.</p>
