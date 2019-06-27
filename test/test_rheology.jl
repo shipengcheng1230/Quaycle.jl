@@ -4,7 +4,7 @@ using JuEQ: dϵ_dt
 @testset "Rheology property" begin
     p1 = DislocationCreepProperty([rand(5) for _ in 1: 10]...)
     p2 = DiffusionCreepProperty([rand(5) for _ in 1: 11]...)
-    pe = ElasticRSFProperty([rand(3, 3) for _ in 1: 4]..., rand(6)...)
+    pe = RateStateQuasiDynamicProperty([rand(3, 3) for _ in 1: 4]..., rand(4)...)
 
     pvm = compose(pe, rand(3), p1, p2)
     σ, τ = [rand(5) for _ in 1: 2]

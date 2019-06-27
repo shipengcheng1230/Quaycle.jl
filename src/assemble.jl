@@ -53,14 +53,14 @@ function assemble(p::SingleDofRSFProperty, u0::AbstractArray, tspan::NTuple;
 end
 
 ## inplace derivatives
-@inline function dμ_dvdθ!(::CForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+@inline function dμ_dvdθ!(::CForm, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         alloc.dμ_dθ[i] = p.σ[i] * p.b[i] / θ[i]
         alloc.dμ_dv[i] = p.σ[i] * p.a[i] / v[i]
     end
 end
 
-@inline function dμ_dvdθ!(::RForm, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+@inline function dμ_dvdθ!(::RForm, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
         ψ2 = p.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
@@ -69,14 +69,14 @@ end
     end
 end
 
-@inline function dvdθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::ElasticRSFProperty, alloc::TractionRateAllocation) where T
+@inline function dvdθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
     @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
         dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
         dv[i] = dv_dt(alloc.dτ_dt[i], alloc.dμ_dv[i], alloc.dμ_dθ[i], dθ[i], p.η)
     end
 end
 
-function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ElasticRSFProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
+function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
     v, θ = u.x # velocity, state
     dv, dθ = du.x
@@ -128,7 +128,7 @@ end
 
 """
     assemble(mf::AbstractMesh, gf::AbstractArray,
-        p::ElasticRSFProperty, u0::AbstractArray, tspan::NTuple{2};
+        p::RateStateQuasiDynamicProperty, u0::AbstractArray, tspan::NTuple{2};
         flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
 
 Assemble the `ODEProblem` for elastic fault.
@@ -136,7 +136,7 @@ Assemble the `ODEProblem` for elastic fault.
 ##  Extra Arguments
 - `mf::AbstractMesh`: fault mesh, currently only support [`OkadaMesh`](@ref)
 - `gf::AbstractArray`: green's function associated with `fs.mesh` and `p.λ` & `p.μ`
-- `p::ElasticRSFProperty`: all system properties
+- `p::RateStateQuasiDynamicProperty`: all system properties
 - `u0::ArrayPartition`: initial condition. By rule of order in this package:
     1. *velocity*
     2. *state*
@@ -147,7 +147,7 @@ Assemble the `ODEProblem` for elastic fault.
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(
-    mf::AbstractMesh, gf::AbstractArray, p::ElasticRSFProperty, u0::ArrayPartition, tspan::NTuple{2};
+    mf::AbstractMesh, gf::AbstractArray, p::RateStateQuasiDynamicProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
     alloc = gen_alloc(mf)

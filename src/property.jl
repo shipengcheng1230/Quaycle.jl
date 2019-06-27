@@ -1,5 +1,5 @@
-export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty,
-    DiffusionCreepProperty, PeierlsProperty,
+export SingleDofRSFProperty, RateStateQuasiDynamicProperty,
+    DislocationCreepProperty, DiffusionCreepProperty, PeierlsProperty,
     CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty,
     compose, composite_factor
 
@@ -55,20 +55,16 @@ System property for multiple fault patches under rate-state friction.
 - `b`: contrib from state
 - `L`: critical distance
 - `σ`: effective normal stress
-- `λ`: Lamé first constants
-- `μ`: Lamé second constants
 - `η`: radiation damping
 - `vpl`: plate rate
 - `f0` = 0.6: ref. frictional coeff
 - `v0` = 1e-6: ref. velocity
 """
-@with_kw struct ElasticRSFProperty{T<:Real, U<:AbstractVecOrMat} <: AbstractProperty
+@with_kw struct RateStateQuasiDynamicProperty{T<:Real, U<:AbstractVecOrMat} <: AbstractProperty
     a::U # contrib from velocity
     b::U # contrib from state
     L::U # critical distance
     σ::U # effective normal stress
-    λ::T # Lamé first constants
-    μ::T # Lamé second constants
     η::T # radiation damping
     vpl::T # plate rate
     f0::T = 0.6 # ref. frictional coeff
@@ -79,8 +75,6 @@ System property for multiple fault patches under rate-state friction.
     @assert size(L) == size(σ)
     @assert f0 > 0
     @assert v0 > 0
-    @assert λ > 0
-    @assert μ > 0
     @assert η > 0
     @assert vpl > 0
 end
@@ -179,14 +173,14 @@ struct PeierlsProperty <: PlasticDeformationProperty end
 Composite property for viscoelastic rheology of maxwell representation.
 
 # Fields
-- `pe::ElasticRSFProperty`: elastic rate-and-state system property
+- `pe::RateStateQuasiDynamicProperty`: elastic rate-and-state system property
 - `pv::CompositePlasticDeformationProperty`: composite plastic deformation system property
 """
 struct ViscoelasticMaxwellProperty{T1, T2} <: AbstractProperty
     pe::T1
     pv::T2
 
-    function ViscoelasticMaxwellProperty(pe::ElasticRSFProperty, pv::CompositePlasticDeformationProperty)
+    function ViscoelasticMaxwellProperty(pe::RateStateQuasiDynamicProperty, pv::CompositePlasticDeformationProperty)
         new{typeof(pe), typeof(pv)}(pe, pv)
     end
 end
@@ -204,16 +198,16 @@ composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂
 function composite_factor(pv::PeierlsProperty) end
 
 """
-    compose(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+    compose(pe::RateStateQuasiDynamicProperty{T}, dϵref, pvs...) where T
 
-Create maxwell viscoelastic system given both elastic and plastic properties.
+Create maxwell viscoelastic system given both rate-and-state and plastic properties.
 
 ## Arguments
-- `pe::ElasticRSFProperty{T}`: elastic rate-and-state system property
+- `pe::RateStateQuasiDynamicProperty{T}`: elastic rate-and-state system property
 - `dϵref`: reference strain rate whose length must equal strain components considered
 - `pvs...`: different type of plastic deformation system properties but no more than three
 """
-function compose(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs
@@ -230,7 +224,7 @@ end
 
 const prop_field_names = Dict(
     :SingleDofRSFProperty => ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0"),
-    :ElasticRSFProperty => ("a", "b", "L", "σ", "λ", "μ", "η", "vpl", "f0", "v0"),
+    :RateStateQuasiDynamicProperty => ("a", "b", "L", "σ", "η", "vpl", "f0", "v0"),
     :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),

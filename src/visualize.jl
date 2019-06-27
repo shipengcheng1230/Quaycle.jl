@@ -1,4 +1,5 @@
-export vtk_output, vtm_output
+## These functions are not fully tested, use with caution.
+export vtk_output, vtm_output, vti_output
 
 const gmshcelltype2vtkcelltype = Dict(
     1 => VTKCellTypes.VTK_LINE,
@@ -23,10 +24,11 @@ struct VTKUnStructuredCache{C, P} <: ParaviewOutputCache
     pts::P
 end
 
-# This works only for scalar data
+# This works only for scalar data, meaning `u` will be flattened
 _map_data(cache::VTKStructuredScalarConversionCache, u::AbstractArray) = map(i -> cache.dat[i] = u[cache.tagmap[cache.etag[i]]], cache.lidx)
+_map_data(cache::VTKStructuredScalarConversionCache, u::Number) = cache.dat .= u
 
-function _write_cell_data(vtkfile, u::AbstractVecOrMat, ustr, cache::VTKStructuredScalarConversionCache)
+function _write_cell_data(vtkfile, u, ustr, cache::VTKStructuredScalarConversionCache)
     _map_data(cache, u)
     vtk_cell_data(vtkfile, cache.dat, ustr)
 end
@@ -41,11 +43,11 @@ Write results to single-block VTK file.
 
 ## Arguments
 - `f`: output file name
-- `u::AbstractVector{<:AbstractArray}`, list of results to be written
+- `u::AbstractVector`, list of results to be written
 - `ustr::AbstractVector{<:AbstractString}`: list results names to be assigned
 - `cache`: cache of data conversion, cell information and nodes information
 """
-function vtk_output(f, u::AbstractVector{<:AbstractArray}, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
+function vtk_output(f, u::AbstractVector, ustr::AbstractVector{<:AbstractString}, cache::ParaviewOutputCache)
     vtk_grid(f, cache.pts, cache.cells) do vtk
         for (_u, _ustr) in zip(u, ustr)
             _write_cell_data(vtk, _u, _ustr, cache)
@@ -135,4 +137,28 @@ function vtm_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
             end
         end
     end
+end
+
+"""
+    vti_output(f, p::AbstractProperty, cache::ParaviewOutputCache)
+
+Store simulation property to VTK file. Name of *vti* is just an alias,
+    suggesting it acts as saving a VTK image file for those static properties,
+    whereas in fact the output is still an *.vtu*.
+
+## Arguments
+- `f`: output file name
+- `p`: property struct
+- `cache`: cache of data conversion, cell information and nodes information
+
+## Notice
+Not all `AbstractProperty` are supported. Only those with well defined `fieldnames`
+    are. For multi-block domain property, save them separately.
+"""
+vti_output(f, p::AbstractProperty, cache::ParaviewOutputCache) = vtk_output(f, _get_field_and_name(p)..., cache)
+
+function _get_field_and_name(p::AbstractProperty)
+    allname = collect(fieldnames(p))
+    allu = [getfield(p, Symbol(pn)) for pn in allname]
+    return allu, allname
 end
