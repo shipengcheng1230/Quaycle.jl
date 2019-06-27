@@ -1,7 +1,7 @@
 export SingleDofRSFProperty, ElasticRSFProperty, DislocationCreepProperty,
     DiffusionCreepProperty, PeierlsProperty,
     CompositePlasticDeformationProperty, ViscoelasticMaxwellProperty,
-    relaxation_property, composite_factor
+    compose, composite_factor
 
 ## Property interface
 import Base.fieldnames
@@ -204,16 +204,16 @@ composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂
 function composite_factor(pv::PeierlsProperty) end
 
 """
-    relaxation_property(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+    compose(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
 
-Create maxwell viscoelastic system property.
+Create maxwell viscoelastic system given both elastic and plastic properties.
 
 ## Arguments
 - `pe::ElasticRSFProperty{T}`: elastic rate-and-state system property
 - `dϵref`: reference strain rate whose length must equal strain components considered
 - `pvs...`: different type of plastic deformation system properties but no more than three
 """
-function relaxation_property(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
+function compose(pe::ElasticRSFProperty{T}, dϵref, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs

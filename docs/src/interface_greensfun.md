@@ -3,16 +3,22 @@
 The interactions among fault patches, asthenosphere elements as well as
   between fault and asthenosphere are computed via convolution of Green's
   Function. Currently supported Green's Function:
-- 1D/2D elastic dislocation
-- 3D inelastic element of Hex8 or Tet4
+- 1D elastic line dislocation
+- 2D elastic rectangular dislocation
+- 3D inelastic strain in Hex8 or Tet4 elements
 
 Other types, such as 2D inelastic (plane stress or antiplane stress), curved
 dislocation, are WIP.
 
+Also notice that coordinate system in [`dc3d`](@ref) is different from
+  [`sbarbot_disp_hex8`](@ref), [`sbarbot_disp_tet4`](@ref) or their auxiliary
+  stress/strain computing function.
+
 ## Public Interface
 ```@autodocs
 Modules = [JuEQ]
-Pages = ["gf.jl", "gf_okada.jl", "gf_sbarbot.jl", "gf_operator.jl"]
+Pages = ["gf.jl", "gf_okada.jl", "gf_sbarbot.jl", "gf_operator.jl",
+         "okada_dc3d.jl", "sbarbot_hex8.jl", "sbarbot_tet4.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]
 ```

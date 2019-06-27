@@ -351,7 +351,7 @@ end
 
 Create cache of structured [`OkadaMesh`](@ref) for VTK output, which handles the data mapping from structured data
     to unstructured mesh. It's worth mention that currently [WriteVTK](https://github.com/jipolanco/WriteVTK.jl)
-    cannot write inlined plane in 3D space. As a workround, it seeks transfering from Gmsh unstructured (transfinite)
+    cannot write inclined plane in 3D space. As a workround, it seeks transfering from Gmsh unstructured (transfinite)
     mesh.
 
 ## Arguments

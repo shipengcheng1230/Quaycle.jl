@@ -1,138 +1,155 @@
 # Author: Yoshimitsu Okada (https://www.researchgate.net/profile/Yoshimitsu_Okada)
 # Translated by Pengcheng Shi (shipengcheng1230@gmail.com)
 
+# An example wrapper for DC3D in julia as below:
+# function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, aw1::T, aw2::T,
+#     disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
+#
+#     # initial return values
+#     # `RefValue{T}` may be also viable other than `Array{T, 1}`
+#     ux = Array{Float64}(1)
+#     uy = Array{Float64}(1)
+#     uz = Array{Float64}(1)
+#     uxx = Array{Float64}(1)
+#     uyx = Array{Float64}(1)
+#     uzx = Array{Float64}(1)
+#     uxy = Array{Float64}(1)
+#     uyy = Array{Float64}(1)
+#     uzy = Array{Float64}(1)
+#     uxz = Array{Float64}(1)
+#     uyz = Array{Float64}(1)
+#     uzz = Array{Float64}(1)
+#     iret = Array{Int64}(1)
+#
+#     # call okada's code which is renamed as "__dc3d__" (see binding rename shown below)
+#     # input args tuple must be syntactically written instead of a variable assigned
+#     # macros could be used to simplify this in the future
+#     ccall((:__dc3d__, "dc3d.so"), Void,
+#         (
+#             Ref{Float64},
+#             Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
+#             Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
+#             Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
+#             Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
+#             Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
+#             Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
+#             Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
+#             Ref{Int64},
+#         ),
+#         α, x, y, z, dep, dip, al1, al2, aw1, aw2, disl1, disl2, disl3,
+#         ux, uy, uz, uxx, uyx, uzx, uxy, uyy, uzy, uxz, uyz, uzz,
+#         iret,
+#     )
+#
+#     # results valid iff iret[1] == 0
+#     return (
+#         iret[1],
+#         ux[1], uy[1], uz[1],
+#         uxx[1], uyx[1], uzx[1],
+#         uxy[1], uyy[1], uzy[1],
+#         uxz[1], uyz[1], uzz[1]
+#     )
+# end
+# ```
+#
+#
+# The corresponding fortran module is:
+# ```fortran
+# MODULE okada
+#   USE, INTRINSIC :: iso_c_binding
+#   IMPLICIT NONE
+# CONTAINS
+#
+#   SUBROUTINE dc3d_wrapper(&
+#        & alpha, &
+#        & x, y, z, &
+#        & depth, dip, &
+#        & al1, al2, &
+#        & aw1, aw2, &
+#        & disl1, disl2, disl3, &
+#        & ux, uy, uz, &
+#        & uxx, uyx, uzx, &
+#        & uxy, uyy, uzy, &
+#        & uxz, uyz, uzz, &
+#        & iret) BIND(C, NAME='__dc3d__')
+#
+#     REAL*8 :: &
+#          & alpha, &
+#          & x, y, z, &
+#          & depth, dip, &
+#          & al1, al2, &
+#          & aw1, aw2, &
+#          & disl1, disl2, disl3, &
+#          & ux, uy, uz, &
+#          & uxx, uyx, uzx, &
+#          & uxy, uyy, uzy, &
+#          & uxz, uyz, uzz
+#
+#     INTEGER*8 :: iret
+#
+#     CALL dc3d(&
+#          & alpha, &
+#          & x, y, z, &
+#          & depth, dip, &
+#          & al1, al2, &
+#          & aw1, aw2, &
+#          & disl1, disl2, disl3, &
+#          & ux, uy, uz, &
+#          & uxx, uyx, uzx, &
+#          & uxy, uyy, uzy, &
+#          & uxz, uyz, uzz, &
+#          & iret)
+#
+#   END SUBROUTINE dc3d_wrapper
+#
+# END MODULE okada
+# ```
+#
+#
+# A sample of makefile is as below:
+# ```make
+# # Build Okada's code for calculating deformation due to a fault model
+# #
+# CC = gfortran
+# CFLAGS = -fPIC -w -O3
+# LDFLAGS = -shared
+#
+# SRCS = dc3d.f okada.f90
+# OBJS = \$(SRCS:.c=.o)
+#
+# TARGET = dc3d.so
+#
+# \$(TARGET): \$(OBJS)
+#     \$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
+#
+
 export dc3d
 
 """
-Calculate displacements and gradient of displacements due to a dislocation in an elastic isotropic halfspace.
-See [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
+    dc3d(x::T, y::T, z::T, α::T, dep::T, dip::T,
+        al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A
+        ) where {T <: Number, A <: AbstractVecOrMat{T}}
 
+Calculate displacements and gradient of displacements due to a rectangular dislocation
+    in an elastic isotropic halfspace.
 
-*test/test_okada.dat* is obtained using [DC3dfortran](http://www.bosai.go.jp/study/application/dc3d/download/DC3Dfortran.txt)
+Please see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html) for details.
+    Also this fault coordinate system is widely used in this package.
 
+## Arguments
+- `x`, `y`, `z`: observational position
+- `α`: elastic constant
+- `dep`: depth of fault origin
+- `dip`: dip angle in degree
+- `al`: a vector of 2 numbers, indicating along strike (x-axis) spanning
+- `aw`: a vector of 2 numbers, indicating along downdip (y-z plane) spanning
+- `disl`: a vector of 3 numbers, indicating dislocation in along-strike,
+    along-downdip and tensile respectively.
 
-An example wrapper for DC3D in julia as below:
-```julia
-function dc3d_fortran(x::T, y::T, z::T, α::T, dep::T, dip::T, al1::T, al2::T, aw1::T, aw2::T,
-    disl1::T, disl2::T, disl3::T) where {T <: AbstractFloat}
-
-    # initial return values
-    # `RefValue{T}` may be also viable other than `Array{T, 1}`
-    ux = Array{Float64}(1)
-    uy = Array{Float64}(1)
-    uz = Array{Float64}(1)
-    uxx = Array{Float64}(1)
-    uyx = Array{Float64}(1)
-    uzx = Array{Float64}(1)
-    uxy = Array{Float64}(1)
-    uyy = Array{Float64}(1)
-    uzy = Array{Float64}(1)
-    uxz = Array{Float64}(1)
-    uyz = Array{Float64}(1)
-    uzz = Array{Float64}(1)
-    iret = Array{Int64}(1)
-
-    # call okada's code which is renamed as "__dc3d__" (see binding rename shown below)
-    # input args tuple must be syntactically written instead of a variable assigned
-    # macros could be used to simplify this in the future
-    ccall((:__dc3d__, "dc3d.so"), Void,
-        (
-            Ref{Float64},
-            Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
-            Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
-            Ref{Float64}, Ref{Float64}, Ref{Float64}, Ref{Float64},
-            Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
-            Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
-            Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
-            Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}}, Ptr{Array{Float64,1}},
-            Ref{Int64},
-        ),
-        α, x, y, z, dep, dip, al1, al2, aw1, aw2, disl1, disl2, disl3,
-        ux, uy, uz, uxx, uyx, uzx, uxy, uyy, uzy, uxz, uyz, uzz,
-        iret,
-    )
-
-    # results valid iff iret[1] == 0
-    return (
-        iret[1],
-        ux[1], uy[1], uz[1],
-        uxx[1], uyx[1], uzx[1],
-        uxy[1], uyy[1], uzy[1],
-        uxz[1], uyz[1], uzz[1]
-    )
-end
-```
-
-
-The corresponding fortran module is:
-```fortran
-MODULE okada
-  USE, INTRINSIC :: iso_c_binding
-  IMPLICIT NONE
-CONTAINS
-
-  SUBROUTINE dc3d_wrapper(&
-       & alpha, &
-       & x, y, z, &
-       & depth, dip, &
-       & al1, al2, &
-       & aw1, aw2, &
-       & disl1, disl2, disl3, &
-       & ux, uy, uz, &
-       & uxx, uyx, uzx, &
-       & uxy, uyy, uzy, &
-       & uxz, uyz, uzz, &
-       & iret) BIND(C, NAME='__dc3d__')
-
-    REAL*8 :: &
-         & alpha, &
-         & x, y, z, &
-         & depth, dip, &
-         & al1, al2, &
-         & aw1, aw2, &
-         & disl1, disl2, disl3, &
-         & ux, uy, uz, &
-         & uxx, uyx, uzx, &
-         & uxy, uyy, uzy, &
-         & uxz, uyz, uzz
-
-    INTEGER*8 :: iret
-
-    CALL dc3d(&
-         & alpha, &
-         & x, y, z, &
-         & depth, dip, &
-         & al1, al2, &
-         & aw1, aw2, &
-         & disl1, disl2, disl3, &
-         & ux, uy, uz, &
-         & uxx, uyx, uzx, &
-         & uxy, uyy, uzy, &
-         & uxz, uyz, uzz, &
-         & iret)
-
-  END SUBROUTINE dc3d_wrapper
-
-END MODULE okada
-```
-
-
-A sample of makefile is as below:
-```make
-# Build Okada's code for calculating deformation due to a fault model
-#
-CC = gfortran
-CFLAGS = -fPIC -w -O3
-LDFLAGS = -shared
-
-SRCS = dc3d.f okada.f90
-OBJS = \$(SRCS:.c=.o)
-
-TARGET = dc3d.so
-
-\$(TARGET): \$(OBJS)
-    \$(CC) \$(CFLAGS) \$(LDFLAGS) -o \$(TARGET) \$(OBJS)
-```
+## Output
+A vector of 12 numbers, each is ``u_{x}``, ``u_{y}``, ``u_{z}``, ``u_{x,x}``,
+    ``u_{y,x}``, ``u_{z,x}``, ``u_{x,y}``, ``u_{y,y}``, ``u_{z,y}``, ``u_{x,z}``
+    ``u_{y,z}``, ``u_{z,z}``.
 """
 function dc3d(x::T, y::T, z::T, α::T, dep::T, dip::T, al::Union{A, SubArray}, aw::Union{A, SubArray}, disl::A) where {T <: Number, A <: AbstractVecOrMat{T}}
 

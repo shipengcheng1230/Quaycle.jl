@@ -36,6 +36,34 @@ export sbarbot_disp_hex8, sbarbot_disp_hex8!
 export sbarbot_strain_hex8, sbarbot_strain_hex8!
 export sbarbot_stress_hex8, sbarbot_stress_hex8!
 
+@doc raw"""
+    sbarbot_disp_hex8(
+        x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
+        L::R, T::R, W::R, theta::R,
+        epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
+        G::R, nu::R,
+        ) where R
+
+Compute displacement arisen from inelastic strain in Hex8 elements.
+    Please see [original version](https://bitbucket.org/sbarbot/bssa-2016237/src/master/)
+    for complete details.
+
+## Arguments
+- `x1`, `x2`, `x3`: observational position
+- `q1`, `q2`, `q3`: Hex8 element position
+- `L`, `T`, `W`: Hex8 element length, thickness and width
+- `theta`: strike angle
+- `epsv**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
+    ``ϵ_{22}``, ``ϵ_{23}``, ``ϵ_{33}``
+- `G`: shear modulus
+- `nu`: poisson ratio
+
+## Output
+A vector of 3 numbers, each represents ``u_{1}``, ``u_{2}``, ``u_{3}``
+
+## Notice
+- Inplace version: `sbarbot_disp_hex8!(u, args...)` where u is a vector of 3 numbers.
+"""
 function sbarbot_disp_hex8(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
@@ -79,6 +107,28 @@ function sbarbot_stress_hex8!(σ::AbstractVector,
     return nothing
 end
 
+@doc raw"""
+    sbarbot_stress_hex8(
+        x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
+        L::R, T::R, W::R, theta::R,
+        epsv11p::R, epsv12p::R, epsv13p::R, epsv22p::R, epsv23p::R, epsv33p::R,
+        G::R, nu::R,
+        ) where R
+
+Compute stress arisen from inelastic strain in Hex8 elements.
+    Please see [original version](https://bitbucket.org/sbarbot/bssa-2016237/src/master/)
+    for complete details.
+
+## Arguments
+The same as [`sbarbot_disp_hex8`](@ref)
+
+## Output
+A vector of 6 numbers, each represents ``σ_{11}``, ``σ_{12}``, ``σ_{13}``,
+    ``σ_{22}``, ``σ_{23}``, ``σ_{33}``
+
+## Notice
+- Inplace version: `sbarbot_stress_hex8!(u, args...)` where u is a vector of 6 numbers.
+"""
 function sbarbot_stress_hex8(
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,
@@ -91,30 +141,6 @@ function sbarbot_stress_hex8(
     return σ
 end
 
-@doc raw"""
-## copyright:
-    https://bitbucket.org/sbarbot
-
-                      N (x1)
-                     /
-                    /| strike (theta)          E (x2)
-        q1,q2,q3 ->@--------------------------+
-                   |                        w |     +
-                   |                        i |    /
-                   |                        d |   / s
-                   |                        t |  / s
-                   |                        h | / e
-                   |                          |/ n
-                   +--------------------------+  k
-                   :       l e n g t h       /  c
-                   |                        /  i
-                   :                       /  h
-                   |                      /  t
-                   :                     /
-                   |                    +
-                   Z (x3)
-
-"""
 function sbarbot_disp_hex8!(u::AbstractVector{<:R},
     x1::R, x2::R, x3::R, q1::R, q2::R, q3::R,
     L::R, T::R, W::R, theta::R,

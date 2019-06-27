@@ -18,7 +18,7 @@ Users are encouraged to read [Gmsh Julia API](https://gitlab.onelab.info/gmsh/gm
 ## Public Interface
 ```@autodocs
 Modules = [JuEQ]
-Pages = ["mesh.jl", "gmshtools.jl"]
+Pages = ["mesh.jl", "gmshtools.jl", "space.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]
 ```
