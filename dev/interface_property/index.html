@@ -535,8 +535,8 @@
 <li><code>v0</code> = 1e-6: ref. velocity</li>
 </ul>
 <p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/7097799cf135ef8f060304adb44307fd2cb78382/base/#L0-L13' class='documenter-source'>source</a><br></p>
-<p><a id='JuEQ.ElasticRSFProperty' href='#JuEQ.ElasticRSFProperty'>#</a>
-<strong><code>JuEQ.ElasticRSFProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='JuEQ.RateStateQuasiDynamicProperty' href='#JuEQ.RateStateQuasiDynamicProperty'>#</a>
+<strong><code>JuEQ.RateStateQuasiDynamicProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>System property for multiple fault patches under rate-state friction.</p>
 <p><strong>Fields</strong></p>
 <ul>
@@ -544,14 +544,12 @@
 <li><code>b</code>: contrib from state</li>
 <li><code>L</code>: critical distance</li>
 <li><code>σ</code>: effective normal stress</li>
-<li><code>λ</code>: Lamé first constants</li>
-<li><code>μ</code>: Lamé second constants</li>
 <li><code>η</code>: radiation damping</li>
 <li><code>vpl</code>: plate rate</li>
 <li><code>f0</code> = 0.6: ref. frictional coeff</li>
 <li><code>v0</code> = 1e-6: ref. velocity</li>
 </ul>
-<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/7097799cf135ef8f060304adb44307fd2cb78382/base/#L0-L14' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/7097799cf135ef8f060304adb44307fd2cb78382/base/#L0-L12' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.DislocationCreepProperty' href='#JuEQ.DislocationCreepProperty'>#</a>
 <strong><code>JuEQ.DislocationCreepProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>System properties for plastic deformation of <em>dislocation creep</em>.     Please refer <a href="https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06">(Hirth &amp; Kohlstedt, 2003)</a>     for concrete units of each factor.</p>
@@ -607,19 +605,19 @@
 <p>Composite property for viscoelastic rheology of maxwell representation.</p>
 <p><strong>Fields</strong></p>
 <ul>
-<li><code>pe::ElasticRSFProperty</code>: elastic rate-and-state system property</li>
+<li><code>pe::RateStateQuasiDynamicProperty</code>: elastic rate-and-state system property</li>
 <li><code>pv::CompositePlasticDeformationProperty</code>: composite plastic deformation system property</li>
 </ul>
-<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{ElasticRSFProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T'>#</a>
+<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T'>#</a>
 <strong><code>JuEQ.compose</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">ElasticRSFProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
 </pre></div>
 </td></tr></table>
 
-<p>Create maxwell viscoelastic system given both elastic and plastic properties.</p>
+<p>Create maxwell viscoelastic system given both rate-and-state and plastic properties.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>pe::ElasticRSFProperty{T}</code>: elastic rate-and-state system property</li>
+<li><code>pe::RateStateQuasiDynamicProperty{T}</code>: elastic rate-and-state system property</li>
 <li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
 <li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
 </ul>

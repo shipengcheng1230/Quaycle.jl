@@ -517,24 +517,24 @@
                 <p><a id='Visualize-1'></a></p>
 <h1 id="visualize">Visualize<a class="headerlink" href="#visualize" title="Permanent link">&para;</a></h1>
 <p>This package provides some utilities for writing results to VTK (vts, vti, vtu, vtm, pvd, etc...)   file for postprocessing with <a href="https://www.paraview.org/">Paraview</a>. Data cache for   writing results are also implemented where users could explore other meshing tools.</p>
+<p>Notice that these function are not fully tested. If you encounter any problem,   please file an issue with your MWE.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.vtk_output-Tuple{Any,AbstractArray{#s36,1} where #s36<:AbstractArray,AbstractArray{#s35,1} where #s35<:AbstractString,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,AbstractArray{#s36,1} where #s36<:AbstractArray,AbstractArray{#s35,1} where #s35<:AbstractString,JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
-2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtk_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">u</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractVecOrMat</span><span class="p">},</span>
-    <span class="n">ustr</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractString</span><span class="p">},</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
+<p><a id='JuEQ.vti_output-Tuple{Any,JuEQ.AbstractProperty,JuEQ.ParaviewOutputCache}' href='#JuEQ.vti_output-Tuple{Any,JuEQ.AbstractProperty,JuEQ.ParaviewOutputCache}'>#</a>
+<strong><code>JuEQ.vti_output</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vti_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span><span class="p">,</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
 
-<p>Write results to single-block VTK file.</p>
+<p>Store simulation property to VTK file. Name of <em>vti</em> is just an alias,     suggesting it acts as saving a VTK image file for those static properties,     whereas in fact the output is still an <em>.vtu</em>.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>f</code>: output file name</li>
-<li><code>u::AbstractVector{&lt;:AbstractArray}</code>, list of results to be written</li>
-<li><code>ustr::AbstractVector{&lt;:AbstractString}</code>: list results names to be assigned</li>
+<li><code>p</code>: property struct</li>
 <li><code>cache</code>: cache of data conversion, cell information and nodes information</li>
 </ul>
+<p><strong>Notice</strong></p>
+<p>Not all <code>AbstractProperty</code> are supported. Only those with well defined <code>fieldnames</code>     are. For multi-block domain property, save them separately.</p>
 <p><a id='JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s35,1} where #s35<:AbstractArray,AbstractArray{#s34,1} where #s34<:AbstractString,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s35,1} where #s35<:AbstractArray,AbstractArray{#s34,1} where #s34<:AbstractString,JuEQ.ParaviewOutputCache}'>#</a>
 <strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
@@ -549,6 +549,22 @@
 <li><code>f</code>: output file name</li>
 <li><code>t::AbstractVector</code>: time stamp vector</li>
 <li><code>u::AbstractVector{&lt;:AbstractArray}</code>, list of results to be written</li>
+<li><code>ustr::AbstractVector{&lt;:AbstractString}</code>: list results names to be assigned</li>
+<li><code>cache</code>: cache of data conversion, cell information and nodes information</li>
+</ul>
+<p><a id='JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s37,1} where #s37<:AbstractString,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s37,1} where #s37<:AbstractString,JuEQ.ParaviewOutputCache}'>#</a>
+<strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtk_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">u</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractVecOrMat</span><span class="p">},</span>
+    <span class="n">ustr</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractString</span><span class="p">},</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Write results to single-block VTK file.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>f</code>: output file name</li>
+<li><code>u::AbstractVector</code>, list of results to be written</li>
 <li><code>ustr::AbstractVector{&lt;:AbstractString}</code>: list results names to be assigned</li>
 <li><code>cache</code>: cache of data conversion, cell information and nodes information</li>
 </ul>

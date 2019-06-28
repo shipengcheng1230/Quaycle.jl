@@ -534,12 +534,12 @@
 <p>Also, please checkout <a href="https://github.com/JuliaDiffEq/RecursiveArrayTools.jl">RecursiveArrayTools.jl</a> for usage of <code>ArrayPartition</code> which is adopted by default for multiple variables in this package.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.assemble-Tuple{JuEQ.AbstractMesh,AbstractArray,ElasticRSFProperty,ArrayPartition,Tuple{T,T} where T}' href='#JuEQ.assemble-Tuple{JuEQ.AbstractMesh,AbstractArray,ElasticRSFProperty,ArrayPartition,Tuple{T,T} where T}'>#</a>
+<p><a id='JuEQ.assemble-Tuple{JuEQ.AbstractMesh,AbstractArray,RateStateQuasiDynamicProperty,ArrayPartition,Tuple{T,T} where T}' href='#JuEQ.assemble-Tuple{JuEQ.AbstractMesh,AbstractArray,RateStateQuasiDynamicProperty,ArrayPartition,Tuple{T,T} where T}'>#</a>
 <strong><code>JuEQ.assemble</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2
 3</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">assemble</span><span class="p">(</span><span class="n">mf</span><span class="o">::</span><span class="n">AbstractMesh</span><span class="p">,</span> <span class="n">gf</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span>
-    <span class="n">p</span><span class="o">::</span><span class="n">ElasticRSFProperty</span><span class="p">,</span> <span class="n">u0</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span> <span class="n">tspan</span><span class="o">::</span><span class="kt">NTuple</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
+    <span class="n">p</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">,</span> <span class="n">u0</span><span class="o">::</span><span class="kt">AbstractArray</span><span class="p">,</span> <span class="n">tspan</span><span class="o">::</span><span class="kt">NTuple</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
     <span class="n">flf</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="o">=</span><span class="n">RForm</span><span class="p">(),</span> <span class="n">se</span><span class="o">::</span><span class="n">StateEvolutionLaw</span><span class="o">=</span><span class="n">DieterichStateLaw</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -549,7 +549,7 @@
 <ul>
 <li><code>mf::AbstractMesh</code>: fault mesh, currently only support <a href="@ref"><code>OkadaMesh</code></a></li>
 <li><code>gf::AbstractArray</code>: green's function associated with <code>fs.mesh</code> and <code>p.λ</code> &amp; <code>p.μ</code></li>
-<li><code>p::ElasticRSFProperty</code>: all system properties</li>
+<li><code>p::RateStateQuasiDynamicProperty</code>: all system properties</li>
 <li>
 <p><code>u0::ArrayPartition</code>: initial condition. By rule of order in this package:</p>
 <ol>

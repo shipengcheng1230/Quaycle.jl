@@ -52,7 +52,7 @@ a[H .< -mesh.z .< H + h] .= a0 .+ (amax - a0) / (h / Δz) * collect(1: Int(h / �
 b = b0 .* ones(mesh.nξ)
 L = L0 .* ones(mesh.nξ)
 σ = σ0 .* ones(mesh.nξ)
-prop = ElasticRSFProperty(a=a, b=b, L=L, σ=σ, λ=λ, μ=μ, vpl=vpl, f0=f0, v0=v0, η=η); nothing
+prop = RateStateQuasiDynamicProperty(a=a, b=b, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η); nothing
 
 # Next, construct the initial condition and ODE problem using Okada's Green's function.
 τ0 = σ0 * amax * asinh(vinit / 2v0 * exp((f0 + b0 * log(v0 / vinit)) / amax)) + η * vinit
