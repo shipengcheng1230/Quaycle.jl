@@ -12,16 +12,17 @@ abstract type ParaviewOutputCache end
 
 struct VTKStructuredScalarConversionCache{D, V, A, C, P, L} <: ParaviewOutputCache
     tagmap::D
-    etag::V
+    tag::V
     dat::A
     cells::C
     pts::P
     lidx::L
 end
 
-struct VTKUnStructuredCache{C, P} <: ParaviewOutputCache
+struct VTKUnStructuredCache{C, P, V} <: ParaviewOutputCache
     cells::C
     pts::P
+    tag::V
 end
 
 # This works only for scalar data, meaning `u` will be flattened

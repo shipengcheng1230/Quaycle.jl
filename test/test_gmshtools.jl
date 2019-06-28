@@ -1,8 +1,10 @@
 using Test
 using GmshTools
 using LinearAlgebra
-using JuEQ: indice2tag
-
+using JuEQ: indice2tag, geo_okada_rect, geo_box_extruded_from_surfaceXY,
+    _get_all_elements_in_physical_group, _get_entity_tags_in_physical_group,
+    _get_centers, _get_num_element_node
+    
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
     gen_gmsh_mesh(Val(:LineOkada), 100.0, 20.0, 45.0; filename=filename)
@@ -122,21 +124,82 @@ end
     rm(fname)
 end
 
+@testset "multiple entities within one physical group" begin
+    filename = tempname() * ".msh"
+    mf1 = gen_mesh(Val(:RectOkada), 80.0e3, 10.0e3, 5e3, 5e3, 90.0)
+    mf2 = gen_mesh(Val(:RectOkada), 80.0e3, 10.0e3, 5e3, 5e3, 30.0)
+    rfzn = ones(5)
+    rfzh = accumulate((x, y) -> x * y, fill(1.0, length(rfzn))) |> cumsum |> x -> normalize(x, Inf)
+    llx1, lly1, llz1 =  -50.0e3, -10.0e3, -10.0e3
+    llx2, lly2, llz2 =  -50.0e3, -10.0e3, -50.0e3
+    dx, dy, dz = 100.0e3, 20.0e3, 10e3
+    rfx, rfy = 1.0, 1.0
+    nx, ny = 25, 10
+    faulttag = (100, "fault")
+    asthenospheretag = (999, "asthenosphere")
+
+    @gmsh_do begin
+        x, ξ = mf1.nx * mf1.Δx,  mf1.nξ * mf1.Δξ
+        _reg1 = geo_okada_rect(x, ξ * cosd(mf1.dip), ξ * sind(mf1.dip), mf1.nx, mf1.nξ, 1)
+        x, ξ = mf2.nx * mf2.Δx,  mf2.nξ * mf2.Δξ
+        _reg2 = geo_okada_rect(x, ξ * cosd(mf2.dip), ξ * sind(mf2.dip), mf2.nx, mf2.nξ, _reg1)
+        gmsh.model.addPhysicalGroup(2, [_reg1-1, _reg2-1], faulttag[1])
+        gmsh.model.setPhysicalName(2, faulttag...)
+        _reg3 = geo_box_extruded_from_surfaceXY(llx1, lly1, llz1, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg2)
+        volumetag1 = _reg3[findfirst(x -> x[1] == 3, _reg3)][2]
+        _reg4 = maximum([x[2] for x in _reg3]) + 1
+        _reg5 = geo_box_extruded_from_surfaceXY(llx2, lly2, llz2, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg4)
+        volumetag2 = _reg5[findfirst(x -> x[1] == 3, _reg5)][2]
+        gmsh.model.addPhysicalGroup(3, [volumetag1, volumetag2], asthenospheretag[1])
+        gmsh.model.setPhysicalName(3, asthenospheretag...)
+        @addOption begin
+            "Mesh.SaveAll", 1 # the mesh is incorrect without this
+        end
+        gmsh.model.geo.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(filename)
+    end
+
+    e1 = _get_all_elements_in_physical_group(filename, 2, faulttag[1])
+    entag1=  _get_entity_tags_in_physical_group(filename, 2, faulttag[1])
+    c1 = _get_centers(filename, e1[1][1], entag1)
+    nnode1 = _get_num_element_node(e1[1][1])
+
+    e2 = _get_all_elements_in_physical_group(filename, 3, asthenospheretag[1])
+    entag2=  _get_entity_tags_in_physical_group(filename, 3, asthenospheretag[1])
+    c2 = _get_centers(filename, e2[1][1], entag2)
+    nnode2 = _get_num_element_node(e2[1][1])
+
+    @test length(e1[2][1]) == mf1.nx * mf1.nξ + mf2.nx * mf2.nξ
+    @test length(e1[3][1]) == length(e1[2][1]) * nnode1
+    @test length(c1) == length(e1[2][1]) * 3
+
+    @test length(e2[2][1]) == nx * ny * length(rfzn) * 2
+    @test length(e2[3][1]) == length(e2[2][1]) * nnode2
+    @test length(c2) == length(e2[2][1]) * 3
+
+    rm(filename)
+end
+
 @testset "paraview cache" begin
     tmp = tempname() * ".msh"
 
     mf = gen_mesh(Val(:LineOkada), 80.0e3, 1e3, 45.0)
     gen_gmsh_mesh(mf; filename=tmp)
-    vcache = gmsh_vtk_output_cache(tmp, mf, 1)
+    vcache = gmsh_vtk_output_cache(tmp, mf, -1)
     @test vcache.dat |> length == mf.nξ
+    @test vcache.tag |> length == mf.nξ
 
     mf = gen_mesh(Val(:RectOkada), 80.0e3, 10.0e3, 1e3, 1e3, 30.0)
     gen_gmsh_mesh(mf; filename=tmp)
-    vcache = gmsh_vtk_output_cache(tmp, mf, 1)
+    vcache = gmsh_vtk_output_cache(tmp, mf, -1)
     @test vcache.dat |> length == mf.nx * mf.nξ
+    @test size(vcache.pts, 2) == (mf.nx + 1) * (mf.nξ + 1)
 
-    vcache = gmsh_vtk_output_cache(tmp, 2, 1)
+    vcache = gmsh_vtk_output_cache(tmp, 2, -1)
     @test vcache.cells |> length == mf.nx * mf.nξ
+    @test size(vcache.pts, 2) == (mf.nx + 1) * (mf.nξ + 1)
+    @test vcache.tag |> length == mf.nx * mf.nξ
 
     rm(tmp)
 end

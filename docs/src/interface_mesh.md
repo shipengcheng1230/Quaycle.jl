@@ -4,8 +4,11 @@ This package provides some buildin structured mesh functionality and some
   data structures coupled with existing Green's functions where users could
   explore external mesh tools.
 
-This package also provide rich utilities based on [Gmsh](http://gmsh.info/).
-  To use them,
+This package also has rich utilities based on [Gmsh](http://gmsh.info/).
+  To use them, it is recommended to install
+  [GmshTools.jl](https://github.com/shipengcheng1230/GmshTools.jl) which
+  automatically downloads Gmsh SDK and provides a few convenient macros.
+
 
 ```julia
 pkg> add GmshTools

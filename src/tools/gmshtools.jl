@@ -217,20 +217,70 @@ end
 tag2linearindice(tags::AbstractVecOrMat) = Dict(tags[k] => k for k in 1: length(tags))
 
 ## mesh IO
-macro check_and_get_mesh_entity(ecode)
-    esc(quote
+function _get_num_element_node(etype)
+    @gmsh_do begin
+        gmsh.model.mesh.getElementProperties(etype)[4]
+    end
+end
+
+function _get_nodes(f)
+    @gmsh_open f begin
         nodes = gmsh.model.mesh.getNodes()
         @assert nodes[1][1] == 1 && nodes[1][end] == length(nodes[1]) "Number of nodes tags are not continuous."
-        volumetag = phytag ≥ 0 ? gmsh.model.getEntitiesForPhysicalGroup(3, phytag) : phytag
-        @assert length(volumetag) == 1 "Multiple entities associated with physical group $(phytag), please distinguish them!"
-        es = gmsh.model.mesh.getElements(3, volumetag[1])
-        @assert length(es[1]) == 1 "Got more than one element type."
-        etag = es[2][1]
-        numelements = length(etag)
-        etype = es[1][1]
-        @assert etype == $(ecode) "Got element type $(gmsh.model.mesh.getElementProperties(etype)[1]), should be $(gmsh.model.mesh.getElementProperties($(ecode))[1])."
-        numnodes = gmsh.model.mesh.getElementProperties(etype)[4]
-        centers = gmsh.model.mesh.getBarycenters(es[1][1], volumetag[1], 0, 1)
+        return nodes
+    end
+end
+
+function _get_centers(f, etype, entag::Number)
+    @gmsh_open f begin
+        gmsh.model.mesh.getBarycenters(etype, entag, 0, 1)
+    end
+end
+
+_get_centers(f, etype, entags::AbstractVector) = mapreduce(x -> _get_centers(f, etype, x), vcat, entags)
+
+function _get_all_elements_in_physical_group(f, pdim::I, ptag::I) where I
+    @gmsh_open f begin
+        entag = ptag > 0 ? gmsh.model.getEntitiesForPhysicalGroup(pdim, ptag) : ptag
+        isa(entag, I) && return gmsh.model.mesh.getElements(pdim, entag)
+        @assert length(entag) ≥ 1 "No entity found on physical group $(ptag) of dimension $(pdim)."
+        es = gmsh.model.mesh.getElements(pdim, entag[1])
+        etype = deepcopy(es[1])
+        etags = deepcopy(es[2])
+        econn = deepcopy(es[3])
+        for i ∈ 2: length(entag)
+            _es = gmsh.model.mesh.getElements(pdim, entag[i])
+            append!(etype, _es[1])
+            foreach(append!, etags, _es[2])
+            foreach(append!, econn, _es[3])
+        end
+        return etype, etags, econn
+    end
+end
+
+function _check_element_type(given::Integer, target::Integer)
+    @gmsh_do begin
+        @assert given == target "Got element type $(gmsh.model.mesh.getElementProperties(given)[1]), should be $(gmsh.model.mesh.getElementProperties(target)[1])."
+    end
+end
+
+function _get_entity_tags_in_physical_group(f, pdim::I, ptag::I) where I
+    ptag < 0 ? ptag :
+        @gmsh_open f begin
+            gmsh.model.getEntitiesForPhysicalGroup(pdim, ptag)
+        end
+end
+
+macro _check_and_get_for_sbarbot_mesh(ecode)
+    esc(quote
+        nodes = _get_nodes(f)
+        es = _get_all_elements_in_physical_group(f, 3, phytag)
+        @assert length(unique(es[1])) == 1 "More than one element type found."
+        _check_element_type(es[1][1], $(ecode))
+        numelements = length(es[2][1])
+        numnodes = _get_num_element_node(es[1][1])
+        entag = _get_entity_tags_in_physical_group(f, 3, phytag)
+        centers = _get_centers(f, es[1][1], entag)
         x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     end)
 end
@@ -258,36 +308,34 @@ Read the mesh and construct mesh entity infomation for SBarbot Hex8 Green's func
     look on the node ordering for one element to ensure the x-, y-extent are correctly resolved by change `reverse` accordingly.
 """
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
-    @gmsh_open f begin
-        @check_and_get_mesh_entity(5)
-        q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
-        @inbounds @fastmath @simd for i in 1: numelements
-            ntag1 = es[3][1][numnodes*i-numnodes+1]
-            ntag2 = es[3][1][numnodes*i-numnodes+2]
-            ntag4 = es[3][1][numnodes*i-numnodes+4]
-            ntag5 = es[3][1][numnodes*i-numnodes+5]
-            reverse && begin ntag2, ntag4 = ntag4, ntag2 end
-            p1x, p1y, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1-1], nodes[2][3*ntag1]
-            p2x, p2y = nodes[2][3*ntag2-2], nodes[2][3*ntag2-1]
-            p4x, p4y = nodes[2][3*ntag4-2], nodes[2][3*ntag4-1]
-            p5z = nodes[2][3*ntag5]
-            T[i] = hypot(p1x - p4x, p1y - p4y)
-            W[i] = abs(p1z - p5z)
-            L[i] = hypot(p1x - p2x, p1y - p2y)
-            q1[i] = x1[i] - L[i] / 2 * cosd(rotate)
-            q2[i] = x2[i] - L[i] / 2 * sind(rotate)
-            q3[i] = x3[i] - W[i] / 2
-        end
-        if check
-            f = x -> round(x; digits=3)
-            if rotate ≈ 0
-                @assert unique(f, x1) |> length == unique(f, q1) |> length "Unmatched `q1` and `x1`, please reset keyword `reverse` to opposite."
-            elseif rotate ≈ 90
-                @assert unique(f, x2) |> length == unique(f, q2) |> length "Unmatched `q2` and `x2`, please reset keyword `reverse` to opposite."
-            end
-        end
-        SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, rotate, etag)
+    @_check_and_get_for_sbarbot_mesh(5)
+    q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
+    @inbounds @fastmath @simd for i in 1: numelements
+        ntag1 = es[3][1][numnodes*i-numnodes+1]
+        ntag2 = es[3][1][numnodes*i-numnodes+2]
+        ntag4 = es[3][1][numnodes*i-numnodes+4]
+        ntag5 = es[3][1][numnodes*i-numnodes+5]
+        reverse && begin ntag2, ntag4 = ntag4, ntag2 end
+        p1x, p1y, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1-1], nodes[2][3*ntag1]
+        p2x, p2y = nodes[2][3*ntag2-2], nodes[2][3*ntag2-1]
+        p4x, p4y = nodes[2][3*ntag4-2], nodes[2][3*ntag4-1]
+        p5z = nodes[2][3*ntag5]
+        T[i] = hypot(p1x - p4x, p1y - p4y)
+        W[i] = abs(p1z - p5z)
+        L[i] = hypot(p1x - p2x, p1y - p2y)
+        q1[i] = x1[i] - L[i] / 2 * cosd(rotate)
+        q2[i] = x2[i] - L[i] / 2 * sind(rotate)
+        q3[i] = x3[i] - W[i] / 2
     end
+    if check
+        f = x -> round(x; digits=3)
+        if rotate ≈ 0
+            @assert unique(f, x1) |> length == unique(f, q1) |> length "Unmatched `q1` and `x1`, please reset keyword `reverse` to opposite."
+        elseif rotate ≈ 90
+            @assert unique(f, x2) |> length == unique(f, q2) |> length "Unmatched `q2` and `x2`, please reset keyword `reverse` to opposite."
+        end
+    end
+    SBarbotHex8MeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, rotate, es[2][1])
 end
 
 """
@@ -301,49 +349,38 @@ Read the mesh and construct mesh entity infomation for SBarbot Tet4 Green's func
     this case, your mesh must contain only one element type.
 """
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
-    @gmsh_open f begin
-        @check_and_get_mesh_entity(4)
-        A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
-        @inbounds @fastmath @simd for i in 1: numelements
-            ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
-            A[i][1] = nodes[2][3*ta-1]
-            A[i][2] = nodes[2][3*ta-2]
-            A[i][3] = -nodes[2][3*ta]
-            B[i][1] = nodes[2][3*tb-1]
-            B[i][2] = nodes[2][3*tb-2]
-            B[i][3] = -nodes[2][3*tb]
-            C[i][1] = nodes[2][3*tc-1]
-            C[i][2] = nodes[2][3*tc-2]
-            C[i][3] = -nodes[2][3*tc]
-            D[i][1] = nodes[2][3*td-1]
-            D[i][2] = nodes[2][3*td-2]
-            D[i][3] = -nodes[2][3*td]
-        end
-        SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, etag)
+    @_check_and_get_for_sbarbot_mesh(4)
+    A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
+    @inbounds @fastmath @simd for i in 1: numelements
+        ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
+        A[i][1] = nodes[2][3*ta-1]
+        A[i][2] = nodes[2][3*ta-2]
+        A[i][3] = -nodes[2][3*ta]
+        B[i][1] = nodes[2][3*tb-1]
+        B[i][2] = nodes[2][3*tb-2]
+        B[i][3] = -nodes[2][3*tb]
+        C[i][1] = nodes[2][3*tc-1]
+        C[i][2] = nodes[2][3*tc-2]
+        C[i][3] = -nodes[2][3*tc]
+        D[i][1] = nodes[2][3*td-1]
+        D[i][2] = nodes[2][3*td-2]
+        D[i][3] = -nodes[2][3*td]
     end
+    SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, es[2][1])
 end
 
 ## paraview
 function gmsh_write_vtk_cache(file, phydim, phytag)
-    @gmsh_open file begin
-        nodes = gmsh.model.mesh.getNodes()
-        pts = reshape(nodes[2], 3, :)
-        if length(gmsh.model.getPhysicalGroups()) == 0 # no physical group assigned
-            entag = -1
-        else
-            entag = gmsh.model.getEntitiesForPhysicalGroup(phydim, phytag)
-            @assert length(entag) == 1 "Multiple entities associated with physical group $(phytag), please distinguish them!"
-        end
-        es = gmsh.model.mesh.getElements(phydim, entag[1])
-        @assert length(es[1][1]) == 1 "More than one type of elements found!"
-        etag = es[2][1]
-        celltype = gmshcelltype2vtkcelltype[es[1][1]]
-        nnode = gmsh.model.mesh.getElementProperties(es[1][1])[4]
-        nume = length(es[2][1])
-        conn = reshape(es[3][1], Int(nnode), :)
-        cells = [MeshCell(celltype, view(conn, :, i)) for i in 1: nume]
-        return (pts, cells, etag)
-    end
+    nodes = _get_nodes(file)
+    es = _get_all_elements_in_physical_group(file, phydim, phytag)
+    @assert length(unique(es[1])) == 1 "More than one element type found."
+    nnode = _get_num_element_node(es[1][1])
+    etag = es[2][1]
+    celltype = gmshcelltype2vtkcelltype[es[1][1]]
+    nume = length(es[2][1])
+    conn = reshape(es[3][1], Int(nnode), :)
+    cells = [MeshCell(celltype, view(conn, :, i)) for i in 1: nume]
+    return (reshape(nodes[2], 3, :), cells, etag)
 end
 
 """
@@ -385,6 +422,6 @@ Create cache of unstructured mesh for VTK output.
     create VTK output caches for each physical group.
 """
 function gmsh_vtk_output_cache(file::AbstractString, phydim::I, phytag::I) where I<:Integer
-    pts, cells, _ = gmsh_write_vtk_cache(file, phydim, phytag)
-    VTKUnStructuredCache(cells, pts)
+    pts, cells, etag = gmsh_write_vtk_cache(file, phydim, phytag)
+    VTKUnStructuredCache(cells, pts, etag)
 end
