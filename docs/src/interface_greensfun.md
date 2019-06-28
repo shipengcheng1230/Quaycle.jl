@@ -17,7 +17,7 @@ Also notice that coordinate system in [`dc3d`](@ref) is different from
 ## Public Interface
 ```@autodocs
 Modules = [JuEQ]
-Pages = ["gf.jl", "gf_okada.jl", "gf_sbarbot.jl", "gf_operator.jl",
+Pages = ["gf.jl", "gf_dislocation.jl", "gf_strain.jl", "gf_operator.jl",
          "okada_dc3d.jl", "sbarbot_hex8.jl", "sbarbot_tet4.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]
