@@ -29,7 +29,7 @@ f0 = 0.6;
 
 ft = STRIKING()
 mesh = gen_mesh(Val(:RectOkada), 80., 10., 0.5, 0.5, 90.0)
-gf = okada_stress_gf_tensor(mesh, λ, μ, ft; buffer_ratio=1); nothing
+gf = stress_greens_func(mesh, λ, μ, ft; buffer_ratio=1); nothing
 
 # !!! tip
 #     It is recommended (from Yajing Liu's personal communication) to add buffer zones adjacent the horizontal edges

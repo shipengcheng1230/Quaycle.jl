@@ -43,7 +43,7 @@ ft = STRIKING()
 mesh = gen_mesh(Val(:LineOkada), 40.0, Δz, 90.0); nothing
 
 # Computing the Green's function for this setting.
-gf = okada_stress_gf_tensor(mesh, λ, μ, ft); nothing
+gf = stress_greens_func(mesh, λ, μ, ft); nothing
 
 # Then, provide the material properties w.r.t. our 'fault space'.
 a = a0 .* ones(mesh.nξ)
