@@ -39,7 +39,7 @@ end
 
     function test_okada2sbarbot_stress(ft)
         ud = unit_dislocation(ft)
-        st = okada_stress_gf_tensor(mf, ma, λ, μ, ft; nrept=0, buffer_ratio=0)
+        st = stress_greens_func(mf, ma, λ, μ, ft; nrept=0, buffer_ratio=0)
         indexST = Base.OneTo(6)
         for _ in 1: 5 # random check 5 position
             i, j, k = rand(1: mf.nx), rand(1: mf.nξ), rand(1: length(ma.tag))
@@ -50,7 +50,7 @@ end
     end
 
     function test_sbarbot2okada_traction(ft)
-        st = sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, allcomp)
+        st = stress_greens_func(ma, mf, λ, μ, ft, allcomp)
         for (ic, _st) in enumerate(st)
             uϵ = unit_strain(Val(allcomp[ic]))
             for _ in 1: 5 # random check 5 position
@@ -63,7 +63,7 @@ end
     end
 
     function test_sbarbot_self_stress()
-        st = sbarbot_stress_gf_tensor(ma, λ, μ, allcomp)
+        st = stress_greens_func(ma, λ, μ, allcomp)
         indexST = Base.OneTo(6)
         for (ic, _st) in enumerate(st)
             uϵ = unit_strain(Val(allcomp[ic]))
@@ -133,8 +133,8 @@ end
     ft = rand([DIPPING(), STRIKING()])
     λ, μ = 1.0, 1.0
 
-    st_hex = sbarbot_stress_gf_tensor(mc1, mf, λ, μ, ft, comp)
-    st_tet = sbarbot_stress_gf_tensor(mc2, mf, λ, μ, ft, comp; quadrature=quadrature)
+    st_hex = stress_greens_func(mc1, mf, λ, μ, ft, comp)
+    st_tet = stress_greens_func(mc2, mf, λ, μ, ft, comp; quadrature=quadrature)
 
     ϵ1 = ones(length(mc1.tag))
     σ1 = st_hex * ϵ1
@@ -158,11 +158,11 @@ end
     ft = rand([DIPPING(), STRIKING()])
     comp = (:xx, :xy, :xz, :yy, :yz, :zz)
 
-    gfoo = okada_stress_gf_tensor(mf, λ, μ, ft)
-    gfos = okada_stress_gf_tensor(mf, me, λ, μ, ft)
-    gfso = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
-    gfss = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    gg = cat_greensfun(gfoo, gfos, gfso, gfss)
+    gfoo = stress_greens_func(mf, λ, μ, ft)
+    gfos = stress_greens_func(mf, me, λ, μ, ft)
+    gfso = stress_greens_func(me, mf, λ, μ, ft, comp)
+    gfss = stress_greens_func(me, λ, μ, comp)
+    gg = cat_greensfunc(gfoo, gfos, gfso, gfss)
 
     @testset "concatenate components of green's function" begin
         @test gg.ee == gfoo

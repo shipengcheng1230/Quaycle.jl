@@ -1,7 +1,3 @@
-export sbarbot_stress_gf_tensor
-
-@gen_shared_chunk_call sbarbot_stress_gf_tensor
-
 """
 Given the axes transformation rule that ``x ⟶ x_2, \\; y ⟶ x_1, \\; z ⟶ -x_3``,
 the corresponding strain mapping is:
@@ -46,7 +42,7 @@ function coordinate_sbarbot2okada!(u::AbstractVector)
 end
 
 """
-    sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault,
+    stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault,
         comp::NTuple{N, Symbol}; kwargs...) where {T, N}
 
 Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref) to [`RectOkadaMesh`](@ref)
@@ -63,18 +59,18 @@ Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 ## Output
 A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault
 """
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
-    f = (c) -> sbarbot_stress_gf_tensor(ma, mf, λ, μ, ft, c; kwargs...)
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+    f = (c) -> stress_greens_func(ma, mf, λ, μ, ft, c; kwargs...)
     map(f, comp)
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
     st = SharedArray{T}(mf.nx * mf.nξ, length(ma.tag))
-    sbarbot_stress_gf_tensor!(st, ma, mf, λ, μ, ft, comp; kwargs...)
+    stress_greens_func!(st, ma, mf, λ, μ, ft, comp; kwargs...)
     return sdata(st)
 end
 
-function sbarbot_stress_gf_tensor_chunk!(
+function stress_greens_func_chunk!(
     st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol;
     quadrature::Union{Nothing, NTuple}=nothing) where T
 
@@ -98,7 +94,7 @@ function sbarbot_stress_gf_tensor_chunk!(
 end
 
 """
-    sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol};
+    stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol};
         kwargs...) where {T, N}
 
 Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
@@ -114,19 +110,19 @@ Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain to the stress components,
     each of which is a matrix, within asthenosphere
 """
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
-    f = (c) -> sbarbot_stress_gf_tensor(ma, λ, μ, c; kwargs...)
+function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+    f = (c) -> stress_greens_func(ma, λ, μ, c; kwargs...)
     map(f, comp)
 end
 
-function sbarbot_stress_gf_tensor(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol; kwargs...) where T
+function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol; kwargs...) where T
     numelements = length(ma.tag)
     st = ntuple(_ -> SharedArray{T}(numelements, numelements), Val(6))
-    sbarbot_stress_gf_tensor!(st, ma, λ, μ, comp; kwargs...)
+    stress_greens_func!(st, ma, λ, μ, comp; kwargs...)
     return ntuple(x -> st[x] |> sdata, 6)
 end
 
-function sbarbot_stress_gf_tensor_chunk!(
+function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol;
     quadrature::Union{Nothing, NTuple}=nothing) where {T, N}
 

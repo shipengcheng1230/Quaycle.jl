@@ -1,10 +1,6 @@
-export okada_stress_gf_tensor
-
-@gen_shared_chunk_call okada_stress_gf_tensor
-
 ## okada displacement - traction green's function, src & recv both on the same fault mesh
 """
-    okada_stress_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
+    stress_greens_func(mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
 
 Compute traction Green function in 1-D elastic fault in [`LineOkadaMesh`](@ref).
 
@@ -17,14 +13,14 @@ Compute traction Green function in 1-D elastic fault in [`LineOkadaMesh`](@ref).
 ### KWARGS Arguments
 - `ax_ratio::Real`: ratio of along-strike to along-downdip, default is `12.5`
 """
-function okada_stress_gf_tensor(mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
+function stress_greens_func(mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
     st = SharedArray{T}(mesh.nξ, mesh.nξ)
-    okada_stress_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
+    stress_greens_func!(st, mesh, λ, μ, ft; kwargs...)
     return sdata(st)
 end
 
 """
-    okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault;
+    stress_greens_func(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault;
         fourier_domain=true, kwargs...) where T
 
 Compute traction Green's function in 2-D elastic fault in [`RectOkadaMesh`](@ref). Translational symmetry is considered.
@@ -41,9 +37,9 @@ Compute traction Green's function in 2-D elastic fault in [`RectOkadaMesh`](@ref
 - `buffer_ratio::Real`: ratio of length of buffer zone (along-strike) to that of fault (along-strike)
     It is recommended to set at least `1` for strike-slip fault for mimicing zero-dislocation at ridge on both sides.
 """
-function okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; fourier_domain=true, kwargs...) where T
+function stress_greens_func(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; fourier_domain=true, kwargs...) where T
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
-    okada_stress_gf_tensor!(st, mesh, λ, μ, ft; kwargs...)
+    stress_greens_func!(st, mesh, λ, μ, ft; kwargs...)
 
     function __convert_to_fourier_domain__()
         FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
@@ -60,7 +56,7 @@ function okada_stress_gf_tensor(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlane
     fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
-function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; ax_ratio::Real=12.5) where T
+function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; ax_ratio::Real=12.5) where T
     ud = unit_dislocation(ft, T)
     ax = mesh.nξ * mesh.Δξ * ax_ratio .* [-one(T), one(T)]
     α = (λ + μ) / (λ + 2μ)
@@ -71,7 +67,7 @@ function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 2}, subs::AbstractArra
     end
 end
 
-function okada_stress_gf_tensor_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=zero(T)) where T
+function stress_greens_func_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=zero(T)) where T
     ud = unit_dislocation(ft, T)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
@@ -133,7 +129,7 @@ function stress_components(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real
 end
 
 """
-    okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
+    stress_greens_func(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
         kwargs...) where {T<:Real, I<:Integer}
 
 Compute stress Green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
@@ -149,13 +145,13 @@ Compute stress Green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4Mes
 The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
     ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``
 """
-function okada_stress_gf_tensor(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
+function stress_greens_func(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
     st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(6))
-    okada_stress_gf_tensor!(st, mf, ma, λ, μ, ft; kwargs...)
+    stress_greens_func!(st, mf, ma, λ, μ, ft; kwargs...)
     return ntuple(x -> st[x] |> sdata, 6)
 end
 
-function okada_stress_gf_tensor_chunk!(
+function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
     λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=0.0,
     ) where {T<:Real, N, I<:Integer}

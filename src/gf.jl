@@ -1,4 +1,4 @@
-export cat_greensfun
+export cat_greensfunc, compose_stress_greensfunc
 
 ## Static Green's Function
 "Obtain mapping from local linear index to cartesian index."
@@ -45,8 +45,11 @@ const KERNELDIR = joinpath(@__DIR__, "gf")
 foreach(x -> include(joinpath(KERNELDIR, x)), filter!(x -> endswith(x, ".jl"), readdir(KERNELDIR)))
 
 ## concrete greens function
-include("gf_okada.jl")
-include("gf_sbarbot.jl")
+export stress_greens_func
+@gen_shared_chunk_call stress_greens_func
+
+include("gf_dislocation.jl")
+include("gf_strain.jl")
 include("gf_operator.jl")
 
 ## composite green's function
@@ -58,12 +61,12 @@ struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray}
 end
 
 """
-    cat_greensfun(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+    cat_greensfunc(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
 
 Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
     a way to update traction/stress rate using only one BLAS call. It does nothing
     to the elastic Green's function and specifically used for the outputs from
-    [`okada_stress_gf_tensor`](@ref) and [`sbarbot_stress_gf_tensor`](@ref).
+    [`stress_greens_func`](@ref) and [`stress_greens_func`](@ref).
 
 ## Arguments
 - `ee`: traction Green's function within the elastic fault
@@ -71,7 +74,7 @@ Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
 - `ve`: traction Green's function inelastic asthenosphere to elastic fault
 - `vv`: stress Green's function within inelastic asthenosphere
 """
-function cat_greensfun(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+function cat_greensfunc(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
     σindex = Base.OneTo(length(ev))
     ϵindex = Base.OneTo(length(ve))
     m, n = size(ev[1]) # number of inelastic elements, number of fault patches
@@ -85,17 +88,16 @@ function cat_greensfun(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
 end
 
 """
-    composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity,
+    compose_stress_greensfunc(mf::OkadaMesh, me::SBarbotMeshEntity,
         λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
 
 Shortcut function for computing all 4 Green's function for viscoelastic relaxation.
-    Arguments stays the same as [`okada_stress_gf_tensor`](@ref) and
-    [`sbarbot_stress_gf_tensor`](@ref).
+    Arguments stays the same as [`stress_greens_func`](@ref).
 """
-function composite_stress_gf_tensor(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
-    ee = okada_stress_gf_tensor(mf, λ, μ, ft)
-    ev = okada_stress_gf_tensor(mf, me, λ, μ, ft)
-    ve = sbarbot_stress_gf_tensor(me, mf, λ, μ, ft, comp)
-    vv = sbarbot_stress_gf_tensor(me, λ, μ, comp)
-    return cat_greensfun(ee, ev, ve, vv)
+function compose_stress_greensfunc(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
+    ee = stress_greens_func(mf, λ, μ, ft)
+    ev = stress_greens_func(mf, me, λ, μ, ft)
+    ve = stress_greens_func(me, mf, λ, μ, ft, comp)
+    vv = stress_greens_func(me, λ, μ, comp)
+    return cat_greensfunc(ee, ev, ve, vv)
 end
