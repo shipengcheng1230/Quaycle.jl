@@ -674,7 +674,7 @@
 <p>Please see <a href="http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html">dc3d</a> for details.     Also this fault coordinate system is widely used in this package.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>x</code>, <code>y</code>, <code>z</code>: observational position</li>
+<li><code>x</code>, <code>y</code>, <code>z</code>: observational position, where <span><span class="MathJax_Preview">z ≤ 0</span><script type="math/tex">z ≤ 0</script></span></li>
 <li><code>α</code>: elastic constant</li>
 <li><code>dep</code>: depth of fault origin</li>
 <li><code>dip</code>: dip angle in degree</li>
@@ -703,8 +703,8 @@
 <p>Compute displacement arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position</li>
-<li><code>q1</code>, <code>q2</code>, <code>q3</code>: Hex8 element position</li>
+<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position, where <span><span class="MathJax_Preview">x_{3} ≥ 0</span><script type="math/tex">x_{3} ≥ 0</script></span></li>
+<li><code>q1</code>, <code>q2</code>, <code>q3</code>: Hex8 element position, where <span><span class="MathJax_Preview">q_{3} ≥ 0</span><script type="math/tex">q_{3} ≥ 0</script></span></li>
 <li><code>L</code>, <code>T</code>, <code>W</code>: Hex8 element length, thickness and width</li>
 <li><code>theta</code>: strike angle</li>
 <li><code>epsv**</code>: strain components, each is <span><span class="MathJax_Preview">ϵ_{11}</span><script type="math/tex">ϵ_{11}</script></span>, <span><span class="MathJax_Preview">ϵ_{12}</span><script type="math/tex">ϵ_{12}</script></span>, <span><span class="MathJax_Preview">ϵ_{13}</span><script type="math/tex">ϵ_{13}</script></span>,   <span><span class="MathJax_Preview">ϵ_{22}</span><script type="math/tex">ϵ_{22}</script></span>, <span><span class="MathJax_Preview">ϵ_{23}</span><script type="math/tex">ϵ_{23}</script></span>, <span><span class="MathJax_Preview">ϵ_{33}</span><script type="math/tex">ϵ_{33}</script></span></li>
@@ -758,8 +758,8 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>quadrature</code>: quadrature rule for integration, see   <a href="https://github.com/JuliaApproximation/FastGaussQuadrature.jl">FastGaussQuadrature.jl</a></li>
-<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position</li>
-<li><code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>: a list of 3 numbers for each, each of which represents   coordinates of the vertex</li>
+<li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position, where <span><span class="MathJax_Preview">x_{3} ≥ 0</span><script type="math/tex">x_{3} ≥ 0</script></span></li>
+<li><code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>: a list of 3 numbers for each, each of which represents   coordinates of the vertex. All depth coordinates must be greater or   equal to 0 (no checking is performed here)</li>
 <li><code>epsv**</code>: strain components, each is <span><span class="MathJax_Preview">ϵ_{11}</span><script type="math/tex">ϵ_{11}</script></span>, <span><span class="MathJax_Preview">ϵ_{12}</span><script type="math/tex">ϵ_{12}</script></span>, <span><span class="MathJax_Preview">ϵ_{13}</span><script type="math/tex">ϵ_{13}</script></span>,   <span><span class="MathJax_Preview">ϵ_{22}</span><script type="math/tex">ϵ_{22}</script></span>, <span><span class="MathJax_Preview">ϵ_{23}</span><script type="math/tex">ϵ_{23}</script></span>, <span><span class="MathJax_Preview">ϵ_{33}</span><script type="math/tex">ϵ_{33}</script></span></li>
 <li><code>nu</code>: poisson ratio</li>
 </ul>
