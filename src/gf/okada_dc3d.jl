@@ -137,7 +137,7 @@ Please see [dc3d](http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html)
     Also this fault coordinate system is widely used in this package.
 
 ## Arguments
-- `x`, `y`, `z`: observational position
+- `x`, `y`, `z`: observational position, where ``z ≤ 0``
 - `α`: elastic constant
 - `dep`: depth of fault origin
 - `dip`: dip angle in degree

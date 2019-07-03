@@ -49,8 +49,8 @@ Compute displacement arisen from inelastic strain in Hex8 elements.
     for complete details.
 
 ## Arguments
-- `x1`, `x2`, `x3`: observational position
-- `q1`, `q2`, `q3`: Hex8 element position
+- `x1`, `x2`, `x3`: observational position, where ``x_{3} ≥ 0``
+- `q1`, `q2`, `q3`: Hex8 element position, where ``q_{3} ≥ 0``
 - `L`, `T`, `W`: Hex8 element length, thickness and width
 - `theta`: strike angle
 - `epsv**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,

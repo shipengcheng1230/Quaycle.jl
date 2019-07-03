@@ -19,9 +19,10 @@ Compute displacement arisen from inelastic strain in Tet4 elements.
 ## Arguments
 - `quadrature`: quadrature rule for integration, see
     [FastGaussQuadrature.jl](https://github.com/JuliaApproximation/FastGaussQuadrature.jl)
-- `x1`, `x2`, `x3`: observational position
+- `x1`, `x2`, `x3`: observational position, where ``x_{3} ≥ 0``
 - `A`, `B`, `C`, `D`: a list of 3 numbers for each, each of which represents
-    coordinates of the vertex
+    coordinates of the vertex. All depth coordinates must be greater or
+    equal to 0 (no checking is performed here)
 - `epsv**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
     ``ϵ_{22}``, ``ϵ_{23}``, ``ϵ_{33}``
 - `nu`: poisson ratio
@@ -47,6 +48,7 @@ function sbarbot_disp_tet4!(u::W, quadrature::Q,
     e11::R, e12::R, e13::R, e22::R, e23::R, e33::R, nu::R
     ) where {R, U, Q, W}
 
+    @assert x3 ≥ zero(R) "Depth must be greater than or equal to 0."
     lambda = 2 * nu / (1 - 2 * nu)
     ekk = e11 + e22 + e33
 
@@ -278,6 +280,7 @@ function sbarbot_strain_tet4!(u::W, quadrature::Q,
     e11::R, e12::R, e13::R, e22::R, e23::R, e33::R, G::R, nu::R
     ) where {R, U, Q, W}
 
+    @assert x3 ≥ zero(R) "Depth must be greater than or equal to 0."
     lambda = 2 * nu / (1 - 2 * nu)
     ekk = e11 + e22 + e33
 

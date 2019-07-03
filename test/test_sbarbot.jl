@@ -26,7 +26,7 @@ using GmshTools
 
     x1s = range(-10000.0, stop=10000.0, step=1000.0)
     x2s = range(-10000.0, stop=10000.0, step=1000.0)
-    x3s = range(-30.0, stop=-20.0, step=5.0)
+    x3s = range(-30.0, stop=-20.0, step=5.0) # in real case should not be negative
     xxs = product(x1s, x2s, x3s)
 
     @testset "Displacement" begin
