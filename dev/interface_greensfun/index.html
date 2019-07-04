@@ -534,10 +534,11 @@
 <ul>
 <li>1D elastic line dislocation</li>
 <li>2D elastic rectangular dislocation</li>
+<li>2D elastic triangular dislocation</li>
 <li>3D inelastic strain in Hex8 or Tet4 elements</li>
 </ul>
-<p>Other types, such as 2D inelastic (plane stress or antiplane stress), curved dislocation, are WIP.</p>
-<p>Also notice that coordinate system in <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a> is different from   <a href="./#JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R"><code>sbarbot_disp_hex8</code></a>, <a href="./#JuEQ.sbarbot_disp_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R}} where Q where U where R"><code>sbarbot_disp_tet4</code></a> or their auxiliary   stress/strain computing function.</p>
+<p>Other types, such as 2D inelastic (plane stress or antiplane stress), polygon dislocation, are WIP.</p>
+<p>Also be aware of the coordinate system difference among all the Green's function   provided here. Users are encouraged to view the original sources for further   details. This package preserves the original coordinate systems as well as   function arguments for all, whose outcomes are also tested against original ones.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
 <p><a id='JuEQ.cat_greensfunc-Tuple{AbstractArray,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N}' href='#JuEQ.cat_greensfunc-Tuple{AbstractArray,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N,Tuple{Vararg{T,N}} where T where N}'>#</a>
@@ -700,7 +701,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Compute displacement arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details.</p>
+<p>Compute displacement arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details, especially the <strong>coordinate system</strong> used here.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>x1</code>, <code>x2</code>, <code>x3</code>: observational position, where <span><span class="MathJax_Preview">x_{3} ≥ 0</span><script type="math/tex">x_{3} ≥ 0</script></span></li>
@@ -733,7 +734,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Compute stress arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details.</p>
+<p>Compute stress arisen from inelastic strain in Hex8 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2016237/src/master/">original version</a>     for complete details, especially the <strong>coordinate system</strong> used here.</p>
 <p><strong>Arguments</strong></p>
 <p>The same as <a href="./#JuEQ.sbarbot_disp_hex8-Union{Tuple{R}, NTuple{18,R}} where R"><code>sbarbot_disp_hex8</code></a></p>
 <p><strong>Output</strong></p>
@@ -754,7 +755,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Compute displacement arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details.</p>
+<p>Compute displacement arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details, especially the <strong>coordinate system</strong> used here.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>quadrature</code>: quadrature rule for integration, see   <a href="https://github.com/JuliaApproximation/FastGaussQuadrature.jl">FastGaussQuadrature.jl</a></li>
@@ -781,7 +782,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Compute stress arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details.</p>
+<p>Compute stress arisen from inelastic strain in Tet4 elements.     Please see <a href="https://bitbucket.org/sbarbot/bssa-2018058/src/default/">original version</a>     for complete details, especially the <strong>coordinate system</strong> used here.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>quadrature</code>: quadrature rule for integration, see   <a href="https://github.com/JuliaApproximation/FastGaussQuadrature.jl">FastGaussQuadrature.jl</a></li>
@@ -797,9 +798,62 @@
 <ul>
 <li>Inplace version: <code>sbarbot_stress_tet4!(u, args...)</code> where u is a vector of 6 numbers.</li>
 </ul>
+<p><a id='JuEQ.td_disp_fs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T}} where V where T' href='#JuEQ.td_disp_fs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T}} where V where T'>#</a>
+<strong><code>JuEQ.td_disp_fs</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">td_disp_fs</span><span class="p">(</span><span class="n">X</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">P1</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P2</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P3</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">Ss</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ds</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ts</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute displacement risen from triangular dislocation in elastic <em>fullspace</em>.     Please see <a href="https://academic.oup.com/gji/article/201/2/1119/572006#86405752">original version (in supporting information)</a>     for details, especially the <strong>coordinate system</strong> used here.</p>
+<p><strong>Arguments</strong></p>
+<p>The same as <a href="./#JuEQ.td_disp_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T}} where V where T"><code>td_disp_hs</code></a></p>
+<p><a id='JuEQ.td_disp_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T}} where V where T' href='#JuEQ.td_disp_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T}} where V where T'>#</a>
+<strong><code>JuEQ.td_disp_hs</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">td_disp_hs</span><span class="p">(</span><span class="n">X</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">P1</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P2</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P3</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">Ss</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ds</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ts</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">nu</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute displacement risen from triangular dislocation in elastic <em>halfspace</em>.     Please see <a href="https://academic.oup.com/gji/article/201/2/1119/572006#86405752">original version (in supporting information)</a>     for details, especially the <strong>coordinate system</strong> used here.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>X</code>, <code>Y</code>, <code>Z</code>: observational coordinates</li>
+<li><code>P1</code>, <code>P2</code>, <code>P3</code>: three triangular vertices coordinates respectively</li>
+<li><code>Ss</code>, <code>Ds</code>, <code>Ts</code>: triangular dislocation vector, Strike-slip, Dip-slip, Tensile-slip respectively</li>
+<li><code>nu</code>: poisson ratio</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>By order: <span><span class="MathJax_Preview">u_x</span><script type="math/tex">u_x</script></span>, <span><span class="MathJax_Preview">u_y</span><script type="math/tex">u_y</script></span>, <span><span class="MathJax_Preview">u_z</span><script type="math/tex">u_z</script></span></p>
+<p><a id='JuEQ.td_stress_fs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T' href='#JuEQ.td_stress_fs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T'>#</a>
+<strong><code>JuEQ.td_stress_fs</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">td_stress_fs</span><span class="p">(</span><span class="n">X</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">P1</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P2</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P3</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">Ss</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ds</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ts</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">mu</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">lambda</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute stress risen from triangular dislocation in elastic <em>fullspace</em>.     Please see <a href="https://academic.oup.com/gji/article/201/2/1119/572006#86405752">original version (in supporting information)</a>     for details, especially the <strong>coordinate system</strong> used here.</p>
+<p><strong>Arguments</strong></p>
+<p>The same as <a href="./#JuEQ.td_stress_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T"><code>td_stress_hs</code></a></p>
+<p><a id='JuEQ.td_stress_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T' href='#JuEQ.td_stress_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T'>#</a>
+<strong><code>JuEQ.td_stress_hs</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">td_stress_hs</span><span class="p">(</span><span class="n">X</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Z</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">P1</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P2</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">P3</span><span class="o">::</span><span class="n">V</span><span class="p">,</span> <span class="n">Ss</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ds</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Ts</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">mu</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">lambda</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute stress risen from triangular dislocation in elastic <em>halfspace</em>.     Please see <a href="https://academic.oup.com/gji/article/201/2/1119/572006#86405752">original version (in supporting information)</a>     for details, especially the <strong>coordinate system</strong> used here.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>X</code>, <code>Y</code>, <code>Z</code>: observational coordinates</li>
+<li><code>P1</code>, <code>P2</code>, <code>P3</code>: three triangular vertices coordinates respectively</li>
+<li><code>Ss</code>, <code>Ds</code>, <code>Ts</code>: triangular dislocation vector, Strike-slip, Dip-slip, Tensile-slip respectively</li>
+<li><code>mu</code>: shear modulus</li>
+<li><code>lambda</code>: Lamé's first parameter</li>
+</ul>
+<p><strong>Output</strong></p>
+<p>By order: <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>,     <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>. Please be aware of its different order, where principle components     come first, against <a href="./#JuEQ.sbarbot_stress_hex8-Union{Tuple{R}, NTuple{18,R}} where R"><code>sbarbot_stress_hex8</code></a> and <a href="./#JuEQ.sbarbot_stress_tet4-Union{Tuple{Q}, Tuple{U}, Tuple{R}, Tuple{Q,R,R,R,U,U,U,U,R,R,R,R,R,R,R,R}} where Q where U where R"><code>sbarbot_stress_tet4</code></a> aside from coordinate system difference.</p>
 <p><a id='References-1'></a></p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <p>Okada, Y. (1992). Internal deformation due to shear and tensile faults in a half-space. Bulletin of the Seismological Society of America, 82(2), 1018–1040.</p>
+<p>Pan, E., Yuan, J. H., Chen, W. Q., &amp; Griffith, W. A. (2014). Elastic Deformation due to Polygonal Dislocations in a Transversely Isotropic Half‐SpaceElastic Deformation due to Polygonal Dislocations in a Transversely Isotropic Half‐Space. Bulletin of the Seismological Society of America, 104(6), 2698–2716. <a href="https://doi.org/10.1785/0120140161">https://doi.org/10.1785/0120140161</a></p>
+<p>Nikkhoo, M., &amp; Walter, T. R. (2015). Triangular dislocation: an analytical, artefact-free solution. Geophysical Journal International, 201(2), 1119–1141. <a href="https://doi.org/10.1093/gji/ggv035">https://doi.org/10.1093/gji/ggv035</a></p>
 <p>Barbot, S., Moore, J. D. P., &amp; Lambert, V. (2017). Displacement and Stress Associated with Distributed Anelastic Deformation in a Half‐Space. Bulletin of the Seismological Society of America, 107(2), 821–855. <a href="https://doi.org/10.1785/0120160237">https://doi.org/10.1785/0120160237</a></p>
 <p>Barbot, S. (2018). Deformation of a Half‐Space from Anelastic Strain Confined in a Tetrahedral Volume. Bulletin of the Seismological Society of America, 108(5A), 2687–2712. <a href="https://doi.org/10.1785/0120180058">https://doi.org/10.1785/0120180058</a></p>
                 
