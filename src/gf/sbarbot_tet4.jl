@@ -14,7 +14,7 @@ export sbarbot_stress_tet4, sbarbot_stress_tet4!
 
 Compute displacement arisen from inelastic strain in Tet4 elements.
     Please see [original version](https://bitbucket.org/sbarbot/bssa-2018058/src/default/)
-    for complete details.
+    for complete details, especially the **coordinate system** used here.
 
 ## Arguments
 - `quadrature`: quadrature rule for integration, see
@@ -216,7 +216,7 @@ end
 
 Compute stress arisen from inelastic strain in Tet4 elements.
     Please see [original version](https://bitbucket.org/sbarbot/bssa-2018058/src/default/)
-    for complete details.
+    for complete details, especially the **coordinate system** used here.
 
 ## Arguments
 - `quadrature`: quadrature rule for integration, see

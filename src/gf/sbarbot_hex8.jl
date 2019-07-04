@@ -46,7 +46,7 @@ export sbarbot_stress_hex8, sbarbot_stress_hex8!
 
 Compute displacement arisen from inelastic strain in Hex8 elements.
     Please see [original version](https://bitbucket.org/sbarbot/bssa-2016237/src/master/)
-    for complete details.
+    for complete details, especially the **coordinate system** used here.
 
 ## Arguments
 - `x1`, `x2`, `x3`: observational position, where ``x_{3} ≥ 0``
@@ -117,7 +117,7 @@ end
 
 Compute stress arisen from inelastic strain in Hex8 elements.
     Please see [original version](https://bitbucket.org/sbarbot/bssa-2016237/src/master/)
-    for complete details.
+    for complete details, especially the **coordinate system** used here.
 
 ## Arguments
 The same as [`sbarbot_disp_hex8`](@ref)

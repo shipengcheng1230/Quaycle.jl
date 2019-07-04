@@ -25,7 +25,7 @@
 # USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # I appreciate any comments or bug reports.
-# 
+#
 # Mehdi Nikkhoo
 # created: 2013.1.24
 # Last modified: 2014.7.30
@@ -42,11 +42,27 @@
 # -------------------------------------------------------
 # Translated by Pengcheng Shi (shipengcheng1230@gmail.com)
 
-export td_disp_fs, td_disp_hs
+export td_disp_fs, td_disp_hs, td_strain_fs, td_strain_hs, td_stress_fs, td_stress_hs
 
 const _ey = [0, 1, 0]
 const _ez = [0, 0, 1]
 
+"""
+    td_disp_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, nu::T) where {T, V}
+
+Compute displacement risen from triangular dislocation in elastic *halfspace*.
+    Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
+    for details, especially the **coordinate system** used here.
+
+## Arguments
+- `X`, `Y`, `Z`: observational coordinates
+- `P1`, `P2`, `P3`: three triangular vertices coordinates respectively
+- `Ss`, `Ds`, `Ts`: triangular dislocation vector, Strike-slip, Dip-slip, Tensile-slip respectively
+- `nu`: poisson ratio
+
+## Output
+By order: ``u_x``, ``u_y``, ``u_z``
+"""
 function td_disp_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, nu::T) where {T, V}
     @assert (Z ≤ zero(T) && P1[3] ≤ zero(T) && P2[3] ≤ zero(T) && P3[3] ≤ zero(T))  "Half-space solution: Z coordinates must be negative!"
     A = transform_matrix(P1, P2, P3)
@@ -74,6 +90,16 @@ function td_disp_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, 
     return ue, un, uv
 end
 
+"""
+    td_disp_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, nu::T) where {T, V}
+
+Compute displacement risen from triangular dislocation in elastic *fullspace*.
+    Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
+    for details, especially the **coordinate system** used here.
+
+## Arguments
+The same as [`td_disp_hs`](@ref)
+"""
 function td_disp_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, nu::T) where {T, V}
     A = transform_matrix(P1, P2, P3)
     _td_disp_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, nu, A')
@@ -163,10 +189,8 @@ end
 end
 
 @inline function AngSetupFSC(X::T, Y::T, Z::T, bX::T, bY::T, bZ::T, PA::V, PB::V, nu::T) where {T, V}
-    SideVec = PB - PA
     sv1, sv2, sv3 = PB[1] - PA[1], PB[2] - PA[2], PB[3] - PA[3]
     svr = hypot(sv1, sv2, sv3)
-
     beta = acos(-sv3 / svr)
     ey1 = [sv1, sv2, zero(T)]
     normalize!(ey1)
@@ -186,7 +210,6 @@ end
     v2 = v2B - v2A
     v3 = v3B - v3A
     ue, un, uv = coord_trans(v1, v2, v3, A')
-
     return ue, un, uv
 end
 
@@ -320,4 +343,657 @@ end
     wz = bz * x * sinA / 8 / pi / (1 - nu) * (cosA / (r - zeta) - z / r / (r - zeta))
 
     return ux + uy + uz, vx + vy + vz, wx + wy + wz
+end
+
+@inline function _TDstrain_HarFunc(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T, At::M) where {T, V, M}
+    bx, by, bz = Ts, Ss, Ds
+    bX, bY, bZ = coord_trans(bx, by, bz, At)
+    exx1, eyy1, ezz1, exy1, exz1, eyz1 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P1, P2, mu, lambda)
+    exx2, eyy2, ezz2, exy2, exz2, eyz2 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P2, P3, mu, lambda)
+    exx3, eyy3, ezz3, exy3, exz3, eyz3 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P3, P1, mu, lambda)
+    return exx1 + exx2 + exx3, eyy1 + eyy2 + eyy3, ezz1 + ezz2 + ezz3, exy1 + exy2 + exy3, exz1 + exz2 + exz3, eyz1 + eyz2 + eyz3
+end
+
+@inline function AngSetupFSC_S(X::T, Y::T, Z::T, bX::T, bY::T, bZ::T, PA::V, PB::V, mu::T, lambda::T) where {T, V}
+    nu = 1 / (1 + lambda / mu) / 2
+    sv1, sv2, sv3 = PB[1] - PA[1], PB[2] - PA[2], PB[3] - PA[3]
+    svr = hypot(sv1, sv2, sv3)
+    beta = acos(-sv3 / svr)
+    ey1 = [sv1, sv2, zero(T)]
+    normalize!(ey1)
+    ey3 = -_ez
+    ey2 = cross(ey3, ey1)
+    A = hcat(ey1, ey2, ey3)
+    y1A, y2A, y3A = coord_trans(X - PA[1], Y - PA[2], Z - PA[3], A)
+    y1AB, y2AB, y3AB = coord_trans(sv1, sv2, sv3, A)
+    y1B = y1A - y1AB
+    y2B = y2A - y2AB
+    y3B = y3A - y3AB
+    b1, b2, b3 = coord_trans(bX, bY, bZ, A)
+    if beta * y1A ≥ zero(T)
+        v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(-y1A, -y2A, y3A, π - beta, -b1, -b2, b3, nu, -PA[3])
+        v13A *= -one(T)
+        v23A *= -one(T)
+        v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(-y1B, -y2B, y3B, π - beta, -b1, -b2, b3, nu, -PB[3])
+        v13B *= -one(T)
+        v23B *= -one(T)
+    else
+        v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(y1A, y2A, y3A, beta, b1, b2, b3, nu, -PA[3])
+        v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(y1B, y2B, y3B, beta, b1, b2, b3, nu, -PB[3])
+    end
+    v11 = v11B - v11A
+    v22 = v22B - v22A
+    v33 = v33B - v33A
+    v12 = v12B - v12A
+    v13 = v13B - v13A
+    v23 = v23B - v23A
+    Exx, Eyy, Ezz, Exy, Exz, Eyz = TensTrans(v11, v22, v33, v12, v13, v23, A')
+    return Exx, Eyy, Ezz, Exy, Exz, Eyz
+end
+
+@inline function AngDisStrainFSC(y1::T, y2::T, y3::T, beta::T, b1::T, b2::T, b3::T, nu::T, a::T) where T
+    sinB, cosB = sincos(beta)
+    cotB = cot(beta)
+    y3b = y3 + 2a
+    z1b = y1 * cosB + y3b * sinB
+    z3b = -y1 * sinB + y3b * cosB
+    rb2 = y1^2 + y2^2 + y3b^2
+    rb = sqrt(rb2)
+    W1 = rb * cosB + y3b
+    W2 = cosB + a / rb
+    W3 = cosB + y3b / rb
+    W4 = nu + a / rb
+    W5 = 2nu + a / rb
+    W6 = rb + y3b
+    W7 = rb + z3b
+    W8 = y3 + a
+    W9 = 1 + a / rb / cosB
+    N1 = 1-2*nu
+
+    rFib_ry2 = z1b / rb / (rb + z3b) - y1 / rb / (rb + y3b) # y2 = x in ADCS
+    rFib_ry1 = y2 / rb / (rb + y3b) - cosB * y2 / rb / (rb + z3b) # y1 =y in ADCS
+    rFib_ry3 = -sinB * y2 / rb / (rb + z3b) # y3 = z in ADCS
+
+    v11 = (b1 * (1 / 4 * ((-2 + 2 * nu) * N1 * rFib_ry1 * cotB ^ 2 - N1 * y2 / W6 ^ 2 * ((1 - W5) * cotB -
+        y1 / W6 * W4) /rb *y1+N1 *y2 /W6 * (a / rb ^ 3 * y1 * cotB - 1 / W6 * W4 + y1 ^ 2 /
+        W6 ^ 2 * W4 / rb + y1 ^ 2 / W6 * a / rb ^ 3) -N1 * y2 * cosB * cotB / W7 ^ 2 * W2 * (y1 /
+        rb - sinB) -N1 * y2 * cosB * cotB / W7 * a / rb ^ 3 * y1 - 3 * a * y2 * W8 * cotB / rb ^ 5. *
+        y1 - y2 * W8 / rb ^ 3 / W6 * (-N1 * cotB + y1 / W6 * W5 + a * y1 / rb2) * y1 - y2 * W8 /
+        rb2 / W6 ^ 2 * (-N1 * cotB + y1 / W6 * W5 + a * y1 / rb2) * y1 + y2 * W8 / rb / W6 *
+        (1 / W6 * W5 - y1 ^ 2 / W6 ^ 2 * W5 / rb - y1 ^ 2 / W6 * a / rb ^ 3 + a / rb2 - 2 * a * y1 ^
+        2 / rb2 ^ 2) -y2 * W8 / rb ^ 3 / W7 * (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB +
+        (2 - 2 * nu) * (rb * sinB - y1) * cosB) -a * y3b * cosB * cotB / rb2) * y1 - y2 * W8 / rb /
+        W7 ^ 2 * (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) *
+        cosB) -a * y3b * cosB * cotB / rb2) * (y1 / rb - sinB) + y2 * W8 / rb / W7 * (-cosB /
+        W7 ^ 2 * (W1 * (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) * cosB) * (y1 /
+        rb - sinB) +cosB / W7 * (1 / rb * cosB * y1 * (N1 * cosB - a / rb) * cotB + W1 * a / rb ^
+        3 * y1 * cotB + (2 - 2 * nu) * (1 / rb * sinB * y1 - 1) * cosB) +2 * a * y3b * cosB * cotB /
+        rb2 ^ 2 * y1)) /π/(1 - nu)) +
+        b2 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 + nu) / rb * y1 / W6 - ((2 - 2 * nu) * cotB ^ 2 + 1) *
+        cosB * (y1 / rb - sinB) / W7) -N1 / W6 ^ 2 * (-N1 * y1 * cotB + nu * y3b - a + a * y1 *
+        cotB / rb + y1 ^ 2 / W6 * W4) /rb *y1+N1 /W6 * (-N1 * cotB + a * cotB / rb - a *
+        y1 ^ 2 * cotB / rb ^ 3 + 2 * y1 / W6 * W4 - y1 ^ 3 / W6 ^ 2 * W4 / rb - y1 ^ 3 / W6 * a /
+        rb ^ 3) +N1 * cotB / W7 ^ 2 * (z1b * cosB - a * (rb * sinB - y1) / rb / cosB) * (y1 /
+        rb - sinB) -N1 * cotB / W7 * (cosB ^ 2 - a * (1 / rb * sinB * y1 - 1) / rb / cosB + a *
+        (rb * sinB - y1) / rb ^ 3 / cosB * y1) -a * W8 * cotB / rb ^ 3 + 3 * a * y1 ^ 2 * W8 *
+        cotB / rb ^ 5 - W8 / W6 ^ 2 * (2 * nu + 1 / rb * (N1 * y1 * cotB + a) - y1 ^ 2 / rb / W6 *
+        W5 - a * y1 ^ 2 / rb ^ 3) /rb *y1+W8 /W6 * (-1 / rb ^ 3 * (N1 * y1 * cotB + a) * y1 +
+        1 / rb * N1 * cotB - 2 * y1 / rb / W6 * W5 + y1 ^ 3 / rb ^ 3 / W6 * W5 + y1 ^ 3 / rb2 /
+        W6 ^ 2 * W5 + y1 ^ 3 / rb2 ^ 2 / W6 * a - 2 * a / rb ^ 3 * y1 + 3 * a * y1 ^ 3 / rb ^ 5) -W8 *
+        cotB / W7 ^ 2 * (-cosB * sinB + a * y1 * y3b / rb ^ 3 / cosB + (rb * sinB - y1) / rb *
+        ((2 - 2 * nu) * cosB - W1 / W7 * W9)) * (y1 / rb - sinB) + W8 * cotB / W7 * (a * y3b /
+        rb ^ 3 / cosB - 3 * a * y1 ^ 2 * y3b / rb ^ 5. / cosB + (1 / rb * sinB * y1 - 1) / rb *
+        ((2 - 2 * nu) * cosB - W1 / W7 * W9) - (rb * sinB - y1) / rb ^ 3 * ((2 - 2 * nu) * cosB - W1 /
+        W7 * W9) * y1 + (rb * sinB - y1) / rb * (-1 / rb * cosB * y1 / W7 * W9 + W1 / W7 ^ 2 *
+        W9 * (y1 / rb - sinB) + W1 / W7 * a / rb ^ 3 / cosB * y1))) /π/(1 - nu)) +
+        b3 * (1 / 4 * (N1 * (-y2 / W6 ^ 2 * (1 + a / rb) / rb * y1 - y2 / W6 * a / rb ^ 3 * y1 + y2 *
+        cosB / W7 ^ 2 * W2 * (y1 / rb - sinB) + y2 * cosB / W7 * a / rb ^ 3 * y1) +y2 * W8 /
+        rb ^ 3 * (a / rb2 + 1 / W6) * y1 - y2 * W8 / rb * (-2 * a / rb2 ^ 2 * y1 - 1 / W6 ^ 2 /
+        rb * y1) -y2 * W8 * cosB / rb ^ 3 / W7 * (W1 / W7 * W2 + a * y3b / rb2) * y1 - y2 * W8 *
+        cosB / rb / W7 ^ 2 * (W1 / W7 * W2 + a * y3b / rb2) * (y1 / rb - sinB) + y2 * W8 *
+        cosB / rb / W7 * (1 / rb * cosB * y1 / W7 * W2 - W1 / W7 ^ 2 * W2 * (y1 / rb - sinB) -
+        W1 / W7 * a / rb ^ 3 * y1 - 2 * a * y3b / rb2 ^ 2 * y1)) /π/(1 - nu)))
+
+    v22 = (b1 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 - nu) / rb * y2 / W6 - ((2 - 2 * nu) * cotB ^ 2 + 1 -
+        2 * nu)* cosB / rb * y2 / W7) +N1 / W6 ^ 2 * (y1 * cotB * (1 - W5) + nu * y3b - a + y2 ^
+        2 / W6 * W4) /rb *y2-N1 /W6 * (a * y1 * cotB / rb ^ 3 * y2 + 2 * y2 / W6 * W4 - y2 ^
+        3 / W6 ^ 2 * W4 / rb - y2 ^ 3 / W6 * a / rb ^ 3) +N1 * z1b * cotB / W7 ^ 2 * W2 / rb *
+        y2 + N1 * z1b * cotB / W7 * a / rb ^ 3 * y2 + 3 * a * y2 * W8 * cotB / rb ^ 5. * y1 - W8 /
+        W6 ^ 2 * (-2 * nu + 1 / rb * (N1 * y1 * cotB - a) + y2 ^ 2 / rb / W6 * W5 + a * y2 ^ 2 /
+        rb ^ 3) /rb *y2+W8 /W6 * (-1 / rb ^ 3 * (N1 * y1 * cotB - a) * y2 + 2 * y2 / rb /
+        W6 * W5 - y2 ^ 3 / rb ^ 3 / W6 * W5 - y2 ^ 3 / rb2 / W6 ^ 2 * W5 - y2 ^ 3 / rb2 ^ 2 / W6 *
+        a + 2 * a / rb ^ 3 * y2 - 3 * a * y2 ^ 3 / rb ^ 5) -W8 / W7 ^ 2 * (cosB ^ 2 - 1 / rb * (N1 *
+        z1b * cotB + a * cosB) +a * y3b * z1b * cotB / rb ^ 3 - 1 / rb / W7 * (y2 ^ 2 * cosB ^ 2 -
+        a * z1b * cotB / rb * W1)) /rb *y2+W8 /W7 * (1 / rb ^ 3 * (N1 * z1b * cotB + a *
+        cosB) * y2 - 3 * a * y3b * z1b * cotB / rb ^ 5. * y2 + 1 / rb ^ 3 / W7 * (y2 ^ 2 * cosB ^ 2 -
+        a * z1b * cotB / rb * W1) * y2 + 1 / rb2 / W7 ^ 2 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB /
+        rb * W1) * y2 - 1 / rb / W7 * (2 * y2 * cosB ^ 2 + a * z1b * cotB / rb ^ 3 * W1 * y2 - a *
+        z1b * cotB / rb2 * cosB * y2))) /π/(1 - nu)) +
+        b2 * (1 / 4 * ((2 - 2 * nu) * N1 * rFib_ry2 * cotB ^ 2 + N1 / W6 * ((W5 - 1) * cotB + y1 / W6 *
+        W4) -N1 * y2 ^ 2 / W6 ^ 2 * ((W5 - 1) * cotB + y1 / W6 * W4) / rb + N1 * y2 / W6 * (-a /
+        rb ^ 3 * y2 * cotB - y1 / W6 ^ 2 * W4 / rb * y2 - y2 / W6 * a / rb ^ 3 * y1) -N1 * cotB /
+        W7 * W9 + N1 * y2 ^ 2 * cotB / W7 ^ 2 * W9 / rb + N1 * y2 ^ 2 * cotB / W7 * a / rb ^ 3 /
+        cosB - a * W8 * cotB / rb ^ 3 + 3 * a * y2 ^ 2 * W8 * cotB / rb ^ 5 + W8 / rb / W6 * (N1 *
+        cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6)) -y2 ^ 2 * W8 / rb ^ 3 / W6 *
+        (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6)) - y2 ^ 2 * W8 / rb2 / W6 ^
+        2 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6)) + y2 * W8 / rb / W6 *
+        (2 * nu * y1 / W6 ^ 2 / rb * y2 + a * y1 / rb ^ 3 * (1 / rb + 1 / W6) * y2 - a * y1 / rb *
+        (-1 / rb ^ 3 * y2 - 1 / W6 ^ 2 / rb * y2)) +W8 * cotB / rb / W7 * ((-2 + 2 * nu) * cosB +
+        W1 / W7 * W9 + a * y3b / rb2 / cosB) -y2 ^ 2 * W8 * cotB / rb ^ 3 / W7 * ((-2 + 2 * nu) *
+        cosB + W1 / W7 * W9 + a * y3b / rb2 / cosB) -y2 ^ 2 * W8 * cotB / rb2 / W7 ^ 2 * ((-2 +
+        2 * nu)* cosB + W1 / W7 * W9 + a * y3b / rb2 / cosB) +y2 * W8 * cotB / rb / W7 * (1 /
+        rb * cosB * y2 / W7 * W9 - W1 / W7 ^ 2 * W9 / rb * y2 - W1 / W7 * a / rb ^ 3 / cosB * y2 -
+        2 * a * y3b / rb2 ^ 2 / cosB * y2)) /π/(1 - nu)) +
+        b3 * (1 / 4 * (N1 * (-sinB / rb * y2 / W7 + y2 / W6 ^ 2 * (1 + a / rb) / rb * y1 + y2 / W6 *
+        a / rb ^ 3 * y1 - z1b / W7 ^ 2 * W2 / rb * y2 - z1b / W7 * a / rb ^ 3 * y2) -y2 * W8 /
+        rb ^ 3 * (a / rb2 + 1 / W6) * y1 + y1 * W8 / rb * (-2 * a / rb2 ^ 2 * y2 - 1 / W6 ^ 2 /
+        rb * y2) +W8 / W7 ^ 2 * (sinB * (cosB - a / rb) + z1b / rb * (1 + a * y3b / rb2) - 1 /
+        rb / W7 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1)) /rb *y2-W8 /W7 * (sinB * a /
+        rb ^ 3 * y2 - z1b / rb ^ 3 * (1 + a * y3b / rb2) * y2 - 2 * z1b / rb ^ 5 * a * y3b * y2 +
+        1 / rb ^ 3 / W7 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1) * y2 + 1 / rb2 / W7 ^ 2 *
+        (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1) * y2 - 1 / rb / W7 * (2 * y2 * cosB * sinB + a *
+        z1b / rb ^ 3 * W1 * y2 - a * z1b / rb2 * cosB * y2))) /π/(1 - nu)))
+
+    v33 = (b1 * (1 / 4 * ((2 - 2 * nu) * (N1 * rFib_ry3 * cotB - y2 / W6 ^ 2 * W5 * (y3b / rb + 1) -
+        1 / 2 * y2 / W6 * a / rb ^ 3 * 2 * y3b + y2 * cosB / W7 ^ 2 * W2 * W3 + 1 / 2 * y2 * cosB / W7 *
+        a / rb ^ 3 * 2 * y3b) +y2 / rb * (2 * nu / W6 + a / rb2) - 1 / 2 * y2 * W8 / rb ^ 3 * (2 *
+        nu / W6 + a / rb2)* 2 * y3b + y2 * W8 / rb * (-2 * nu / W6 ^ 2 * (y3b / rb + 1) - a /
+        rb2 ^ 2 * 2 * y3b) +y2 * cosB / rb / W7 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) -
+        1 / 2 * y2 * W8 * cosB / rb ^ 3 / W7 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) * 2 *
+        y3b - y2 * W8 * cosB / rb / W7 ^ 2 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) * W3 + y2 *
+        W8 * cosB / rb / W7 * (-(cosB * y3b / rb + 1) / W7 * W2 + W1 / W7 ^ 2 * W2 * W3 + 1 / 2 *
+        W1 / W7 * a / rb ^ 3 * 2 * y3b - a / rb2 + a * y3b / rb2 ^ 2 * 2 * y3b)) /π/(1 - nu)) +
+        b2 * (1 / 4 * ((-2 + 2 * nu) * N1 * cotB * ((y3b / rb + 1) / W6 - cosB * W3 / W7) + (2 - 2 * nu) *
+        y1 / W6 ^ 2 * W5 * (y3b / rb + 1) + 1 / 2 * (2 - 2 * nu) * y1 / W6 * a / rb ^ 3 * 2 * y3b + (2 -
+        2 * nu)* sinB / W7 * W2 - (2 - 2 * nu) * z1b / W7 ^ 2 * W2 * W3 - 1 / 2 * (2 - 2 * nu) * z1b /
+        W7 * a / rb ^ 3 * 2 * y3b + 1 / rb * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb2) - 1 / 2 *
+        W8 / rb ^ 3 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb2) * 2 * y3b + W8 / rb * (2 * nu *
+        y1 / W6 ^ 2 * (y3b / rb + 1) + a * y1 / rb2 ^ 2 * 2 * y3b) -1 / W7 * (cosB * sinB + W1 *
+        cotB / rb * ((2 - 2 * nu) * cosB - W1 / W7) + a / rb * (sinB - y3b * z1b / rb2 - z1b *
+        W1 / rb / W7)) +W8 / W7 ^ 2 * (cosB * sinB + W1 * cotB / rb * ((2 - 2 * nu) * cosB - W1 /
+        W7) +a / rb * (sinB - y3b * z1b / rb2 - z1b * W1 / rb / W7)) * W3 - W8 / W7 * ((cosB *
+        y3b / rb + 1)* cotB / rb * ((2 - 2 * nu) * cosB - W1 / W7) - 1 / 2 * W1 * cotB / rb ^ 3 *
+        ((2 - 2 * nu) * cosB - W1 / W7) * 2 * y3b + W1 * cotB / rb * (-(cosB * y3b / rb + 1) / W7 +
+        W1 / W7 ^ 2 * W3) -1 / 2 * a / rb ^ 3 * (sinB - y3b * z1b / rb2 - z1b * W1 / rb / W7) *
+        2 * y3b + a / rb * (-z1b / rb2 - y3b * sinB / rb2 + y3b * z1b / rb2 ^ 2 * 2 * y3b -
+        sinB * W1 / rb / W7 - z1b * (cosB * y3b / rb + 1) / rb / W7 + 1 / 2 * z1b * W1 / rb ^ 3 /
+        W7 * 2 * y3b + z1b * W1 / rb / W7 ^ 2 * W3))) /π/(1 - nu)) +
+        b3 * (1 / 4 * ((2 - 2 * nu) * rFib_ry3 - (2 - 2 * nu) * y2 * sinB / W7 ^ 2 * W2 * W3 - 1 / 2 *
+        (2 - 2 * nu) * y2 * sinB / W7 * a / rb ^ 3 * 2 * y3b + y2 * sinB / rb / W7 * (1 + W1 / W7 *
+        W2 + a * y3b / rb2) -1 / 2 * y2 * W8 * sinB / rb ^ 3 / W7 * (1 + W1 / W7 * W2 + a * y3b /
+        rb2)* 2 * y3b - y2 * W8 * sinB / rb / W7 ^ 2 * (1 + W1 / W7 * W2 + a * y3b / rb2) * W3 +
+        y2 * W8 * sinB / rb / W7 * ((cosB * y3b / rb + 1) / W7 * W2 - W1 / W7 ^ 2 * W2 * W3 -
+        1 / 2 * W1 / W7 * a / rb ^ 3 * 2 * y3b + a / rb2 - a * y3b / rb2 ^ 2 * 2 * y3b)) /π/(1 - nu)))
+
+    v12 = (b1 / 2 * (1 / 4 * ((-2 + 2 * nu) * N1 * rFib_ry2 * cotB ^ 2 + N1 / W6 * ((1 - W5) * cotB - y1 /
+        W6 * W4) -N1 * y2 ^ 2 / W6 ^ 2 * ((1 - W5) * cotB - y1 / W6 * W4) / rb + N1 * y2 / W6 *
+        (a / rb ^ 3 * y2 * cotB + y1 / W6 ^ 2 * W4 / rb * y2 + y2 / W6 * a / rb ^ 3 * y1) + N1 *
+        cosB * cotB / W7 * W2 - N1 * y2 ^ 2 * cosB * cotB / W7 ^ 2 * W2 / rb - N1 * y2 ^ 2 * cosB *
+        cotB / W7 * a / rb ^ 3 + a * W8 * cotB / rb ^ 3 - 3 * a * y2 ^ 2 * W8 * cotB / rb ^ 5 + W8 /
+        rb / W6 * (-N1 * cotB + y1 / W6 * W5 + a * y1 / rb2) - y2 ^ 2 * W8 / rb ^ 3 / W6 * (-N1 *
+        cotB + y1 / W6 * W5 + a * y1 / rb2) -y2 ^ 2 * W8 / rb2 / W6 ^ 2 * (-N1 * cotB + y1 /
+        W6 * W5 + a * y1 / rb2) +y2 * W8 / rb / W6 * (-y1 / W6 ^ 2 * W5 / rb * y2 - y2 / W6 *
+        a / rb ^ 3 * y1 - 2 * a * y1 / rb2 ^ 2 * y2) +W8 / rb / W7 * (cosB / W7 * (W1 * (N1 *
+        cosB - a / rb)* cotB + (2 - 2 * nu) * (rb * sinB - y1) * cosB) -a * y3b * cosB * cotB /
+        rb2) -y2 ^ 2 * W8 / rb ^ 3 / W7 * (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB + (2 -
+        2 * nu) * (rb * sinB - y1) * cosB) -a * y3b * cosB * cotB / rb2) -y2 ^ 2 * W8 / rb2 /
+        W7 ^ 2 * (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) *
+        cosB) -a * y3b * cosB * cotB / rb2) +y2 * W8 / rb / W7 * (-cosB / W7 ^ 2 * (W1 *
+        (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) * cosB) /rb *y2+cosB /
+        W7 * (1 / rb * cosB * y2 * (N1 * cosB - a / rb) * cotB + W1 * a / rb ^ 3 * y2 * cotB + (2 - 2 *
+        nu) /rb*sinB *y2*cosB)+2*a *y3b*cosB*cotB /rb2 ^ 2 * y2)) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 + nu) / rb * y2 / W6 - ((2 - 2 * nu) * cotB ^ 2 + 1) *
+        cosB / rb * y2 / W7) -N1 / W6 ^ 2 * (-N1 * y1 * cotB + nu * y3b - a + a * y1 * cotB / rb +
+        y1 ^ 2 / W6 * W4) /rb *y2+N1 /W6 * (-a * y1 * cotB / rb ^ 3 * y2 - y1 ^ 2 / W6 ^
+        2 * W4 / rb * y2 - y1 ^ 2 / W6 * a / rb ^ 3 * y2) +N1 * cotB / W7 ^ 2 * (z1b * cosB - a *
+        (rb * sinB - y1) / rb / cosB) /rb *y2-N1*cotB /W7 * (-a / rb2 * sinB * y2 /
+        cosB + a * (rb * sinB - y1) / rb ^ 3 / cosB * y2) +3 * a * y2 * W8 * cotB / rb ^ 5. * y1 -
+        W8 / W6 ^ 2 * (2 * nu + 1 / rb * (N1 * y1 * cotB + a) - y1 ^ 2 / rb / W6 * W5 - a * y1 ^ 2 /
+        rb ^ 3) /rb *y2+W8 /W6 * (-1 / rb ^ 3 * (N1 * y1 * cotB + a) * y2 + y1 ^ 2 / rb ^
+        3 / W6 * W5 * y2 + y1 ^ 2 / rb2 / W6 ^ 2 * W5 * y2 + y1 ^ 2 / rb2 ^ 2 / W6 * a * y2 + 3 *
+        a * y1 ^ 2 / rb ^ 5. * y2) -W8 * cotB / W7 ^ 2 * (-cosB * sinB + a * y1 * y3b / rb ^ 3 /
+        cosB + (rb * sinB - y1) / rb * ((2 - 2 * nu) * cosB - W1 / W7 * W9)) /rb *y2+W8*cotB /
+        W7 * (-3 * a * y1 * y3b / rb ^ 5. / cosB * y2 + 1 / rb2 * sinB * y2 * ((2 - 2 * nu) * cosB -
+        W1 / W7 * W9) -(rb * sinB - y1) / rb ^ 3 * ((2 - 2 * nu) * cosB - W1 / W7 * W9) * y2 + (rb *
+        sinB - y1) /rb *(-1 /rb * cosB * y2 / W7 * W9 + W1 / W7 ^ 2 * W9 / rb * y2 + W1 / W7 *
+        a / rb ^ 3 / cosB * y2))) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * (N1 * (1 / W6 * (1 + a / rb) - y2 ^ 2 / W6 ^ 2 * (1 + a / rb) / rb - y2 ^ 2 /
+        W6 * a / rb ^ 3 - cosB / W7 * W2 + y2 ^ 2 * cosB / W7 ^ 2 * W2 / rb + y2 ^ 2 * cosB / W7 *
+        a / rb ^ 3) -W8 / rb * (a / rb2 + 1 / W6) + y2 ^ 2 * W8 / rb ^ 3 * (a / rb2 + 1 / W6) -
+        y2 * W8 / rb * (-2 * a / rb2 ^ 2 * y2 - 1 / W6 ^ 2 / rb * y2) + W8 * cosB / rb / W7 *
+        (W1 / W7 * W2 + a * y3b / rb2) - y2 ^ 2 * W8 * cosB / rb ^ 3 / W7 * (W1 / W7 * W2 + a *
+        y3b / rb2) -y2 ^ 2 * W8 * cosB / rb2 / W7 ^ 2 * (W1 / W7 * W2 + a * y3b / rb2) + y2 *
+        W8 * cosB / rb / W7 * (1 / rb * cosB * y2 / W7 * W2 - W1 / W7 ^ 2 * W2 / rb * y2 - W1 /
+        W7 * a / rb ^ 3 * y2 - 2 * a * y3b / rb2 ^ 2 * y2)) /π/(1 - nu)) +
+        b1 / 2 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 - nu) / rb * y1 / W6 - ((2 - 2 * nu) * cotB ^ 2 + 1 -
+        2 * nu)* cosB * (y1 / rb - sinB) / W7) +N1 / W6 ^ 2 * (y1 * cotB * (1 - W5) + nu * y3b -
+        a + y2 ^ 2 / W6 * W4) /rb *y1-N1 /W6 * ((1 - W5) * cotB + a * y1 ^ 2 * cotB / rb ^ 3 -
+        y2 ^ 2 / W6 ^ 2 * W4 / rb * y1 - y2 ^ 2 / W6 * a / rb ^ 3 * y1) -N1 * cosB * cotB / W7 *
+        W2 + N1 * z1b * cotB / W7 ^ 2 * W2 * (y1 / rb - sinB) + N1 * z1b * cotB / W7 * a / rb ^
+        3 * y1 - a * W8 * cotB / rb ^ 3 + 3 * a * y1 ^ 2 * W8 * cotB / rb ^ 5 - W8 / W6 ^ 2 * (-2 *
+        nu + 1 / rb * (N1 * y1 * cotB - a) + y2 ^ 2 / rb / W6 * W5 + a * y2 ^ 2 / rb ^ 3) /rb *
+        y1 + W8 / W6 * (-1 / rb ^ 3 * (N1 * y1 * cotB - a) * y1 + 1 / rb * N1 * cotB - y2 ^ 2 /
+        rb ^ 3 / W6 * W5 * y1 - y2 ^ 2 / rb2 / W6 ^ 2 * W5 * y1 - y2 ^ 2 / rb2 ^ 2 / W6 * a * y1 -
+        3 * a * y2 ^ 2 / rb ^ 5. * y1) -W8 / W7 ^ 2 * (cosB ^ 2 - 1 / rb * (N1 * z1b * cotB + a *
+        cosB) +a * y3b * z1b * cotB / rb ^ 3 - 1 / rb / W7 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB /
+        rb * W1)) * (y1 / rb - sinB) + W8 / W7 * (1 / rb ^ 3 * (N1 * z1b * cotB + a * cosB) *
+        y1 - 1 / rb * N1 * cosB * cotB + a * y3b * cosB * cotB / rb ^ 3 - 3 * a * y3b * z1b * cotB /
+        rb ^ 5. * y1 + 1 / rb ^ 3 / W7 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB / rb * W1) * y1 + 1 /
+        rb / W7 ^ 2 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB / rb * W1) * (y1 / rb - sinB) - 1 / rb /
+        W7 * (-a * cosB * cotB / rb * W1 + a * z1b * cotB / rb ^ 3 * W1 * y1 - a * z1b * cotB /
+        rb2 * cosB * y1))) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * ((2 - 2 * nu) * N1 * rFib_ry1 * cotB ^ 2 - N1 * y2 / W6 ^ 2 * ((W5 - 1) * cotB +
+        y1 / W6 * W4) /rb *y1+N1 *y2 /W6 * (-a / rb ^ 3 * y1 * cotB + 1 / W6 * W4 - y1 ^
+        2 / W6 ^ 2 * W4 / rb - y1 ^ 2 / W6 * a / rb ^ 3) +N1 * y2 * cotB / W7 ^ 2 * W9 * (y1 /
+        rb - sinB) +N1 * y2 * cotB / W7 * a / rb ^ 3 / cosB * y1 + 3 * a * y2 * W8 * cotB / rb ^
+        5. * y1 - y2 * W8 / rb ^ 3 / W6 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 /
+        W6)) * y1 - y2 * W8 / rb2 / W6 ^ 2 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 /
+        rb + 1 / W6)) * y1 + y2 * W8 / rb / W6 * (-2 * nu / W6 + 2 * nu * y1 ^ 2 / W6 ^ 2 / rb - a /
+        rb * (1 / rb + 1 / W6) + a * y1 ^ 2 / rb ^ 3 * (1 / rb + 1 / W6) - a * y1 / rb * (-1 /
+        rb ^ 3 * y1 - 1 / W6 ^ 2 / rb * y1)) -y2 * W8 * cotB / rb ^ 3 / W7 * ((-2 + 2 * nu) *
+        cosB + W1 / W7 * W9 + a * y3b / rb2 / cosB) * y1 - y2 * W8 * cotB / rb / W7 ^ 2 * ((-2 +
+        2 * nu)* cosB + W1 / W7 * W9 + a * y3b / rb2 / cosB) * (y1 / rb - sinB) + y2 * W8 *
+        cotB / rb / W7 * (1 / rb * cosB * y1 / W7 * W9 - W1 / W7 ^ 2 * W9 * (y1 / rb - sinB) -
+        W1 / W7 * a / rb ^ 3 / cosB * y1 - 2 * a * y3b / rb2 ^ 2 / cosB * y1)) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * (N1 * (-sinB * (y1 / rb - sinB) / W7 - 1 / W6 * (1 + a / rb) + y1 ^ 2 / W6 ^
+        2 * (1 + a / rb) / rb + y1 ^ 2 / W6 * a / rb ^ 3 + cosB / W7 * W2 - z1b / W7 ^ 2 * W2 *
+        (y1 / rb - sinB) - z1b / W7 * a / rb ^ 3 * y1) +W8 / rb * (a / rb2 + 1 / W6) - y1 ^ 2 *
+        W8 / rb ^ 3 * (a / rb2 + 1 / W6) + y1 * W8 / rb * (-2 * a / rb2 ^ 2 * y1 - 1 / W6 ^ 2 /
+        rb * y1) +W8 / W7 ^ 2 * (sinB * (cosB - a / rb) + z1b / rb * (1 + a * y3b / rb2) - 1 /
+        rb / W7 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1)) * (y1 / rb - sinB) - W8 / W7 *
+        (sinB * a / rb ^ 3 * y1 + cosB / rb * (1 + a * y3b / rb2) - z1b / rb ^ 3 * (1 + a * y3b /
+        rb2) * y1 - 2 * z1b / rb ^ 5 * a * y3b * y1 + 1 / rb ^ 3 / W7 * (y2 ^ 2 * cosB * sinB - a *
+        z1b / rb * W1) * y1 + 1 / rb / W7 ^ 2 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1) *
+        (y1 / rb - sinB) - 1 / rb / W7 * (-a * cosB / rb * W1 + a * z1b / rb ^ 3 * W1 * y1 - a *
+        z1b / rb2 * cosB * y1))) /π/(1 - nu)))
+
+    v13 = (b1 / 2 * (1 / 4 * ((-2 + 2 * nu) * N1 * rFib_ry3 * cotB ^ 2 - N1 * y2 / W6 ^ 2 * ((1 - W5) *
+        cotB - y1 / W6 * W4) * (y3b / rb + 1) + N1 * y2 / W6 * (1 / 2 * a / rb ^ 3 * 2 * y3b * cotB +
+        y1 / W6 ^ 2 * W4 * (y3b / rb + 1) + 1 / 2 * y1 / W6 * a / rb ^ 3 * 2 * y3b) -N1 * y2 * cosB *
+        cotB / W7 ^ 2 * W2 * W3 - 1 / 2 * N1 * y2 * cosB * cotB / W7 * a / rb ^ 3 * 2 * y3b + a /
+        rb ^ 3 * y2 * cotB - 3 / 2 * a * y2 * W8 * cotB / rb ^ 5 * 2 * y3b + y2 / rb / W6 * (-N1 *
+        cotB + y1 / W6 * W5 + a * y1 / rb2) -1 / 2 * y2 * W8 / rb ^ 3 / W6 * (-N1 * cotB + y1 /
+        W6 * W5 + a * y1 / rb2)* 2 * y3b - y2 * W8 / rb / W6 ^ 2 * (-N1 * cotB + y1 / W6 * W5 +
+        a * y1 / rb2) * (y3b / rb + 1) + y2 * W8 / rb / W6 * (-y1 / W6 ^ 2 * W5 * (y3b / rb +
+        1) -1 / 2 * y1 / W6 * a / rb ^ 3 * 2 * y3b - a * y1 / rb2 ^ 2 * 2 * y3b) +y2 / rb / W7 *
+        (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) * cosB) -
+        a * y3b * cosB * cotB / rb2) -1 / 2 * y2 * W8 / rb ^ 3 / W7 * (cosB / W7 * (W1 * (N1 *
+        cosB - a / rb)* cotB + (2 - 2 * nu) * (rb * sinB - y1) * cosB) -a * y3b * cosB * cotB /
+        rb2)* 2 * y3b - y2 * W8 / rb / W7 ^ 2 * (cosB / W7 * (W1 * (N1 * cosB - a / rb) * cotB +
+        (2 - 2 * nu) * (rb * sinB - y1) * cosB) -a * y3b * cosB * cotB / rb2) * W3 + y2 * W8 / rb /
+        W7 * (-cosB / W7 ^ 2 * (W1 * (N1 * cosB - a / rb) * cotB + (2 - 2 * nu) * (rb * sinB - y1) *
+        cosB) * W3 + cosB / W7 * ((cosB * y3b / rb + 1) * (N1 * cosB - a / rb) * cotB + 1 / 2 * W1 *
+        a / rb ^ 3 * 2 * y3b * cotB + 1 / 2 * (2 - 2 * nu) / rb * sinB * 2 * y3b * cosB) -a * cosB *
+        cotB / rb2 + a * y3b * cosB * cotB / rb2 ^ 2 * 2 * y3b)) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 + nu) * (y3b / rb + 1) / W6 - ((2 - 2 * nu) * cotB ^
+        2 + 1)* cosB * W3 / W7) -N1 / W6 ^ 2 * (-N1 * y1 * cotB + nu * y3b - a + a * y1 * cotB /
+        rb + y1 ^ 2 / W6 * W4) * (y3b / rb + 1) + N1 / W6 * (nu - 1 / 2 * a * y1 * cotB / rb ^ 3 * 2 *
+        y3b - y1 ^ 2 / W6 ^ 2 * W4 * (y3b / rb + 1) - 1 / 2 * y1 ^ 2 / W6 * a / rb ^ 3 * 2 * y3b) +
+        N1 * cotB / W7 ^ 2 * (z1b * cosB - a * (rb * sinB - y1) / rb / cosB) * W3 - N1 * cotB /
+        W7 * (cosB * sinB - 1 / 2 * a / rb2 * sinB * 2 * y3b / cosB + 1 / 2 * a * (rb * sinB - y1) /
+        rb ^ 3 / cosB * 2 * y3b) -a / rb ^ 3 * y1 * cotB + 3 / 2 * a * y1 * W8 * cotB / rb ^ 5 * 2 *
+        y3b + 1 / W6 * (2 * nu + 1 / rb * (N1 * y1 * cotB + a) - y1 ^ 2 / rb / W6 * W5 - a * y1 ^ 2 /
+        rb ^ 3) -W8 / W6 ^ 2 * (2 * nu + 1 / rb * (N1 * y1 * cotB + a) - y1 ^ 2 / rb / W6 * W5 - a *
+        y1 ^ 2 / rb ^ 3) * (y3b / rb + 1) + W8 / W6 * (-1 / 2 / rb ^ 3 * (N1 * y1 * cotB + a) * 2 *
+        y3b + 1 / 2 * y1 ^ 2 / rb ^ 3 / W6 * W5 * 2 * y3b + y1 ^ 2 / rb / W6 ^ 2 * W5 * (y3b / rb +
+        1) +1 / 2 * y1 ^ 2 / rb2 ^ 2 / W6 * a * 2 * y3b + 3 / 2 * a * y1 ^ 2 / rb ^ 5 * 2 * y3b) +
+        cotB / W7 * (-cosB * sinB + a * y1 * y3b / rb ^ 3 / cosB + (rb * sinB - y1) / rb * ((2 -
+        2 * nu)* cosB - W1 / W7 * W9)) -W8 * cotB / W7 ^ 2 * (-cosB * sinB + a * y1 * y3b / rb ^
+        3 / cosB + (rb * sinB - y1) / rb * ((2 - 2 * nu) * cosB - W1 / W7 * W9)) * W3 + W8 * cotB /
+        W7 * (a / rb ^ 3 / cosB * y1 - 3 / 2 * a * y1 * y3b / rb ^ 5. / cosB * 2 * y3b + 1 / 2 /
+        rb2 * sinB * 2 * y3b * ((2 - 2 * nu) * cosB - W1 / W7 * W9) - 1 / 2 * (rb * sinB - y1) / rb ^
+        3 * ((2 - 2 * nu) * cosB - W1 / W7 * W9) * 2 * y3b + (rb * sinB - y1) / rb * (-(cosB * y3b /
+        rb + 1) /W7 *W9+W1 /W7 ^ 2 * W9 * W3 + 1 / 2 * W1 / W7 * a / rb ^ 3 / cosB * 2 *
+        y3b))) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * (N1 * (-y2 / W6 ^ 2 * (1 + a / rb) * (y3b / rb + 1) - 1 / 2 * y2 / W6 * a /
+        rb ^ 3 * 2 * y3b + y2 * cosB / W7 ^ 2 * W2 * W3 + 1 / 2 * y2 * cosB / W7 * a / rb ^ 3 * 2 *
+        y3b) -y2 / rb * (a / rb2 + 1 / W6) + 1 / 2 * y2 * W8 / rb ^ 3 * (a / rb2 + 1 / W6) * 2 *
+        y3b - y2 * W8 / rb * (-a / rb2 ^ 2 * 2 * y3b - 1 / W6 ^ 2 * (y3b / rb + 1)) + y2 * cosB /
+        rb / W7 * (W1 / W7 * W2 + a * y3b / rb2) - 1 / 2 * y2 * W8 * cosB / rb ^ 3 / W7 * (W1 /
+        W7 * W2 + a * y3b / rb2)* 2 * y3b - y2 * W8 * cosB / rb / W7 ^ 2 * (W1 / W7 * W2 + a *
+        y3b / rb2) * W3 + y2 * W8 * cosB / rb / W7 * ((cosB * y3b / rb + 1) / W7 * W2 - W1 /
+        W7 ^ 2 * W2 * W3 - 1 / 2 * W1 / W7 * a / rb ^ 3 * 2 * y3b + a / rb2 - a * y3b / rb2 ^ 2 * 2 *
+        y3b)) /π/(1 - nu)) +
+        b1 / 2 * (1 / 4 * ((2 - 2 * nu) * (N1 * rFib_ry1 * cotB - y1 / W6 ^ 2 * W5 / rb * y2 - y2 / W6 *
+        a / rb ^ 3 * y1 + y2 * cosB / W7 ^ 2 * W2 * (y1 / rb - sinB) + y2 * cosB / W7 * a / rb ^
+        3 * y1) -y2 * W8 / rb ^ 3 * (2 * nu / W6 + a / rb2) * y1 + y2 * W8 / rb * (-2 * nu / W6 ^
+        2 / rb * y1 - 2 * a / rb2 ^ 2 * y1) -y2 * W8 * cosB / rb ^ 3 / W7 * (1 - 2 * nu - W1 / W7 *
+        W2 - a * y3b / rb2) * y1 - y2 * W8 * cosB / rb / W7 ^ 2 * (1 - 2 * nu - W1 / W7 * W2 - a *
+        y3b / rb2) * (y1 / rb - sinB) + y2 * W8 * cosB / rb / W7 * (-1 / rb * cosB * y1 / W7 *
+        W2 + W1 / W7 ^ 2 * W2 * (y1 / rb - sinB) + W1 / W7 * a / rb ^ 3 * y1 + 2 * a * y3b / rb2 ^
+        2 * y1)) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * ((-2 + 2 * nu) * N1 * cotB * (1 / rb * y1 / W6 - cosB * (y1 / rb - sinB) / W7) -
+        (2 - 2 * nu) / W6 * W5 + (2 - 2 * nu) * y1 ^ 2 / W6 ^ 2 * W5 / rb + (2 - 2 * nu) * y1 ^ 2 / W6 *
+        a / rb ^ 3 + (2 - 2 * nu) * cosB / W7 * W2 - (2 - 2 * nu) * z1b / W7 ^ 2 * W2 * (y1 / rb -
+        sinB) -(2 - 2 * nu) * z1b / W7 * a / rb ^ 3 * y1 - W8 / rb ^ 3 * (N1 * cotB - 2 * nu * y1 /
+        W6 - a * y1 / rb2) * y1 + W8 / rb * (-2 * nu / W6 + 2 * nu * y1 ^ 2 / W6 ^ 2 / rb - a / rb2 +
+        2 * a * y1 ^ 2 / rb2 ^ 2) +W8 / W7 ^ 2 * (cosB * sinB + W1 * cotB / rb * ((2 - 2 * nu) *
+        cosB - W1 / W7) +a / rb * (sinB - y3b * z1b / rb2 - z1b * W1 / rb / W7)) * (y1 / rb -
+        sinB) -W8 / W7 * (1 / rb2 * cosB * y1 * cotB * ((2 - 2 * nu) * cosB - W1 / W7) - W1 *
+        cotB / rb ^ 3 * ((2 - 2 * nu) * cosB - W1 / W7) * y1 + W1 * cotB / rb * (-1 / rb * cosB *
+        y1 / W7 + W1 / W7 ^ 2 * (y1 / rb - sinB)) -a / rb ^ 3 * (sinB - y3b * z1b / rb2 -
+        z1b * W1 / rb / W7) * y1 + a / rb * (-y3b * cosB / rb2 + 2 * y3b * z1b / rb2 ^ 2 * y1 -
+        cosB * W1 / rb / W7 - z1b / rb2 * cosB * y1 / W7 + z1b * W1 / rb ^ 3 / W7 * y1 + z1b *
+        W1 / rb / W7 ^ 2 * (y1 / rb - sinB)))) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * ((2 - 2 * nu) * rFib_ry1 - (2 - 2 * nu) * y2 * sinB / W7 ^ 2 * W2 * (y1 / rb -
+        sinB) -(2 - 2 * nu) * y2 * sinB / W7 * a / rb ^ 3 * y1 - y2 * W8 * sinB / rb ^ 3 / W7 * (1 +
+        W1 / W7 * W2 + a * y3b / rb2) * y1 - y2 * W8 * sinB / rb / W7 ^ 2 * (1 + W1 / W7 * W2 +
+        a * y3b / rb2) * (y1 / rb - sinB) + y2 * W8 * sinB / rb / W7 * (1 / rb * cosB * y1 /
+        W7 * W2 - W1 / W7 ^ 2 * W2 * (y1 / rb - sinB) - W1 / W7 * a / rb ^ 3 * y1 - 2 * a * y3b /
+        rb2 ^ 2 * y1)) /π/(1 - nu)))
+
+    v23 = (b1 / 2 * (1 / 4 * (N1 * (((2 - 2 * nu) * cotB ^ 2 - nu) * (y3b / rb + 1) / W6 - ((2 - 2 * nu) *
+        cotB ^ 2 + 1 - 2 * nu)* cosB * W3 / W7) +N1 / W6 ^ 2 * (y1 * cotB * (1 - W5) + nu * y3b - a +
+        y2 ^ 2 / W6 * W4) * (y3b / rb + 1) - N1 / W6 * (1 / 2 * a * y1 * cotB / rb ^ 3 * 2 * y3b +
+        nu - y2 ^ 2 / W6 ^ 2 * W4 * (y3b / rb + 1) - 1 / 2 * y2 ^ 2 / W6 * a / rb ^ 3 * 2 * y3b) -N1 *
+        sinB * cotB / W7 * W2 + N1 * z1b * cotB / W7 ^ 2 * W2 * W3 + 1 / 2 * N1 * z1b * cotB / W7 *
+        a / rb ^ 3 * 2 * y3b - a / rb ^ 3 * y1 * cotB + 3 / 2 * a * y1 * W8 * cotB / rb ^ 5 * 2 * y3b +
+        1 / W6 * (-2 * nu + 1 / rb * (N1 * y1 * cotB - a) + y2 ^ 2 / rb / W6 * W5 + a * y2 ^ 2 /
+        rb ^ 3) -W8 / W6 ^ 2 * (-2 * nu + 1 / rb * (N1 * y1 * cotB - a) + y2 ^ 2 / rb / W6 * W5 +
+        a * y2 ^ 2 / rb ^ 3) * (y3b / rb + 1) + W8 / W6 * (-1 / 2 / rb ^ 3 * (N1 * y1 * cotB - a) *
+        2 * y3b - 1 / 2 * y2 ^ 2 / rb ^ 3 / W6 * W5 * 2 * y3b - y2 ^ 2 / rb / W6 ^ 2 * W5 * (y3b /
+        rb + 1) -1 / 2 * y2 ^ 2 / rb2 ^ 2 / W6 * a * 2 * y3b - 3 / 2 * a * y2 ^ 2 / rb ^ 5 * 2 * y3b) +
+        1 / W7 * (cosB ^ 2 - 1 / rb * (N1 * z1b * cotB + a * cosB) + a * y3b * z1b * cotB / rb ^
+        3 - 1 / rb / W7 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB / rb * W1)) -W8 / W7 ^ 2 * (cosB ^ 2 -
+        1 / rb * (N1 * z1b * cotB + a * cosB) + a * y3b * z1b * cotB / rb ^ 3 - 1 / rb / W7 *
+        (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB / rb * W1)) * W3 + W8 / W7 * (1 / 2 / rb ^ 3 * (N1 *
+        z1b * cotB + a * cosB)* 2 * y3b - 1 / rb * N1 * sinB * cotB + a * z1b * cotB / rb ^ 3 + a *
+        y3b * sinB * cotB / rb ^ 3 - 3 / 2 * a * y3b * z1b * cotB / rb ^ 5 * 2 * y3b + 1 / 2 / rb ^
+        3 / W7 * (y2 ^ 2 * cosB ^ 2 - a * z1b * cotB / rb * W1) * 2 * y3b + 1 / rb / W7 ^ 2 * (y2 ^
+        2 * cosB ^ 2 - a * z1b * cotB / rb * W1) * W3 - 1 / rb / W7 * (-a * sinB * cotB / rb * W1 +
+        1 / 2 * a * z1b * cotB / rb ^ 3 * W1 * 2 * y3b - a * z1b * cotB / rb * (cosB * y3b / rb +
+        1)))) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * ((2 - 2 * nu) * N1 * rFib_ry3 * cotB ^ 2 - N1 * y2 / W6 ^ 2 * ((W5 - 1) * cotB +
+        y1 / W6 * W4) * (y3b / rb + 1) + N1 * y2 / W6 * (-1 / 2 * a / rb ^ 3 * 2 * y3b * cotB - y1 /
+        W6 ^ 2 * W4 * (y3b / rb + 1) - 1 / 2 * y1 / W6 * a / rb ^ 3 * 2 * y3b) +N1 * y2 * cotB /
+        W7 ^ 2 * W9 * W3 + 1 / 2 * N1 * y2 * cotB / W7 * a / rb ^ 3 / cosB * 2 * y3b - a / rb ^ 3 *
+        y2 * cotB + 3 / 2 * a * y2 * W8 * cotB / rb ^ 5 * 2 * y3b + y2 / rb / W6 * (N1 * cotB - 2 *
+        nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6)) -1 / 2 * y2 * W8 / rb ^ 3 / W6 * (N1 *
+        cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6))* 2 * y3b - y2 * W8 / rb / W6 ^
+        2 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb * (1 / rb + 1 / W6)) * (y3b / rb + 1) + y2 *
+        W8 / rb / W6 * (2 * nu * y1 / W6 ^ 2 * (y3b / rb + 1) + 1 / 2 * a * y1 / rb ^ 3 * (1 / rb +
+        1 / W6)* 2 * y3b - a * y1 / rb * (-1 / 2 / rb ^ 3 * 2 * y3b - 1 / W6 ^ 2 * (y3b / rb +
+        1))) +y2 * cotB / rb / W7 * ((-2 + 2 * nu) * cosB + W1 / W7 * W9 + a * y3b / rb2 / cosB) -
+        1 / 2 * y2 * W8 * cotB / rb ^ 3 / W7 * ((-2 + 2 * nu) * cosB + W1 / W7 * W9 + a * y3b /
+        rb2 / cosB)* 2 * y3b - y2 * W8 * cotB / rb / W7 ^ 2 * ((-2 + 2 * nu) * cosB + W1 / W7 *
+        W9 + a * y3b / rb2 / cosB) * W3 + y2 * W8 * cotB / rb / W7 * ((cosB * y3b / rb + 1) /
+        W7 * W9 - W1 / W7 ^ 2 * W9 * W3 - 1 / 2 * W1 / W7 * a / rb ^ 3 / cosB * 2 * y3b + a / rb2 /
+        cosB - a * y3b / rb2 ^ 2 / cosB * 2 * y3b)) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * (N1 * (-sinB * W3 / W7 + y1 / W6 ^ 2 * (1 + a / rb) * (y3b / rb + 1) +
+        1 / 2 * y1 / W6 * a / rb ^ 3 * 2 * y3b + sinB / W7 * W2 - z1b / W7 ^ 2 * W2 * W3 - 1 / 2 *
+        z1b / W7 * a / rb ^ 3 * 2 * y3b) +y1 / rb * (a / rb2 + 1 / W6) - 1 / 2 * y1 * W8 / rb ^
+        3 * (a / rb2 + 1 / W6) * 2 * y3b + y1 * W8 / rb * (-a / rb2 ^ 2 * 2 * y3b - 1 / W6 ^ 2 *
+        (y3b / rb + 1)) -1 / W7 * (sinB * (cosB - a / rb) + z1b / rb * (1 + a * y3b / rb2) - 1 /
+        rb / W7 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1)) +W8 / W7 ^ 2 * (sinB * (cosB -
+        a / rb) +z1b / rb * (1 + a * y3b / rb2) - 1 / rb / W7 * (y2 ^ 2 * cosB * sinB - a * z1b /
+        rb * W1)) * W3 - W8 / W7 * (1 / 2 * sinB * a / rb ^ 3 * 2 * y3b + sinB / rb * (1 + a * y3b /
+        rb2) -1 / 2 * z1b / rb ^ 3 * (1 + a * y3b / rb2) * 2 * y3b + z1b / rb * (a / rb2 - a *
+        y3b / rb2 ^ 2 * 2 * y3b) +1 / 2 / rb ^ 3 / W7 * (y2 ^ 2 * cosB * sinB - a * z1b / rb *
+        W1)* 2 * y3b + 1 / rb / W7 ^ 2 * (y2 ^ 2 * cosB * sinB - a * z1b / rb * W1) * W3 - 1 /
+        rb / W7 * (-a * sinB / rb * W1 + 1 / 2 * a * z1b / rb ^ 3 * W1 * 2 * y3b - a * z1b / rb *
+        (cosB * y3b / rb + 1)))) /π/(1 - nu)) +
+        b1 / 2 * (1 / 4 * ((2 - 2 * nu) * (N1 * rFib_ry2 * cotB + 1 / W6 * W5 - y2 ^ 2 / W6 ^ 2 * W5 /
+        rb - y2 ^ 2 / W6 * a / rb ^ 3 - cosB / W7 * W2 + y2 ^ 2 * cosB / W7 ^ 2 * W2 / rb + y2 ^ 2 *
+        cosB / W7 * a / rb ^ 3) +W8 / rb * (2 * nu / W6 + a / rb2) - y2 ^ 2 * W8 / rb ^ 3 * (2 *
+        nu / W6 + a / rb2) +y2 * W8 / rb * (-2 * nu / W6 ^ 2 / rb * y2 - 2 * a / rb2 ^ 2 * y2) +
+        W8 * cosB / rb / W7 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) - y2 ^ 2 * W8 * cosB /
+        rb ^ 3 / W7 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) - y2 ^ 2 * W8 * cosB / rb2 / W7 ^
+        2 * (1 - 2 * nu - W1 / W7 * W2 - a * y3b / rb2) + y2 * W8 * cosB / rb / W7 * (-1 / rb *
+        cosB * y2 / W7 * W2 + W1 / W7 ^ 2 * W2 / rb * y2 + W1 / W7 * a / rb ^ 3 * y2 + 2 * a *
+        y3b / rb2 ^ 2 * y2)) /π/(1 - nu)) +
+        b2 / 2 * (1 / 4 * ((-2 + 2 * nu) * N1 * cotB * (1 / rb * y2 / W6 - cosB / rb * y2 / W7) + (2 -
+        2 * nu) * y1 / W6 ^ 2 * W5 / rb * y2 + (2 - 2 * nu) * y1 / W6 * a / rb ^ 3 * y2 - (2 - 2 *
+        nu) * z1b / W7 ^ 2 * W2 / rb * y2 - (2 - 2 * nu) * z1b / W7 * a / rb ^ 3 * y2 - W8 / rb ^
+        3 * (N1 * cotB - 2 * nu * y1 / W6 - a * y1 / rb2) * y2 + W8 / rb * (2 * nu * y1 / W6 ^ 2 /
+        rb * y2 + 2 * a * y1 / rb2 ^ 2 * y2) +W8 / W7 ^ 2 * (cosB * sinB + W1 * cotB / rb * ((2 -
+        2 * nu)* cosB - W1 / W7) +a / rb * (sinB - y3b * z1b / rb2 - z1b * W1 / rb / W7)) /
+        rb * y2 - W8 / W7 * (1 / rb2 * cosB * y2 * cotB * ((2 - 2 * nu) * cosB - W1 / W7) - W1 *
+        cotB / rb ^ 3 * ((2 - 2 * nu) * cosB - W1 / W7) * y2 + W1 * cotB / rb * (-cosB / rb *
+        y2 / W7 + W1 / W7 ^ 2 / rb * y2) -a / rb ^ 3 * (sinB - y3b * z1b / rb2 - z1b * W1 /
+        rb / W7) * y2 + a / rb * (2 * y3b * z1b / rb2 ^ 2 * y2 - z1b / rb2 * cosB * y2 / W7 +
+        z1b * W1 / rb ^ 3 / W7 * y2 + z1b * W1 / rb2 / W7 ^ 2 * y2))) /π/(1 - nu)) +
+        b3 / 2 * (1 / 4 * ((2 - 2 * nu) * rFib_ry2 + (2 - 2 * nu) * sinB / W7 * W2 - (2 - 2 * nu) * y2 ^ 2 *
+        sinB / W7 ^ 2 * W2 / rb - (2 - 2 * nu) * y2 ^ 2 * sinB / W7 * a / rb ^ 3 + W8 * sinB / rb /
+        W7 * (1 + W1 / W7 * W2 + a * y3b / rb2) - y2 ^ 2 * W8 * sinB / rb ^ 3 / W7 * (1 + W1 /
+        W7 * W2 + a * y3b / rb2) -y2 ^ 2 * W8 * sinB / rb2 / W7 ^ 2 * (1 + W1 / W7 * W2 + a *
+        y3b / rb2) +y2 * W8 * sinB / rb / W7 * (1 / rb * cosB * y2 / W7 * W2 - W1 / W7 ^ 2 *
+        W2 / rb * y2 - W1 / W7 * a / rb ^ 3 * y2 - 2 * a * y3b / rb2 ^ 2 * y2)) /π/(1 - nu)))
+
+    return v11, v22, v33, v12, v13, v23
+end
+
+function td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    A = transform_matrix(P1, P2, P3)
+    _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
+end
+
+"""
+    td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+
+Compute stress risen from triangular dislocation in elastic *fullspace*.
+    Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
+    for details, especially the **coordinate system** used here.
+
+## Arguments
+The same as [`td_stress_hs`](@ref)
+"""
+function td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    exx, eyy, ezz, exy, exz, eyz = td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda)
+    return _strain2stress(exx, eyy, ezz, exy, exz, eyz, lambda, mu)
+end
+
+@inline function _strain2stress(exx::T, eyy::T, ezz::T, exy::T, exz::T, eyz::T, lambda::T, mu::T) where T
+    ekk = exx + eyy + ezz
+    σxx = lambda * ekk + 2mu * exx
+    σyy = lambda * ekk + 2mu * eyy
+    σzz = lambda * ekk + 2mu * ezz
+    σxy = 2mu * exy
+    σxz = 2mu * exz
+    σyz = 2mu * eyz
+    return σxx, σyy, σzz, σxy, σxz, σyz
+end
+
+@inline function _td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T, At::M) where {T, V, M}
+    nu = 1 / (1 + lambda / mu) / 2
+    bx, by, bz = Ts, Ss, Ds
+    p1, p2, p3 = [zeros(T, 3) for _ in 1: 3]
+    x, y, z = coord_trans(X - P2[1], Y - P2[2], Z - P2[3], At)
+    p1[1], p1[2], p1[3] = coord_trans(P1[1] - P2[1], P1[2] - P2[2], P1[3] - P2[3], At)
+    p3[1], p3[2], p3[3] = coord_trans(P3[1] - P2[1], P3[2] - P2[2], P3[3] - P2[3], At)
+
+    e12 = normalize(p2 - p1)
+    e13 = normalize(p3 - p1)
+    e23 = normalize(p3 - p2)
+
+    A = acos(dot(e12, e13))
+    B = acos(dot(-e12, e23))
+    C = acos(dot(e23, e13))
+
+    Trimode = trimodefinder(y, z, x, p1, p2, p3)
+
+    if Trimode == 1
+        Exx1Tp, Eyy1Tp, Ezz1Tp, Exy1Tp, Exz1Tp, Eyz1Tp = TDSetupS(x, y, z, A, bx, by, bz, nu, p1, -e13)
+        Exx2Tp, Eyy2Tp, Ezz2Tp, Exy2Tp, Exz2Tp, Eyz2Tp = TDSetupS(x, y, z, B, bx, by, bz, nu, p2, e12)
+        Exx3Tp, Eyy3Tp, Ezz3Tp, Exy3Tp, Exz3Tp, Eyz3Tp = TDSetupS(x, y, z, C, bx, by, bz, nu, p3, e23)
+        exx = Exx1Tp + Exx2Tp + Exx3Tp
+        eyy = Eyy1Tp + Eyy2Tp + Eyy3Tp
+        ezz = Ezz1Tp + Ezz2Tp + Ezz3Tp
+        exy = Exy1Tp + Exy2Tp + Exy3Tp
+        exz = Exz1Tp + Exz2Tp + Exz3Tp
+        eyz = Eyz1Tp + Eyz2Tp + Eyz3Tp
+    end
+
+    if Trimode == -1
+        Exx1Tn, Eyy1Tn, Ezz1Tn, Exy1Tn, Exz1Tn, Eyz1Tn = TDSetupS(x, y, z, A, bx, by, bz, nu, p1, e13)
+        Exx2Tn, Eyy2Tn, Ezz2Tn, Exy2Tn, Exz2Tn, Eyz2Tn = TDSetupS(x, y, z, B, bx, by, bz, nu, p2, -e12)
+        Exx3Tn, Eyy3Tn, Ezz3Tn, Exy3Tn, Exz3Tn, Eyz3Tn = TDSetupS(x, y, z, C, bx, by, bz, nu, p3, -e23)
+        exx = Exx1Tn + Exx2Tn + Exx3Tn
+        eyy = Eyy1Tn + Eyy2Tn + Eyy3Tn
+        ezz = Ezz1Tn + Ezz2Tn + Ezz3Tn
+        exy = Exy1Tn + Exy2Tn + Exy3Tn
+        exz = Exz1Tn + Exz2Tn + Exz3Tn
+        eyz = Eyz1Tn + Eyz2Tn + Eyz3Tn
+    end
+
+    if Trimode == 0
+        exx = NaN
+        eyy = NaN
+        ezz = NaN
+        exy = NaN
+        exz = NaN
+        eyz = NaN
+    end
+
+    Exx, Eyy, Ezz, Exy, Exz, Eyz = TensTrans(exx, eyy, ezz, exy, exz, eyz, At')
+    return Exx, Eyy, Ezz, Exy, Exz, Eyz
+end
+
+@inline function TensTrans(Txx1, Tyy1, Tzz1, Txy1, Txz1, Tyz1, A)
+    Txx2 = A[1] ^ 2 * Txx1 + 2 * A[1] * A[4] * Txy1 + 2 * A[1] * A[7] * Txz1 + 2 * A[4] * A[7] * Tyz1 + A[4] ^ 2 * Tyy1 + A[7] ^ 2 * Tzz1
+    Tyy2 = A[2] ^ 2 * Txx1 + 2 * A[2] * A[5] * Txy1 + 2 * A[2] * A[8] * Txz1 + 2 * A[5] * A[8] * Tyz1 + A[5] ^ 2 * Tyy1 + A[8] ^ 2 * Tzz1
+    Tzz2 = A[3] ^ 2 * Txx1 + 2 * A[3] * A[6] * Txy1 + 2 * A[3] * A[9] * Txz1 + 2 * A[6] * A[9] * Tyz1 + A[6] ^ 2 * Tyy1 + A[9] ^ 2 * Tzz1
+    Txy2 = A[1] * A[2] * Txx1 + (A[1] * A[5] + A[2] * A[4]) * Txy1 + (A[1] * A[8] + A[2] * A[7])* Txz1 + (A[8] * A[4] + A[7] * A[5]) * Tyz1 + A[5] * A[4] * Tyy1 + A[7] * A[8] * Tzz1
+    Txz2 = A[1] * A[3] * Txx1 + (A[1] * A[6] + A[3] * A[4]) * Txy1 + (A[1] * A[9] + A[3] * A[7])* Txz1 + (A[9] * A[4] + A[7] * A[6]) * Tyz1 + A[6] * A[4] * Tyy1 + A[7] * A[9] * Tzz1
+    Tyz2 = A[2] * A[3] * Txx1 + (A[3] * A[5] + A[2] * A[6]) * Txy1 + (A[3] * A[8] + A[2] * A[9])* Txz1 + (A[8] * A[6] + A[9] * A[5]) * Tyz1 + A[5] * A[6] * Tyy1 + A[8] * A[9] * Tzz1
+    return Txx2, Tyy2, Tzz2, Txy2, Txz2, Tyz2
+end
+
+@inline function TDSetupS(x::T, y::T, z::T, alpha::T, bx::T, by::T, bz::T, nu::T, TriVertex::V, SideVec::V) where {T, V}
+    y1 = SideVec[3] * (y - TriVertex[2]) - SideVec[2] * (z - TriVertex[3])
+    z1 = SideVec[2] * (y - TriVertex[2]) + SideVec[3] * (z - TriVertex[3])
+    by1 = SideVec[3] * by - SideVec[2] * bz
+    bz1 = SideVec[2] * by + SideVec[3] * bz
+
+    exx, eyy, ezz, exy, exz, eyz = AngDisStrain(x, y1, z1, -π + alpha, bx, by1, bz1, nu)
+    B = zeros(T, 3, 3)
+    B[1,1] = one(T)
+    B[2,2] = SideVec[3]
+    B[2,3] = SideVec[2]
+    B[3,2] = -SideVec[2]
+    B[3,3] = SideVec[3]
+    exx, eyy, ezz, exy, exz, eyz = TensTrans(exx, eyy, ezz, exy, exz, eyz, B)
+    return exx, eyy, ezz, exy, exz, eyz
+end
+
+@inline function AngDisStrain(x::T, y::T, z::T, alpha::T, bx::T, by::T, bz::T, nu::T) where T
+    sinA, cosA = sincos(alpha)
+    eta = y * cosA - z * sinA
+    zeta = y * sinA + z * cosA
+    x2 = x ^ 2
+    y2 = y ^ 2
+    z2 = z ^ 2
+    r2 = x2 + y2 + z2
+    r = sqrt(r2) # use `hypot` for higher precision
+    r3 = r2 * r
+    rz = r * (r - z)
+    r2z2 = rz ^ 2
+    r3z = r3 * (r - z)
+    W = zeta - r
+    W2 = W ^ 2
+    Wr = W * r
+    W2r = W2 * r
+    Wr3 = W * r3
+    W2r2 = W2 * r2
+    C = (r * cosA - z) / Wr
+    S = (r * sinA - y) / Wr
+
+    rFi_rx = (eta / r / (r - zeta) - y / r / (r - z)) / 4 / π
+    rFi_ry = (x / r / (r - z) - cosA * x / r / (r - zeta)) / 4 / π
+    rFi_rz = (sinA * x / r / (r - zeta)) / 4 / π
+
+    Exx = (bx * (rFi_rx) + bx / 8 / π / (1 - nu) * (eta / Wr + eta * x2 / W2r2 - eta * x2 / Wr3 + y / rz -
+        x2 * y / r2z2 - x2 * y / r3z) - by * x / 8 / π / (1 - nu) * (((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3) * cosA +
+        (2 * nu + 1) / rz - x2 / r2z2 - x2 / r3z) + bz * x * sinA / 8 / π / (1 - nu) * ((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3))
+
+    Eyy = (by * (rFi_ry) +
+        bx / 8 / π / (1 - nu) * ((1 / Wr + S ^ 2 - y2 / Wr3) * eta + (2 * nu + 1) * y / rz - y ^ 3 / r2z2 -
+        y ^ 3 / r3z - 2 * nu * cosA * S) -
+        by * x / 8 / π / (1 - nu) * (1 / rz - y2 / r2z2 - y2 / r3z +
+        (1 / Wr + S ^ 2 - y2 / Wr3) * cosA) +
+        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + S ^ 2 - y2 / Wr3))
+
+    Ezz = (bz * (rFi_rz) +
+        bx / 8 / π / (1 - nu) * (eta / W / r + eta * C ^ 2 - eta * z2 / Wr3 + y * z / r3 +
+        2 * nu * sinA * C) -
+        by * x / 8 / π / (1 - nu) * ((1 / Wr + C ^ 2 - z2 / Wr3) * cosA + z / r3) +
+        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + C ^ 2 - z2 / Wr3))
+
+    Exy = (bx * (rFi_ry) / 2 + by * (rFi_rx) / 2 -
+        bx / 8 / π / (1 - nu) * (x * y2 / r2z2 - nu * x / rz + x * y2 / r3z - nu * x * cosA / Wr +
+        eta * x * S / Wr + eta * x * y / Wr3) +
+        by / 8 / π / (1 - nu) * (x2 * y / r2z2 - nu * y / rz + x2 * y / r3z + nu * cosA * S +
+        x2 * y * cosA / Wr3 + x2 * cosA * S / Wr) -
+        bz * sinA / 8 / π / (1 - nu) * (nu * S + x2 * S / Wr + x2 * y / Wr3))
+
+    Exz = (bx * (rFi_rz) / 2 + bz * (rFi_rx) / 2 -
+        bx / 8 / π / (1 - nu) * (-x * y / r3 + nu * x * sinA / Wr + eta * x * C / Wr +
+        eta * x * z / Wr3) +
+        by / 8 / π / (1 - nu) * (-x2 / r3 + nu / r + nu * cosA * C + x2 * z * cosA / Wr3 +
+        x2 * cosA * C / Wr) -
+        bz * sinA / 8 / π / (1 - nu) * (nu * C + x2 * C / Wr + x2 * z / Wr3))
+
+    Eyz = (by * (rFi_rz) / 2 + bz * (rFi_ry) / 2 +
+        bx / 8 / π / (1 - nu) * (y2 / r3 - nu / r - nu * cosA * C + nu * sinA * S + eta * sinA * cosA / W2 -
+        eta * (y * cosA + z * sinA) / W2r + eta * y * z / W2r2 - eta * y * z / Wr3) -
+        by * x / 8 / π / (1 - nu) * (y / r3 + sinA * cosA ^ 2 / W2 - cosA * (y * cosA + z * sinA) /
+        W2r + y * z * cosA / W2r2 - y * z * cosA / Wr3) -
+        bz * x * sinA / 8 / π / (1 - nu) * (y * z / Wr3 - sinA * cosA / W2 + (y * cosA + z * sinA) /
+        W2r - y * z / W2r2))
+
+    return Exx, Eyy, Ezz, Exy, Exz, Eyz
+end
+
+function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    A = transform_matrix(P1, P2, P3)
+    strms11, strms22, strms33, strms12, strms13, strms23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
+    strfsc11, strfsc22, strfsc33, strfsc12, strfsc13, strfsc23 = _TDstrain_HarFunc(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A)
+    P1[3] *= -one(T)
+    P2[3] *= -one(T)
+    P3[3] *= -one(T)
+    allatsurface = P1[3] == zero(T) && P2[3] == zero(T) && P3[3] == zero(T)
+    if !allatsurface
+        A *= -one(T)
+        A[3,1] *= -one(T)
+        A[3,2] *= -one(T)
+        A[3,3] *= -one(T)
+    end
+    stris11, stris22, stris33, stris12, stris13, stris23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
+    if allatsurface
+        stris13 *= -one(T)
+        stris23 *= -one(T)
+    end
+    P1[3] *= -one(T)
+    P2[3] *= -one(T)
+    P3[3] *= -one(T)
+    e11 = strms11 + strfsc11 + stris11
+    e22 = strms22 + strfsc22 + stris22
+    e33 = strms33 + strfsc33 + stris33
+    e12 = strms12 + strfsc12 + stris12
+    e13 = strms13 + strfsc13 + stris13
+    e23 = strms23 + strfsc23 + stris23
+    return e11, e22, e33, e12, e13, e23
+end
+
+"""
+    td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+
+Compute stress risen from triangular dislocation in elastic *halfspace*.
+    Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
+    for details, especially the **coordinate system** used here.
+
+## Arguments
+- `X`, `Y`, `Z`: observational coordinates
+- `P1`, `P2`, `P3`: three triangular vertices coordinates respectively
+- `Ss`, `Ds`, `Ts`: triangular dislocation vector, Strike-slip, Dip-slip, Tensile-slip respectively
+- `mu`: shear modulus
+- `lambda`: Lamé's first parameter
+
+## Output
+By order: ``σ_{xx}``, ``σ_{yy}``, ``σ_{zz}``,
+    ``σ_{xy}``, ``σ_{xz}``, ``σ_{yz}``. Please be aware of its different order, where principle components
+    come first, against [`sbarbot_stress_hex8`](@ref) and [`sbarbot_stress_tet4`](@ref) aside from coordinate system difference.
+"""
+function td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    exx, eyy, ezz, exy, exz, eyz = td_strain_hs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda)
+    return _strain2stress(exx, eyy, ezz, exy, exz, eyz, lambda, mu)
 end

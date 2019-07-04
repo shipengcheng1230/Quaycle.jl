@@ -27,7 +27,6 @@ using Test
 
     @testset "displacement" begin
         u = map(x -> td_disp_hs(x[1], x[2], x[3], P1, P2, P3, ss, ds, ts, ν)[1], xyz)
-
         # validation data from Table 3, Nikkhoo & Walter, 2015
         u_truth = [
             0.0352311877319734, -0.509465745232405, -0.0450664903903138,
@@ -38,5 +37,18 @@ using Test
             ]
 
         @test u ≈ u_truth
+    end
+
+    @testset "strain ϵₓₓ" begin
+        ϵ = map(x -> td_strain_hs(x[1], x[2], x[3], P1, P2, P3, ss, ds, ts, 2.0, 2.0)[1], xyz)
+        # validation data from Table 3, Nikkhoo & Walter, 2015
+        ϵ_truth = [
+            0.048104700525518, -0.244188978214975, 0.0546831404832553,
+            0.000829157341339727, 0.00114439668841158, -0.00386292388925956,
+            -0.00243788640223540, 0.000706397690338731, 0.000211254167350266,
+            0.00650800501584133, 0.000922452413344460, 0.00441202690885827,
+            0.00330232019558791, 0.00876398663844928, -0.000914111766849476,
+            ]
+        @test ϵ ≈ ϵ_truth
     end
 end
