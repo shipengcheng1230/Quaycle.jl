@@ -37,8 +37,8 @@ function shear_traction_sbarbot(::DIPPING, σvec::AbstractVector, λ::T, μ::T, 
 end
 
 function coordinate_sbarbot2okada!(u::AbstractVector)
-    u[1], u[4] = u[4], u[1]
-    u[3], u[5] = -u[5], -u[3]
+    u[1], u[4] = u[4], u[1] # σxx, σyy = σ22, σ11
+    u[3], u[5] = -u[5], -u[3] # σxz, σyz = -σ23, -σ13
 end
 
 """
@@ -57,7 +57,7 @@ Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBar
     `:yy`, `:yz`, `:zz` or tuple of a few ones
 
 ## Output
-A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault
+A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault.
 """
 function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> stress_greens_func(ma, mf, λ, μ, ft, c; kwargs...)
@@ -107,8 +107,10 @@ Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBar
     `:yy`, `:yz`, `:zz` or tuple of a few ones
 
 ## Output
-A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain to the stress components,
-    each of which is a matrix, within asthenosphere
+A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain, w.r.t. `comp`
+    to the stress components, whose order is
+    ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``, ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``,
+    each of which is a matrix, within asthenosphere.
 """
 function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> stress_greens_func(ma, λ, μ, c; kwargs...)

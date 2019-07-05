@@ -155,6 +155,8 @@ end
 𝐕𝚯𝚬(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3])
 "Retrieve **velocity** and **state**."
 𝐕𝚯(u::ArrayPartition, args...) = (u.x[1], u.x[2])
+"Retrieve **velocity** and **strain rate**"
+𝐕𝚬′(u::ArrayPartition, t, integrator) = (u.x[1], integrator(integrator.t, Val{1}).x[3])
 
 """
     wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm,

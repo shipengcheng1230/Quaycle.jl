@@ -114,12 +114,12 @@ end
 "Compute 6 stress components from [`dc3d`](@ref) output."
 @inline function stress_components!(σ::T, u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
     ϵkk = u[4] + u[8] + u[12]
-    σ[1] = λ * ϵkk + 2μ * u[4]
-    σ[2] = μ * (u[5] + u[7])
-    σ[3] = μ * (u[6] + u[10])
-    σ[4] = λ * ϵkk + 2μ * u[8]
-    σ[5] = μ * (u[9] + u[11])
-    σ[6] = λ * ϵkk + 2μ * u[12]
+    σ[1] = λ * ϵkk + 2μ * u[4] # σxx
+    σ[2] = μ * (u[5] + u[7]) # σxy
+    σ[3] = μ * (u[6] + u[10]) # σxz
+    σ[4] = λ * ϵkk + 2μ * u[8] # σyy
+    σ[5] = μ * (u[9] + u[11]) # σyz
+    σ[6] = λ * ϵkk + 2μ * u[12] # σzz
 end
 
 function stress_components(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
@@ -143,7 +143,7 @@ Compute stress Green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4Mes
 
 ## Output
 The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
-    ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``
+    ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``.
 """
 function stress_greens_func(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
     st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(6))

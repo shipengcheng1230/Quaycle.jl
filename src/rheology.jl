@@ -6,14 +6,14 @@ abstract type DeformationMechanism end
 # Karato 2008, Deformation of Earth Materials
 @doc raw"""
 ```math
-\dot{ϵ} = A σ′ d^{-m} f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{(αϕ)} \exp{(- \frac{Q + PV}{RT})}
+\dot{ϵ} = A σ′ d^{-m} f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 ```
 """
 struct DiffusionCreep <: DeformationMechanism end
 
 @doc raw"""
 ```math
-\dot{ϵ} = A τ^{n-1} σ′ f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{(αϕ)} \exp{(- \frac{Q + PV}{RT})}
+\dot{ϵ} = A τ^{n-1} σ′ f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 ```
 """
 struct DislocationCreep <: DeformationMechanism end

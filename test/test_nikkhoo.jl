@@ -52,3 +52,33 @@ using Test
         @test ϵ ≈ ϵ_truth
     end
 end
+
+@testset "displacement between rectangular dislocation and triangular one" begin
+    # settings are adopted from Figure 11, Nikkhoo & Walter, 2015
+    l, w = 1.5, 0.75
+    dip, strike = 30.0, 10.0
+    depth = 2.0
+    depth_obs = 5.0
+
+    p1 = [l/2 * sind(strike), l/2 * cosd(strike), -depth]
+    p2 = [-p1[1], -p1[2], -2.0]
+    p4 = [p1[1] + w * cosd(dip) * cosd(strike), p1[2] - w * cosd(dip) * sind(strike), p1[3] - w * sind(dip)]
+    p3 = [p4[1] - l * sind(strike), p4[2] - l * cosd(strike), p4[3]]
+
+    xs = range(-3.0, 3.0; step=1.0)
+    ys = range(-3.0, 3.0; step=1.0)
+
+    disl = [0.0, 1.0, 0.0]
+    A = [cosd(90-strike) sind(90-strike) 0; -sind(90-strike) cosd(90-strike) 0; 0 0 1]
+    A⁻¹ = inv(A)
+
+    for (x, y) in Iterators.product(xs, ys)
+        obs = A * [x, y, -depth_obs]
+        u_okada = dc3d(obs..., 2/3, depth, dip, [-l/2, l/2], [-w, 0.0], disl)
+        ux, uy, uz = A⁻¹ * u_okada[1:3]
+        u_td1 = td_disp_hs(x, y, -depth_obs, p1, p2, p3, disl..., 0.25)
+        u_td2 = td_disp_hs(x, y, -depth_obs, p3, p4, p1, disl..., 0.25)
+        ux_td, uy_td, uz_td = map(+, u_td1, u_td2)
+        @test ux_td ≈ ux && uy_td ≈ uy && uz_td ≈ uz
+    end
+end

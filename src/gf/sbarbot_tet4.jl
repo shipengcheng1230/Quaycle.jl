@@ -23,7 +23,7 @@ Compute displacement arisen from inelastic strain in Tet4 elements.
 - `A`, `B`, `C`, `D`: a list of 3 numbers for each, each of which represents
     coordinates of the vertex. All depth coordinates must be greater or
     equal to 0 (no checking is performed here)
-- `epsv**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
+- `e**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
     ``ϵ_{22}``, ``ϵ_{23}``, ``ϵ_{33}``
 - `nu`: poisson ratio
 
@@ -224,7 +224,7 @@ Compute stress arisen from inelastic strain in Tet4 elements.
 - `x1`, `x2`, `x3`: observational position
 - `A`, `B`, `C`, `D`: a list of 3 numbers for each, each of which represents
     coordinates of the vertex
-- `epsv**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
+- `e**`: strain components, each is ``ϵ_{11}``, ``ϵ_{12}``, ``ϵ_{13}``,
     ``ϵ_{22}``, ``ϵ_{23}``, ``ϵ_{33}``
 - `G`: shear modulus
 - `nu`: poisson ratio
