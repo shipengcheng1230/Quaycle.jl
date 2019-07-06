@@ -1,6 +1,6 @@
 # Assemble
 
-The **assemble** function aims to provide an `ODEProblem` encapsulating
+The `assemble` function aims to provide an `ODEProblem` encapsulating
   all the necessary information for modeling earthquake cycles. It will
   automatically generate caches based on given mesh sizes aiming to minimize
   allocation during solving. The full functionality of `ODEProblem`

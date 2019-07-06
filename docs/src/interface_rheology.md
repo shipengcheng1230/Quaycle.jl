@@ -1,6 +1,6 @@
 # Rheology
 
-This package implements plastic deformation as the key for modeling asthenosphere dynamics.
+This package implements plastic deformation as the key for modeling asthenosphere dynamics. Currently, only `DiffusionCreep` and `DislocationCreep` are supported.
 
 ## Public Interface
 ```@autodocs

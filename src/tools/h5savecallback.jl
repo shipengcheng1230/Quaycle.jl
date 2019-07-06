@@ -1,4 +1,4 @@
-export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝐄′, 𝐕𝚯𝚬𝚺
+export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝐄′, 𝐕𝚯𝚬𝚺, 𝐕𝚬′
 
 """
     @h5savecallback(filename, tend, nsteps, usize, T)

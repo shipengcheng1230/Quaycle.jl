@@ -103,6 +103,7 @@ end
 ## unstructured mesh entities
 abstract type UnstructuredMesh{dim} <: AbstractMesh{dim} end
 abstract type SBarbotMeshEntity{dim} <: UnstructuredMesh{dim} end
+abstract type TriangularMesh <: UnstructuredMesh{2} end
 
 "Mesh entities of Tet4 for using strain-stress green's function."
 @with_kw struct SBarbotTet4MeshEntity{P<:AbstractArray, Q<:AbstractVector, T<:AbstractVector} <: SBarbotMeshEntity{3}
@@ -157,4 +158,23 @@ end
     @assert size(tag) == size(L)
     @assert size(tag) == size(T)
     @assert size(tag) == size(W)
+end
+
+"Mesh entities of Tri3 for using dislocaiton-stress green's function"
+@with_kw struct TDTri3MeshEntity{T<:AbstractVector, V<:AbstractVector, VI<:AbstractVector} <: TriangularMesh
+    x::T
+    y::T
+    z::T
+    A::V
+    B::V
+    C::V
+    tag::VI
+
+    @assert size(x) == size(y)
+    @assert size(y) == size(z)
+    @assert size(A) == size(B)
+    @assert size(B) == size(C)
+    @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, A) ≤ 0
+    @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, B) ≤ 0
+    @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, C) ≤ 0
 end

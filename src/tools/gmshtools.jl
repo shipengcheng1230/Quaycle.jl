@@ -14,7 +14,7 @@ function geo_line(x::T, y::T, z::T, dx::T, dy::T, dz::T, reg::Integer) where T<:
     return reg+3
 end
 
-"Code snippet for adding a rectangular parallel to x-axis with topleft at (x, y, z), length of `dx` and width of `hypot(dy, dz)`."
+"Code snippet for adding a rectangular parallel to x-axis with bottom left at (x, y, z), length of `dx` and width of `hypot(dy, dz)`."
 function geo_rect_x(x::T, y::T, z::T, dx::T, dy::T, dz::T, reg::Integer) where T<:Real
     @addPoint begin
         x, y, z, 0.0, reg
@@ -223,6 +223,12 @@ function _get_num_element_node(etype)
     end
 end
 
+function _get_element_dim(etype)
+    @gmsh_do begin
+        gmsh.model.mesh.getElementProperties(etype)[2]
+    end
+end
+
 function _get_nodes(f)
     @gmsh_open f begin
         nodes = gmsh.model.mesh.getNodes()
@@ -239,10 +245,10 @@ end
 
 _get_centers(f, etype, entags::AbstractVector) = mapreduce(x -> _get_centers(f, etype, x), vcat, entags)
 
-function _get_all_elements_in_physical_group(f, pdim::I, ptag::I) where I
+function _get_all_elements_in_physical_group(f, pdim::Integer, ptag::Integer)
     @gmsh_open f begin
         entag = ptag > 0 ? gmsh.model.getEntitiesForPhysicalGroup(pdim, ptag) : ptag
-        isa(entag, I) && return gmsh.model.mesh.getElements(pdim, entag)
+        isa(entag, Integer) && return gmsh.model.mesh.getElements(pdim, entag)
         @assert length(entag) ≥ 1 "No entity found on physical group $(ptag) of dimension $(pdim)."
         es = gmsh.model.mesh.getElements(pdim, entag[1])
         etype = deepcopy(es[1])
@@ -264,24 +270,24 @@ function _check_element_type(given::Integer, target::Integer)
     end
 end
 
-function _get_entity_tags_in_physical_group(f, pdim::I, ptag::I) where I
+function _get_entity_tags_in_physical_group(f, pdim::Integer, ptag::Integer)
     ptag < 0 ? ptag :
         @gmsh_open f begin
             gmsh.model.getEntitiesForPhysicalGroup(pdim, ptag)
         end
 end
 
-macro _check_and_get_for_sbarbot_mesh(ecode)
+macro _check_and_get_mesh_entity(ecode)
     esc(quote
         nodes = _get_nodes(f)
-        es = _get_all_elements_in_physical_group(f, 3, phytag)
+        edim = _get_element_dim($(ecode))
+        es = _get_all_elements_in_physical_group(f, edim, phytag)
         @assert length(unique(es[1])) == 1 "More than one element type found."
         _check_element_type(es[1][1], $(ecode))
         numelements = length(es[2][1])
         numnodes = _get_num_element_node(es[1][1])
-        entag = _get_entity_tags_in_physical_group(f, 3, phytag)
+        entag = _get_entity_tags_in_physical_group(f, edim, phytag)
         centers = _get_centers(f, es[1][1], entag)
-        x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     end)
 end
 
@@ -308,7 +314,8 @@ Read the mesh and construct mesh entity infomation for SBarbot Hex8 Green's func
     look on the node ordering for one element to ensure the x-, y-extent are correctly resolved by change `reverse` accordingly.
 """
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
-    @_check_and_get_for_sbarbot_mesh(5)
+    @_check_and_get_mesh_entity(5)
+    x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
     @inbounds @fastmath @simd for i in 1: numelements
         ntag1 = es[3][1][numnodes*i-numnodes+1]
@@ -349,10 +356,14 @@ Read the mesh and construct mesh entity infomation for SBarbot Tet4 Green's func
     this case, your mesh must contain only one element type.
 """
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
-    @_check_and_get_for_sbarbot_mesh(4)
+    @_check_and_get_mesh_entity(4)
+    x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
     @inbounds @fastmath @simd for i in 1: numelements
-        ta, tb, tc, td = selectdim(es[3][1], 1, numnodes*i-numnodes+1: numnodes*i-numnodes+4)
+        ta = es[3][1][(i-1)*numnodes+1]
+        tb = es[3][1][(i-1)*numnodes+2]
+        tc = es[3][1][(i-1)*numnodes+3]
+        td = es[3][1][(i-1)*numnodes+4]
         A[i][1] = nodes[2][3*ta-1]
         A[i][2] = nodes[2][3*ta-2]
         A[i][3] = -nodes[2][3*ta]
@@ -367,6 +378,31 @@ function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=
         D[i][3] = -nodes[2][3*td]
     end
     SBarbotTet4MeshEntity(x1, x2, x3, A, B, C, D, es[2][1])
+end
+
+"""
+    read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
+
+Read the mesh and construct mesh entity infomation for triangular Green's function use.
+
+## Arguments
+- `f`: mesh file name
+- `phytag`: physical tag for targeting volume entity. If smaller than `0`, retrieve all elements in all 3-dimensional entities. If in
+    this case, your mesh must contain only one element type.
+"""
+function read_gmsh_mesh(::Val{:TDTri3}, f::AbstractString; phytag::Integer=-1)
+    @_check_and_get_mesh_entity(2)
+    x, y, z = centers[1: 3: end], centers[2: 3: end], centers[3: 3: end]
+    A, B, C = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 3]
+    @inbounds @fastmath @simd for i ∈ 1: numelements
+        tag1 = es[3][1][(i-1)*numnodes+1]
+        tag2 = es[3][1][(i-1)*numnodes+2]
+        tag3 = es[3][1][(i-1)*numnodes+3]
+        A[i][1], A[i][2], A[i][3] = nodes[2][3tag1-2], nodes[2][3tag1-1], nodes[2][3tag1]
+        B[i][1], B[i][2], B[i][3] = nodes[2][3tag2-2], nodes[2][3tag2-1], nodes[2][3tag2]
+        C[i][1], C[i][2], C[i][3] = nodes[2][3tag3-2], nodes[2][3tag3-1], nodes[2][3tag3]
+    end
+    TDTri3MeshEntity(x, y, z, A, B, C, es[2][1])
 end
 
 ## paraview
@@ -408,6 +444,7 @@ function gmsh_vtk_output_cache(file::AbstractString, mf::OkadaMesh{N}, phytag::I
     lidx = Base.OneTo(nume)
     VTKStructuredScalarConversionCache(tagmap, etag, dat, cells, pts, lidx)
 end
+
 """
     gmsh_vtk_output_cache(file::AbstractString, phydim::I, phytag::I) where I<:Integer
 

@@ -9,7 +9,12 @@ The interactions among fault patches, asthenosphere elements as well as
 - 3D inelastic strain in Hex8 or Tet4 elements
 
 Other types, such as 2D inelastic (plane stress or antiplane stress), polygon
-dislocation, are WIP.
+dislocation, are WIP (**PR are welcome!**).
+
+All functions translated here are ensured to be type stable
+and have minimum allocation. Broadcasting isn't supported here
+([why?](https://julialang.org/blog/2017/01/moredots)) so you can easily embed them
+into multiprocessors parallel computation, which is implemented here.
 
 Also be aware of the coordinate system difference among all the Green's function
   provided here. Users are encouraged to view the original sources for further
