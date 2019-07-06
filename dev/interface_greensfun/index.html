@@ -537,7 +537,8 @@
 <li>2D elastic triangular dislocation</li>
 <li>3D inelastic strain in Hex8 or Tet4 elements</li>
 </ul>
-<p>Other types, such as 2D inelastic (plane stress or antiplane stress), polygon dislocation, are WIP.</p>
+<p>Other types, such as 2D inelastic (plane stress or antiplane stress), polygon dislocation, are WIP (<strong>PR are welcome!</strong>).</p>
+<p>All functions translated here are ensured to be type stable and have minimum allocation. Broadcasting isn't supported here (<a href="https://julialang.org/blog/2017/01/moredots">why?</a>) so you can easily embed them into multiprocessors parallel computation, which is implemented here.</p>
 <p>Also be aware of the coordinate system difference among all the Green's function   provided here. Users are encouraged to view the original sources for further   details. This package preserves the original coordinate systems as well as   function arguments for all, whose outcomes are also tested against original ones.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
