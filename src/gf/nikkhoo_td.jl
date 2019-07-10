@@ -192,25 +192,29 @@ end
     sv1, sv2, sv3 = PB[1] - PA[1], PB[2] - PA[2], PB[3] - PA[3]
     svr = hypot(sv1, sv2, sv3)
     beta = acos(-sv3 / svr)
-    ey1 = [sv1, sv2, zero(T)]
-    normalize!(ey1)
-    ey3 = -_ez
-    ey2 = cross(ey3, ey1)
-    A = hcat(ey1, ey2, ey3)
-    y1A, y2A, y3A = coord_trans(X - PA[1], Y - PA[2], Z - PA[3], A)
-    y1AB, y2AB, y3AB = coord_trans(sv1, sv2, sv3, A)
-    y1B = y1A - y1AB
-    y2B = y2A - y2AB
-    y3B = y3A - y3AB
-    b1, b2, b3 = coord_trans(bX, bY, bZ, A)
-    angle = ifelse(beta * y1A ≥ zero(T), -π + beta, beta)
-    v1A, v2A, v3A = AngDisDispFSC(y1A, y2A, y3A, angle, b1, b2, b3, nu, -PA[3])
-    v1B, v2B, v3B = AngDisDispFSC(y1B, y2B, y3B, angle, b1, b2, b3, nu, -PB[3])
-    v1 = v1B - v1A
-    v2 = v2B - v2A
-    v3 = v3B - v3A
-    ue, un, uv = coord_trans(v1, v2, v3, A')
-    return ue, un, uv
+    if beta ≈ zero(T) || beta ≈ π
+        return zero(T), zero(T), zero(T)
+    else
+        ey1 = [sv1, sv2, zero(T)]
+        normalize!(ey1)
+        ey3 = -_ez
+        ey2 = cross(ey3, ey1)
+        A = hcat(ey1, ey2, ey3)
+        y1A, y2A, y3A = coord_trans(X - PA[1], Y - PA[2], Z - PA[3], A)
+        y1AB, y2AB, y3AB = coord_trans(sv1, sv2, sv3, A)
+        y1B = y1A - y1AB
+        y2B = y2A - y2AB
+        y3B = y3A - y3AB
+        b1, b2, b3 = coord_trans(bX, bY, bZ, A)
+        angle = ifelse(beta * y1A ≥ zero(T), -π + beta, beta)
+        v1A, v2A, v3A = AngDisDispFSC(y1A, y2A, y3A, angle, b1, b2, b3, nu, -PA[3])
+        v1B, v2B, v3B = AngDisDispFSC(y1B, y2B, y3B, angle, b1, b2, b3, nu, -PB[3])
+        v1 = v1B - v1A
+        v2 = v2B - v2A
+        v3 = v3B - v3A
+        ue, un, uv = coord_trans(v1, v2, v3, A')
+        return ue, un, uv
+    end
 end
 
 @inline function AngDisDispFSC(y1::T, y2::T, y3::T, beta::T, b1::T, b2::T, b3::T, nu::T, a::T) where T
@@ -359,36 +363,40 @@ end
     sv1, sv2, sv3 = PB[1] - PA[1], PB[2] - PA[2], PB[3] - PA[3]
     svr = hypot(sv1, sv2, sv3)
     beta = acos(-sv3 / svr)
-    ey1 = [sv1, sv2, zero(T)]
-    normalize!(ey1)
-    ey3 = -_ez
-    ey2 = cross(ey3, ey1)
-    A = hcat(ey1, ey2, ey3)
-    y1A, y2A, y3A = coord_trans(X - PA[1], Y - PA[2], Z - PA[3], A)
-    y1AB, y2AB, y3AB = coord_trans(sv1, sv2, sv3, A)
-    y1B = y1A - y1AB
-    y2B = y2A - y2AB
-    y3B = y3A - y3AB
-    b1, b2, b3 = coord_trans(bX, bY, bZ, A)
-    if beta * y1A ≥ zero(T)
-        v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(-y1A, -y2A, y3A, π - beta, -b1, -b2, b3, nu, -PA[3])
-        v13A *= -one(T)
-        v23A *= -one(T)
-        v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(-y1B, -y2B, y3B, π - beta, -b1, -b2, b3, nu, -PB[3])
-        v13B *= -one(T)
-        v23B *= -one(T)
+    if beta ≈ zero(T) || beta ≈ π
+        return zero(T), zero(T), zero(T), zero(T), zero(T), zero(T)
     else
-        v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(y1A, y2A, y3A, beta, b1, b2, b3, nu, -PA[3])
-        v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(y1B, y2B, y3B, beta, b1, b2, b3, nu, -PB[3])
+        ey1 = [sv1, sv2, zero(T)]
+        normalize!(ey1)
+        ey3 = -_ez
+        ey2 = cross(ey3, ey1)
+        A = hcat(ey1, ey2, ey3)
+        y1A, y2A, y3A = coord_trans(X - PA[1], Y - PA[2], Z - PA[3], A)
+        y1AB, y2AB, y3AB = coord_trans(sv1, sv2, sv3, A)
+        y1B = y1A - y1AB
+        y2B = y2A - y2AB
+        y3B = y3A - y3AB
+        b1, b2, b3 = coord_trans(bX, bY, bZ, A)
+        if beta * y1A ≥ zero(T)
+            v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(-y1A, -y2A, y3A, π - beta, -b1, -b2, b3, nu, -PA[3])
+            v13A *= -one(T)
+            v23A *= -one(T)
+            v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(-y1B, -y2B, y3B, π - beta, -b1, -b2, b3, nu, -PB[3])
+            v13B *= -one(T)
+            v23B *= -one(T)
+        else
+            v11A, v22A, v33A, v12A, v13A, v23A = AngDisStrainFSC(y1A, y2A, y3A, beta, b1, b2, b3, nu, -PA[3])
+            v11B, v22B, v33B, v12B, v13B, v23B = AngDisStrainFSC(y1B, y2B, y3B, beta, b1, b2, b3, nu, -PB[3])
+        end
+        v11 = v11B - v11A
+        v22 = v22B - v22A
+        v33 = v33B - v33A
+        v12 = v12B - v12A
+        v13 = v13B - v13A
+        v23 = v23B - v23A
+        Exx, Eyy, Ezz, Exy, Exz, Eyz = TensTrans(v11, v22, v33, v12, v13, v23, A')
+        return Exx, Eyy, Ezz, Exy, Exz, Eyz
     end
-    v11 = v11B - v11A
-    v22 = v22B - v22A
-    v33 = v33B - v33A
-    v12 = v12B - v12A
-    v13 = v13B - v13A
-    v23 = v23B - v23A
-    Exx, Eyy, Ezz, Exy, Exz, Eyz = TensTrans(v11, v22, v33, v12, v13, v23, A')
-    return Exx, Eyy, Ezz, Exy, Exz, Eyz
 end
 
 @inline function AngDisStrainFSC(y1::T, y2::T, y3::T, beta::T, b1::T, b2::T, b3::T, nu::T, a::T) where T
