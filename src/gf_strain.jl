@@ -28,11 +28,11 @@ the corresponding strain mapping is:
 @inline unit_strain(::Val{:zz}, T=Float64) = [zero(T), zero(T), zero(T), zero(T), zero(T), one(T)]
 
 "Shear traction from output of SBarbot green's function."
-function shear_traction_sbarbot(::STRIKING, σvec::AbstractVector, λ::T, μ::T, dip::T) where T<:Real
+function shear_traction_sbarbot_on_okada(::STRIKING, σvec::AbstractVector, dip::T) where T<:Real
     -σvec[2] * sind(dip) - σvec[5] * cosd(dip)
 end
 
-function shear_traction_sbarbot(::DIPPING, σvec::AbstractVector, λ::T, μ::T, dip::T) where T<:Real
+function shear_traction_sbarbot_on_okada(::DIPPING, σvec::AbstractVector, dip::T) where T<:Real
     (σvec[6] - σvec[1])/2 * sind(2dip) - σvec[3] * cosd(2dip)
 end
 
@@ -89,7 +89,7 @@ function stress_greens_func_chunk!(
         else
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
-        st[i,j] = shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+        st[i,j] = shear_traction_sbarbot_on_okada(ft, σ, mf.dip)
     end
 end
 

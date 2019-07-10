@@ -4,7 +4,7 @@ using FastGaussQuadrature
 using LinearAlgebra
 using JuEQ:
     unit_dislocation, unit_strain,
-    shear_traction_sbarbot, shear_traction_dc3d,
+    shear_traction_sbarbot_on_okada, shear_traction_dc3d,
     stress_components, coordinate_sbarbot2okada!,
     ViscoelasticCompositeGreensFunction,
     relative_velocity!, relative_strain_rate!,
@@ -56,7 +56,7 @@ end
             for _ in 1: 5 # random check 5 position
                 i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
                 σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
-                τ = shear_traction_sbarbot(ft, σ, λ, μ, mf.dip)
+                τ = shear_traction_sbarbot_on_okada(ft, σ, mf.dip)
                 @test _st[s2i[i,k],j] == τ
             end
         end
@@ -96,10 +96,10 @@ end
     # construct an equivalent output from `dc3d`, ignoring the first 3 displacement
     u = [0.0, 0.0, 0.0, ϵ[4], ϵ[2], -ϵ[5], ϵ[2], ϵ[1], -ϵ[3], -ϵ[5], -ϵ[3], ϵ[6]]
     τyz1 = shear_traction_dc3d(DIPPING(), u, λ, μ, dip)
-    τyz2 = shear_traction_sbarbot(DIPPING(), σ, λ, μ, dip)
+    τyz2 = shear_traction_sbarbot_on_okada(DIPPING(), σ, dip)
     @test τyz1 ≈ τyz2
     τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
-    τxy2 = shear_traction_sbarbot(STRIKING(), σ, λ, μ, dip)
+    τxy2 = shear_traction_sbarbot_on_okada(STRIKING(), σ, dip)
     @test τxy1 ≈ τxy2
 end
 
