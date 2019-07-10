@@ -1,10 +1,12 @@
 using Test
 using GmshTools
 using LinearAlgebra
+using Logging
+
 using JuEQ: indice2tag, geo_okada_rect, geo_box_extruded_from_surfaceXY,
     _get_all_elements_in_physical_group, _get_entity_tags_in_physical_group,
     _get_centers, _get_num_element_node
-    
+
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
     gen_gmsh_mesh(Val(:LineOkada), 100.0, 20.0, 45.0; filename=filename)
@@ -122,6 +124,137 @@ end
         read_gmsh_mesh(Val(:SBarbotHex8), fname; rotate=90.0, phytag=-1, reverse=false, check=true)
     end
     rm(fname)
+end
+
+@testset "read Tri3 mesh" begin
+    filename = tempname() * ".msh"
+    @testset "perpendicular to z" begin
+        @gmsh_do begin
+            @addPoint begin
+                0.0, 0.0, 0.0, 0.0, 1
+                1.0, 0.0, 0.0, 0.0, 2
+                1.0, 1.0, 0.0, 0.0, 3
+                0.0, 1.0, 0.0, 0.0, 4
+            end
+            @addLine begin
+                1, 2, 1
+                2, 3, 2
+                3, 4, 3
+                4, 1, 4
+            end
+            gmsh.model.geo.addCurveLoop([1, 2, 3, 4], 1)
+            gmsh.model.geo.addPlaneSurface([1], 1)
+            gmsh.model.addPhysicalGroup(2, [1], 99)
+            gmsh.model.setPhysicalName(2, 99, "FAULT")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.generate(2)
+            gmsh.write(filename)
+        end
+
+        mf = with_logger(NullLogger()) do
+            read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
+        end
+        @test map(i ->
+            cross(mf.B[i] - mf.A[i], mf.C[i] - mf.A[i]) × mf.ts[i] |> norm ≈ 0 &&
+            all(isnan.(mf.ss[i])) && all(isnan.(mf.ds[i])) && mf.ts[i] ≈ [0, 0, 1], eachindex(mf.tag)) |> all
+    end
+    @testset "parallel to z" begin
+        @gmsh_do begin
+            @addPoint begin
+                0.0, 0.0, 0.0, 0.0, 1
+                1.0, 0.0, 0.0, 0.0, 2
+                1.0, 0.0, -1.0, 0.0, 3
+                0.0, 0.0, -1.0, 0.0, 4
+            end
+            @addLine begin
+                1, 2, 1
+                2, 3, 2
+                3, 4, 3
+                4, 1, 4
+            end
+            gmsh.model.geo.addCurveLoop([1, 2, 3, 4], 1)
+            gmsh.model.geo.addPlaneSurface([1], 1)
+            gmsh.model.addPhysicalGroup(2, [1], 99)
+            gmsh.model.setPhysicalName(2, 99, "FAULT")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.generate(2)
+            gmsh.write(filename)
+        end
+
+        mf = read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
+        @test map(i ->
+            cross(mf.B[i] - mf.A[i], mf.C[i] - mf.A[i]) × mf.ts[i] |> norm ≈ 0 &&
+            mf.ss[i] ≈ [1, 0, 0] && mf.ds[i] ≈ [0, 0, 1] && mf.ts[i] ≈ [0, -1, 0], eachindex(mf.tag)) |> all
+    end
+    @testset "arbitrary plane" begin
+        l, w = 1.5, 0.75
+        dip, strike = 30.0, 10.0
+        depth = 2.0
+
+        p1 = [l/2 * sind(strike), l/2 * cosd(strike), -depth]
+        p2 = [-p1[1], -p1[2], -2.0]
+        p4 = [p1[1] + w * cosd(dip) * cosd(strike), p1[2] - w * cosd(dip) * sind(strike), p1[3] - w * sind(dip)]
+        p3 = [p4[1] - l * sind(strike), p4[2] - l * cosd(strike), p4[3]]
+
+        # true solution
+        A = hcat(p1, p2, p3)'
+        a, b, c = A \ [-1; -1; -1]
+        ts = (p2 - p1) × (p3 - p1) |> normalize!
+        ss = normalize([a, -b, 0.0])
+        ds = ts × ss
+
+        @gmsh_do begin
+            @addPoint begin
+                p1..., 0.0, 1
+                p2..., 0.0, 2
+                p3..., 0.0, 3
+                p4..., 0.0, 4
+            end
+            @addLine begin
+                1, 2, 1
+                2, 3, 2
+                3, 4, 3
+                4, 1, 4
+            end
+            gmsh.model.geo.addCurveLoop([1, 2, 3, 4], 1)
+            gmsh.model.geo.addPlaneSurface([1], 1)
+            gmsh.model.addPhysicalGroup(2, [1], 99)
+            gmsh.model.setPhysicalName(2, 99, "FAULT")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.generate(2)
+            gmsh.write(filename)
+        end
+
+        mf = read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
+        @test map(i -> mf.ts[i] ≈ ts && mf.ss[i] ≈ ss && mf.ds[i] ≈ ds, 1: length(mf.tag)) |> all
+
+        # reverse the curve loop
+        @gmsh_do begin
+            @addPoint begin
+                p1..., 0.0, 1
+                p2..., 0.0, 2
+                p3..., 0.0, 3
+                p4..., 0.0, 4
+            end
+            @addLine begin
+                1, 2, 1
+                2, 3, 2
+                3, 4, 3
+                4, 1, 4
+            end
+            gmsh.model.geo.addCurveLoop([4, 3, 2, 1], 1)
+            gmsh.model.geo.addPlaneSurface([1], 1)
+            gmsh.model.addPhysicalGroup(2, [1], 99)
+            gmsh.model.setPhysicalName(2, 99, "FAULT")
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.generate(2)
+            gmsh.write(filename)
+        end
+
+        mf = read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
+        @test map(i -> mf.ts[i] ≈ ts && mf.ss[i] ≈ ss && mf.ds[i] ≈ ds, eachindex(mf.tag)) |> all
+    end
+    rm(filename)
 end
 
 @testset "multiple entities within one physical group" begin

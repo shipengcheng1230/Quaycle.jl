@@ -1,7 +1,7 @@
 name = "JuEQ"
 uuid = "70fec03b-432a-5687-8a7d-e45297f2e4e6"
 authors = ["Pengcheng Shi"]
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
@@ -29,8 +29,9 @@ DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
 GmshTools = "82e2f556-b1bd-5f1a-9576-f93c0da5f0ee"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "DelimitedFiles", "GmshTools", "HDF5", "Sundials", "FastGaussQuadrature"]
+test = ["Test", "DelimitedFiles", "GmshTools", "HDF5", "Logging", "Sundials", "FastGaussQuadrature"]

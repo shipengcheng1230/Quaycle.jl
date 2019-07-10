@@ -153,16 +153,19 @@ end
 
 "Mesh entities of Tri3 for using dislocaiton-stress green's function"
 @with_kw struct TDTri3MeshEntity{T<:AbstractVector, V<:AbstractVector, VI<:AbstractVector} <: TriangularMesh
-    x::T
-    y::T
-    z::T
+    x::T # centroid x
+    y::T # centroid y
+    z::T # centroid z
     A::V
     B::V
     C::V
+    ss::V # strike
+    ds::V # dip
+    ts::V # tensile
     tag::VI
 
     @assert size(x) == size(y) == size(z)
-    @assert size(A) == size(B) == size(C)
+    @assert size(A) == size(B) == size(C) == size(ss) == size(ds) == size(ts)
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, A) ≤ 0
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, B) ≤ 0
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, C) ≤ 0
@@ -201,7 +204,6 @@ function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where
             A[i], B[i] = B[i], A[i]
         end
     end
-
     if A[3] ≈ B[3] ≈ C[3]
         @warn "Coplanar at `z = const` where we cannot tell strike and downdip direction."
         ss .= NaN, NaN, NaN
@@ -217,13 +219,13 @@ function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where
         ds .= zero(T), zero(T), one(T)
         ss .= cross(ds, ts)
     else
-        r = (A[2]*C[3] - C[2]*A[3])*B[1] - (B[2]*C[3] - C[2]*B[3])*A[1] - (A[2]*B[3] - B[2]*A[3])*C[1]
-        a = - ((A[3] - C[3])*B[2] - (B[3] - C[3])*A[2] - (A[3] - B[3])*C[2]) / r
-        b = (A[3] - C[3])*B[1] - (B[3] - C[3])*A[1] - (A[3] - B[3])*C[1] / r
+        # r = (A[2]*C[3] - C[2]*A[3])*B[1] - (B[2]*C[3] - C[2]*B[3])*A[1] - (A[2]*B[3] - B[2]*A[3])*C[1]
+        a = - ((A[3] - C[3])*B[2] - (B[3] - C[3])*A[2] - (A[3] - B[3])*C[2]) # / r
+        b = (A[3] - C[3])*B[1] - (B[3] - C[3])*A[1] - (A[3] - B[3])*C[1] # / r
         # c = - ((A[2] - C[2])*B[1] - (B[2] - C[2])*A[1] - (A[2] - B[2])*C[1]) / r
 
         ss[1], ss[2], ss[3] = a, -b, zero(T)
-        if b < 0 ss .*= -one(T) end
+        if a < zero(T) ss .*= -one(T) end # to positive x-axis
         normalize!(ss)
         ds .= cross(ts, ss)
     end
