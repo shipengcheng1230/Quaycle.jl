@@ -54,14 +54,14 @@ end
 
 ## inplace derivatives
 @inline function dμ_dvdθ!(::CForm, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
-    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
+    @fastmath @inbounds @threads for i ∈ eachindex(v)
         alloc.dμ_dθ[i] = p.σ[i] * p.b[i] / θ[i]
         alloc.dμ_dv[i] = p.σ[i] * p.a[i] / v[i]
     end
 end
 
 @inline function dμ_dvdθ!(::RForm, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
-    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
+    @fastmath @inbounds @threads for i ∈ eachindex(v)
         ψ1 = exp((p.f0 + p.b[i] * log(p.v0 * θ[i] / p.L[i])) / p.a[i]) / 2p.v0
         ψ2 = p.σ[i] * ψ1 / hypot(1, v[i] * ψ1)
         alloc.dμ_dv[i] = p.a[i] * ψ2
@@ -70,7 +70,7 @@ end
 end
 
 @inline function dvdθ_dt!(se::StateEvolutionLaw, dv::T, dθ::T, v::T, θ::T, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation) where T
-    @fastmath @inbounds @threads for i = 1: prod(alloc.dims)
+    @fastmath @inbounds @threads for i ∈ eachindex(v)
         dθ[i] = dθ_dt(se, v[i], θ[i], p.L[i])
         dv[i] = dv_dt(alloc.dτ_dt[i], alloc.dμ_dv[i], alloc.dμ_dθ[i], dθ[i], p.η)
     end

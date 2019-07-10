@@ -89,14 +89,14 @@ gen_alloc(mf::OkadaMesh, me::SBarbotMeshEntity{3}, numϵ::Integer) = Viscoelasti
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T
-    @inbounds @fastmath @threads for i = 1: alloc.dims[1]
+    @inbounds @fastmath @threads for i ∈ eachindex(v)
         alloc.relv[i] = v[i] - vpl
     end
 end
 
 @inline function relative_velocity!(alloc::TractionRateAllocFFTConv, vpl::T, v::AbstractMatrix) where T
-    @inbounds @fastmath @threads for j = 1: alloc.dims[2]
-        @simd for i = 1: alloc.dims[1]
+    @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
+        @simd for i ∈ 1: alloc.dims[1]
             alloc.relv[i,j] = v[i,j] - vpl # there are zero paddings in `alloc.relv`
             alloc.relvnp[i,j] = alloc.relv[i,j] # copy-paste, useful for `LinearAlgebra.BLAS`
         end
@@ -104,8 +104,8 @@ end
 end
 
 @inline function relative_strain_rate!(alloc::StressRateAllocation, dϵ₀::AbstractVector, dϵ::AbstractVecOrMat)
-    @inbounds @fastmath for j in 1: alloc.numϵ
-        @threads for i = 1: alloc.nume
+    @inbounds @fastmath for j ∈ 1: alloc.numϵ
+        @threads for i ∈ 1: alloc.nume
             alloc.reldϵ[i,j] = dϵ[i,j] - dϵ₀[j]
         end
     end
@@ -120,16 +120,16 @@ end
 @inline function dτ_dt!(gf::AbstractArray{T, 3}, alloc::TractionRateAllocFFTConv) where {T<:Complex, U<:Number}
     mul!(alloc.relv_dft, alloc.pf, alloc.relv)
     fill!(alloc.dτ_dt_dft, zero(T))
-    @inbounds @fastmath @threads for j = 1: alloc.dims[2]
-        for l = 1: alloc.dims[2]
-            @simd for i = 1: alloc.dims[1]
+    @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
+        for l ∈ 1: alloc.dims[2]
+            @simd for i ∈ 1: alloc.dims[1]
                 @inbounds alloc.dτ_dt_dft[i,j] += gf[i,j,l] * alloc.relv_dft[i,l]
             end
         end
     end
     ldiv!(alloc.dτ_dt_buffer, alloc.pf, alloc.dτ_dt_dft)
-    @inbounds @fastmath @threads for j = 1: alloc.dims[2]
-        @simd for i = 1: alloc.dims[1]
+    @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
+        @simd for i ∈ 1: alloc.dims[1]
             @inbounds alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
         end
     end

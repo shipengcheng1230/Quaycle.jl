@@ -5,9 +5,9 @@ abstract type AbstractFaultType end
 abstract type PlaneFault <: AbstractFaultType end
 abstract type FlatPlaneFault <: PlaneFault end
 
-"Dipping, indicate dislocation occurs at y-z plane in [`dc3d`](@ref) use."
+"Dipping, indicate dislocation occurs at downdip direction."
 struct DIPPING <: FlatPlaneFault end
-"Striking, indicate dislocation occurs at x-direction in [`dc3d`](@ref) use."
+"Striking, indicate dislocation occurs at strike direction."
 struct STRIKING <: FlatPlaneFault end
 
 abstract type AbstractFaultSpace end

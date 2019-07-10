@@ -96,11 +96,11 @@ end
 @inline unit_dislocation(::DIPPING, T=Float64) = [zero(T), one(T), zero(T)]
 @inline unit_dislocation(::STRIKING, T=Float64) = [one(T), zero(T), zero(T)]
 
-"Normal of hanging outwards: ``(0,\\; -\\sin{θ},\\; \\cos{θ})``."
+"Normal of hanging inwards: ``(0,\\; -\\sin{θ},\\; \\cos{θ})``."
 @inline function shear_traction_dc3d(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
-    τyz = μ * (u[11] + u[9])
+    τyz = μ * (u[11] + u[9])    
     (σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip)
 end
 
