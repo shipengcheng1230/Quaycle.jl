@@ -689,7 +689,7 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>f</code>: mesh file name</li>
-<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type.</li>
+<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type, which should be Hex8</li>
 <li><code>rotate</code>: the angle of strike direction, see <a href="@ref"><code>sbarbot_disp_hex8!</code></a>. If your meshing box isn't parallel to x, y-axis, your must   provide your strike angle manually. By default, the strike angle is zero</li>
 <li><code>reverse</code>: if <code>true</code>, reverse the along-x, y-node tag during read. By default, 1→4 in x-axis, 1→2 in y-axis, 1→5 in z-axis</li>
 <li><code>check</code>: if <code>true</code>, check that number of distinctive <code>q1</code> equals that of <code>x1</code>, same for <code>q2</code> and <code>x2</code> at orthogonal direction,   which should hold for transfinite mesh.</li>
@@ -709,11 +709,11 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>f</code>: mesh file name</li>
-<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type.</li>
+<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type, which should be Tet4.</li>
 </ul>
 <p><a id='JuEQ.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}' href='#JuEQ.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}'>#</a>
 <strong><code>JuEQ.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">read_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">SBarbotTet4</span><span class="p">},</span> <span class="n">f</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">;</span> <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">read_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">TDTri3</span><span class="p">},</span> <span class="n">f</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">;</span> <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
 
@@ -721,7 +721,7 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>f</code>: mesh file name</li>
-<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type.</li>
+<li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 2-dimensional entities. If in   this case, your mesh must contain only one element type, which should be Tri3.</li>
 </ul>
 <p><a id='JuEQ.DIPPING' href='#JuEQ.DIPPING'>#</a>
 <strong><code>JuEQ.DIPPING</code></strong> &mdash; <em>Type</em>.</p>
