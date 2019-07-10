@@ -121,13 +121,9 @@ abstract type TriangularMesh <: UnstructuredMesh{2} end
     @assert map(x -> x[3], B) |> minimum > 0
     @assert map(x -> x[3], C) |> minimum > 0
     @assert map(x -> x[3], D) |> minimum > 0
-    @assert size(tag) == size(x1)
-    @assert size(tag) == size(x2)
-    @assert size(tag) == size(x3)
-    @assert size(tag) == size(A)
-    @assert size(tag) == size(B)
-    @assert size(tag) == size(C)
-    @assert size(tag) == size(D)
+    @assert size(tag) ==
+        size(x1) == size(x2) == size(x3) ==
+        size(A) == size(B) == size(C) == size(D)
 end
 
 "Mesh entities of Hex8 for using strain-stress green's function."
@@ -149,15 +145,10 @@ end
     @assert minimum(L) > 0
     @assert minimum(W) > 0
     @assert minimum(T) > 0
-    @assert size(tag) == size(x1)
-    @assert size(tag) == size(x2)
-    @assert size(tag) == size(x3)
-    @assert size(tag) == size(q1)
-    @assert size(tag) == size(q2)
-    @assert size(tag) == size(q3)
-    @assert size(tag) == size(L)
-    @assert size(tag) == size(T)
-    @assert size(tag) == size(W)
+    @assert size(tag) ==
+        size(x1) == size(x2) == size(x3) ==
+        size(q1) == size(q2) == size(q3) ==
+        size(L) == size(T) == size(W)
 end
 
 "Mesh entities of Tri3 for using dislocaiton-stress green's function"
@@ -170,11 +161,72 @@ end
     C::V
     tag::VI
 
-    @assert size(x) == size(y)
-    @assert size(y) == size(z)
-    @assert size(A) == size(B)
-    @assert size(B) == size(C)
+    @assert size(x) == size(y) == size(z)
+    @assert size(A) == size(B) == size(C)
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, A) ≤ 0
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, B) ≤ 0
     @assert mapreduce(x -> x[3], (a, b) -> a < b ? a : b, C) ≤ 0
 end
+
+## geometry
+"""
+This function calculates the strike and downdip direction given a triangular
+    element in Local east, north, up (ENU) coordinates.
+    Notice when the element is coplanar at ``z = 0`` it cannot tell such
+    information. Also element vertices cannot be collinear.
+    It's worth mentioning that the normal vector, as in our coordinate choice,
+    shall point upwards and `A`, `B` and `C` are in couter-clockwise direction
+    when viewing from above. If those points are coplanar horizontally, the normal
+    vector shall point to negative-y-section.
+
+
+The geometry vector is obtained through solving plane equation:
+```math
+ax + by + cz + d = 0
+```
+
+You may use [Reduce.jl](https://github.com/chakravala/Reduce.jl) to obtain the solution
+    without populating a temporary matrix, for instance if ``d ≠ 0``:
+```julia
+using Reduce
+
+R"(mat((A[1], A[2], A[3]), (B[1], B[2], B[3]), (C[1], C[2], C[3])))^(-1) * mat((-1), (-1), (-1))" |> rcall
+```
+"""
+function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where V <: AbstractVector{T} where T
+    ts .= normal_vector(A, B, C)
+    if ts[3] < zero(T) || (ts[3] ≈ zero(T) && ts[2] > zero(T)) # point to hanging wall
+        ts .*= -one(T)
+        for i in eachindex(A)
+            A[i], B[i] = B[i], A[i]
+        end
+    end
+
+    if A[3] ≈ B[3] ≈ C[3]
+        @warn "Coplanar at `z = const` where we cannot tell strike and downdip direction."
+        ss .= NaN, NaN, NaN
+        ds .= NaN, NaN, NaN
+        ts .= zero(T), zero(T), one(T)
+    elseif ts[1] ≈ zero(T) # parallel -x
+        ss .= one(T), zero(T), zero(T)
+        ds .= cross(ts, ss)
+    elseif ts[2] ≈ zero(T) # parallel -y
+        ss .= zero(T), one(T), zero(T)
+        ds .= cross(ts, ss)
+    elseif ts[3] ≈ zero(T) # parallel -z
+        ds .= zero(T), zero(T), one(T)
+        ss .= cross(ds, ts)
+    else
+        r = (A[2]*C[3] - C[2]*A[3])*B[1] - (B[2]*C[3] - C[2]*B[3])*A[1] - (A[2]*B[3] - B[2]*A[3])*C[1]
+        a = - ((A[3] - C[3])*B[2] - (B[3] - C[3])*A[2] - (A[3] - B[3])*C[2]) / r
+        b = (A[3] - C[3])*B[1] - (B[3] - C[3])*A[1] - (A[3] - B[3])*C[1] / r
+        # c = - ((A[2] - C[2])*B[1] - (B[2] - C[2])*A[1] - (A[2] - B[2])*C[1]) / r
+
+        ss[1], ss[2], ss[3] = a, -b, zero(T)
+        if b < 0 ss .*= -one(T) end
+        normalize!(ss)
+        ds .= cross(ts, ss)
+    end
+end
+
+@inline normal_vector(p1::T, p2::T, p3::T) where T<:AbstractVector = normalize!(cross(p2 - p1, p3 - p1))
