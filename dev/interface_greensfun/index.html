@@ -548,7 +548,7 @@
 </pre></div>
 </td></tr></table>
 
-<p>Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in     a way to update traction/stress rate using only one BLAS call. It does nothing     to the elastic Green's function and specifically used for the outputs from     <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a> and <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a>.</p>
+<p>Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in     a way to update traction/stress rate using only one BLAS call. It does nothing     to the elastic Green's function and specifically used for the outputs from     <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a> and <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a>.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>ee</code>: traction Green's function within the elastic fault</li>
@@ -556,7 +556,7 @@
 <li><code>ve</code>: traction Green's function inelastic asthenosphere to elastic fault</li>
 <li><code>vv</code>: stress Green's function within inelastic asthenosphere</li>
 </ul>
-<p><a id='JuEQ.compose_stress_greensfunc-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.OkadaMesh,JuEQ.SBarbotMeshEntity,T,T,JuEQ.PlaneFault,Tuple{Vararg{#s48,N}} where #s48<:Symbol}} where N where T' href='#JuEQ.compose_stress_greensfunc-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.OkadaMesh,JuEQ.SBarbotMeshEntity,T,T,JuEQ.PlaneFault,Tuple{Vararg{#s48,N}} where #s48<:Symbol}} where N where T'>#</a>
+<p><a id='JuEQ.compose_stress_greensfunc-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity,T,T,JuEQ.PlaneFault,Tuple{Vararg{#s48,N}} where #s48<:Symbol}} where N where T' href='#JuEQ.compose_stress_greensfunc-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity,T,T,JuEQ.PlaneFault,Tuple{Vararg{#s48,N}} where #s48<:Symbol}} where N where T'>#</a>
 <strong><code>JuEQ.compose_stress_greensfunc</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose_stress_greensfunc</span><span class="p">(</span><span class="n">mf</span><span class="o">::</span><span class="n">OkadaMesh</span><span class="p">,</span> <span class="n">me</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">,</span>
@@ -564,19 +564,19 @@
 </pre></div>
 </td></tr></table>
 
-<p>Shortcut function for computing all 4 Green's function for viscoelastic relaxation.     Arguments stays the same as <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a>.</p>
-<p><a id='JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I<:Integer where T<:Real' href='#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I<:Integer where T<:Real'>#</a>
+<p>Shortcut function for computing all 4 Green's function for viscoelastic relaxation.     Arguments stays the same as <a href="./#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I&lt;:Integer where T&lt;:Real"><code>stress_greens_func</code></a>.</p>
+<p><a id='JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I<:Integer where T<:Real' href='#JuEQ.stress_greens_func-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.AbstractMesh{2},JuEQ.SBarbotMeshEntity{3},T,T,JuEQ.FlatPlaneFault}} where I<:Integer where T<:Real'>#</a>
 <strong><code>JuEQ.stress_greens_func</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
-2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">mf</span><span class="o">::</span><span class="n">RectOkadaMesh</span><span class="p">,</span> <span class="n">ma</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">FlatPlaneFault</span><span class="p">;</span>
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">mf</span><span class="o">::</span><span class="n">AbstractMesh</span><span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="n">ma</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">FlatPlaneFault</span><span class="p">;</span>
     <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">,</span> <span class="nb">I</span><span class="o">&lt;:</span><span class="kt">Integer</span><span class="p">}</span>
 </pre></div>
 </td></tr></table>
 
-<p>Compute stress Green's function from <a href="@ref"><code>RectOkadaMesh</code></a> to <a href="@ref"><code>SBarbotTet4MeshEntity</code></a> or <a href="@ref"><code>SBarbotHex8MeshEntity</code></a></p>
+<p>Compute stress Green's function from fault mesh to asthenosphere mesh.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>mf::RectOkadaMesh</code>: mesh of fault</li>
+<li><code>mf::AbstractMesh{2}</code>: mesh of fault</li>
 <li><code>ma::SBarbotMeshEntity{3}</code>: mesh of asthenosphere</li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
@@ -613,7 +613,7 @@
 <p>Compute traction Green's function in 2-D elastic fault in <a href="@ref"><code>RectOkadaMesh</code></a>. Translational symmetry is considered.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>mesh::RectOkadaMesh</code>: the line mesh coupled with <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a></li>
+<li><code>mesh::RectOkadaMesh</code>: the rectangular mesh coupled with <a href="./#JuEQ.dc3d-Union{Tuple{A}, Tuple{T}, Tuple{T,T,T,T,T,T,Union{SubArray, A},Union{SubArray, A},A}} where A&lt;:Union{AbstractArray{T,1}, AbstractArray{T,2}} where T&lt;:Number"><code>dc3d</code></a></li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
 <li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
@@ -624,10 +624,24 @@
 <li><code>nrept::Integer</code>: number of periodic summation is performed</li>
 <li><code>buffer_ratio::Real</code>: ratio of length of buffer zone (along-strike) to that of fault (along-strike)   It is recommended to set at least <code>1</code> for strike-slip fault for mimicing zero-dislocation at ridge on both sides.</li>
 </ul>
-<p><a id='JuEQ.stress_greens_func-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.SBarbotMeshEntity{3},JuEQ.RectOkadaMesh,T,T,JuEQ.PlaneFault,Tuple{Vararg{Symbol,N}}}} where N where T' href='#JuEQ.stress_greens_func-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.SBarbotMeshEntity{3},JuEQ.RectOkadaMesh,T,T,JuEQ.PlaneFault,Tuple{Vararg{Symbol,N}}}} where N where T'>#</a>
+<p><a id='JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.TDTri3MeshEntity,T,T,JuEQ.FlatPlaneFault}} where T' href='#JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.TDTri3MeshEntity,T,T,JuEQ.FlatPlaneFault}} where T'>#</a>
+<strong><code>JuEQ.stress_greens_func</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">mesh</span><span class="o">::</span><span class="n">TDTri3MeshEntity</span><span class="p">,</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">FlatPlaneFault</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute traction Green's function in 2-D elastic fault in <a href="@ref"><code>TDTri3MeshEntity</code></a>.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>mesh::TDTri3MeshEntity</code>: the triangular mesh coupled with <a href="./#JuEQ.td_stress_hs-Union{Tuple{V}, Tuple{T}, Tuple{T,T,T,V,V,V,T,T,T,T,T}} where V where T"><code>td_stress_hs</code></a></li>
+<li><code>λ::T</code>: Lamé's first parameter</li>
+<li><code>μ::T</code>: shear modulus</li>
+<li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
+</ul>
+<p><a id='JuEQ.stress_greens_func-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.SBarbotMeshEntity{3},JuEQ.AbstractMesh{2},T,T,JuEQ.PlaneFault,Tuple{Vararg{Symbol,N}}}} where N where T' href='#JuEQ.stress_greens_func-Union{Tuple{N}, Tuple{T}, Tuple{JuEQ.SBarbotMeshEntity{3},JuEQ.AbstractMesh{2},T,T,JuEQ.PlaneFault,Tuple{Vararg{Symbol,N}}}} where N where T'>#</a>
 <strong><code>JuEQ.stress_greens_func</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
-2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">ma</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="n">mf</span><span class="o">::</span><span class="n">RectOkadaMesh</span><span class="p">,</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">PlaneFault</span><span class="p">,</span>
+2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">ma</span><span class="o">::</span><span class="n">SBarbotMeshEntity</span><span class="p">{</span><span class="mi">3</span><span class="p">},</span> <span class="n">mf</span><span class="o">::</span><span class="n">AbstractMesh</span><span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">PlaneFault</span><span class="p">,</span>
     <span class="n">comp</span><span class="o">::</span><span class="kt">NTuple</span><span class="p">{</span><span class="n">N</span><span class="p">,</span> <span class="kt">Symbol</span><span class="p">};</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="p">}</span>
 </pre></div>
 </td></tr></table>
@@ -636,7 +650,7 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>ma::SBarbotMeshEntity{3}</code>: asthenosphere mesh</li>
-<li><code>mf::RectOkadaMesh</code>: fault mesh</li>
+<li><code>mf::AbstractMesh{2}</code>: fault mesh</li>
 <li><code>λ::T</code>: Lamé's first parameter</li>
 <li><code>μ::T</code>: shear modulus</li>
 <li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
