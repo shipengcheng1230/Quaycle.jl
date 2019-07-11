@@ -26,7 +26,7 @@ end
 Compute traction Green's function in 2-D elastic fault in [`RectOkadaMesh`](@ref). Translational symmetry is considered.
 
 ## Arguments
-- `mesh::RectOkadaMesh`: the line mesh coupled with [`dc3d`](@ref)
+- `mesh::RectOkadaMesh`: the rectangular mesh coupled with [`dc3d`](@ref)
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
@@ -110,6 +110,17 @@ end
     -σxy * sind(dip) + σxz * cosd(dip)
 end
 
+"""
+    stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault) where T
+
+Compute traction Green's function in 2-D elastic fault in [`TDTri3MeshEntity`](@ref).
+
+## Arguments
+- `mesh::TDTri3MeshEntity`: the triangular mesh coupled with [`td_stress_hs`](@ref)
+- `λ::T`: Lamé's first parameter
+- `μ::T`: shear modulus
+- `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
+"""
 function stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
     nume = length(mesh.tag)
     st = SharedArray{T}(nume, nume)
@@ -140,7 +151,7 @@ end
 
 ## okada displacement - stress green's function, src on the fault but recv in the other volume
 "Compute 6 stress components from [`dc3d`](@ref) output."
-@inline function stress_components!(σ::T, u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
+@inline function stress_components_dc3d!(σ::T, u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
     ϵkk = u[4] + u[8] + u[12]
     σ[1] = λ * ϵkk + 2μ * u[4] # σxx
     σ[2] = μ * (u[5] + u[7]) # σxy
@@ -150,20 +161,27 @@ end
     σ[6] = λ * ϵkk + 2μ * u[12] # σzz
 end
 
-function stress_components(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
+function stress_components_dc3d(u::T, λ::U, μ::U) where {T<:AbstractVector, U<:Real}
     σ = Vector{eltype(u)}(undef, 6)
-    stress_components!(σ, u, λ, μ)
+    stress_components_dc3d!(σ, u, λ, μ)
     return σ
 end
 
+"Flip the output from [`td_stress_hs`](@ref) in accordance to [`stress_components_dc3d`](@ref)."
+@inline function flip_stress_components_td!(σ::T) where T<:AbstractVector
+    σ[2], σ[4] = σ[4], σ[2]
+    σ[3], σ[6] = σ[6], σ[3]
+    σ[3], σ[5] = σ[5], σ[3]
+end
+
 """
-    stress_greens_func(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
+    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
         kwargs...) where {T<:Real, I<:Integer}
 
-Compute stress Green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
+Compute stress Green's function from fault mesh to asthenosphere mesh.
 
 ## Arguments
-- `mf::RectOkadaMesh`: mesh of fault
+- `mf::AbstractMesh{2}`: mesh of fault
 - `ma::SBarbotMeshEntity{3}`: mesh of asthenosphere
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
@@ -173,16 +191,23 @@ Compute stress Green's function from [`RectOkadaMesh`](@ref) to [`SBarbotTet4Mes
 The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
     ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``.
 """
-function stress_greens_func(mf::RectOkadaMesh, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
-    st = ntuple(_ -> SharedArray{T}(length(ma.tag), mf.nx * mf.nξ), Val(6))
+function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
+    if isa(mf, RectOkadaMesh)
+        num_patch = mf.nx * mf.nξ
+    elseif isa(mf, TDTri3MeshEntity)
+        num_patch = length(mf.tag)
+    else
+        error("Unsupported mesh entity type: $(typeof(mf)).")
+    end
+    st = ntuple(_ -> SharedArray{T}(length(ma.tag), num_patch), Val(6))
     stress_greens_func!(st, mf, ma, λ, μ, ft; kwargs...)
     return ntuple(x -> st[x] |> sdata, 6)
 end
 
 function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=0.0,
-    ) where {T<:Real, N, I<:Integer}
+    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=0.0) where {T<:Real, N, I<:Integer}
+
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
     α = (λ + μ) / (λ + 2μ)
@@ -195,7 +220,25 @@ function stress_greens_func_chunk!(
         i, j = sub[1], sub[2] # index of volume, index of fault
         q = i2s[j] # return (ix, iξ)
         okada_gf_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
-        stress_components!(σ, u, λ, μ)
+        stress_components_dc3d!(σ, u, λ, μ)
+        for ind in indexST
+            st[ind][i,j] = σ[ind]
+        end
+    end
+end
+
+function stress_greens_func_chunk!(
+    st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::TDTri3MeshEntity, ma::SBarbotMeshEntity{3},
+    λ::T, μ::T, ft::FlatPlaneFault) where {T<:Real, N, I<:Integer}
+
+    ud = unit_dislocation(ft)
+    σ = Vector{T}(undef, 6)
+    indexST = Base.OneTo(6)
+
+    @inbounds @fastmath @simd for sub in subs
+        i, j = sub[1], sub[2] # index of volume, index of fault
+        σ .= td_stress_hs(ma.x2[i], ma.x1[i], -ma.x3[i], mf.A[j], mf.B[j], mf.C[j], ud..., λ, μ)
+        flip_stress_components_td!(σ)
         for ind in indexST
             st[ind][i,j] = σ[ind]
         end

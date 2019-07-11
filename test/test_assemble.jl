@@ -22,6 +22,30 @@ using GmshTools
         @inferred prob.f(du, u0, prob.p, 1.0)
     end
 
+    @testset "triangular fault mesh" begin
+        filename = tempname() * ".msh"
+        @gmsh_do begin
+            reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
+            gmsh.model.addPhysicalGroup(2, [reg-1], 99)
+            gmsh.model.setPhysicalName(2, 99, "FAULT")
+            @addOption begin
+                "Mesh.CharacteristicLengthMax", 10000.0
+                "Mesh.CharacteristicLengthMin", 10000.0
+            end
+            gmsh.model.geo.synchronize()
+            gmsh.model.mesh.generate(2)
+            gmsh.write(filename)
+        end
+        mesh = read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
+        gf = stress_greens_func(mesh, 1.0, 1.0, DIPPING())
+        p = RateStateQuasiDynamicProperty([rand(length(mesh.tag)) for _ in 1: 4]..., rand(4)...)
+        u0 = ArrayPartition([rand(length(mesh.tag)) for _ in 1: 2]...)
+        prob = assemble(mesh, gf, p, u0, (0.0, 1.0))
+        du = similar(u0)
+        @inferred prob.f(du, u0, prob.p, 1.0)
+        rm(filename)
+    end
+
     @testset "2D fault 3D asthenosphere" begin
         mf = gen_mesh(Val(:RectOkada), 10., 10., 2., 2., 90.)
         rfzn = ones(2)

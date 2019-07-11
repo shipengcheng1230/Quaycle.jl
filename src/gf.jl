@@ -94,7 +94,7 @@ end
 Shortcut function for computing all 4 Green's function for viscoelastic relaxation.
     Arguments stays the same as [`stress_greens_func`](@ref).
 """
-function compose_stress_greensfunc(mf::OkadaMesh, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
+function compose_stress_greensfunc(mf::AbstractMesh{2}, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, <:Symbol}) where {T, N}
     ee = stress_greens_func(mf, λ, μ, ft)
     ev = stress_greens_func(mf, me, λ, μ, ft)
     ve = stress_greens_func(me, mf, λ, μ, ft, comp)

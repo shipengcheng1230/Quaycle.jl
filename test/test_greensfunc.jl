@@ -5,7 +5,8 @@ using LinearAlgebra
 using JuEQ:
     unit_dislocation, unit_strain, shear_traction_td,
     shear_traction_sbarbot_on_okada, shear_traction_dc3d,
-    stress_components, coordinate_sbarbot2okada!,
+    stress_components_dc3d, flip_stress_components_sbarbot!,
+    flip_stress_components_td!, shear_traction_sbarbot_on_td,
     ViscoelasticCompositeGreensFunction,
     relative_velocity!, relative_strain_rate!,
     dτ_dt!, dσ_dt!, deviatoric_stress!, gen_alloc
@@ -24,13 +25,55 @@ end
     @test unit_strain(Val(:zz)) == [0., 0., 0., 0., 0., 1.]
 end
 
+@testset "flip stress components" begin
+    @testset "flip stress components between td and ENU" begin
+        a = rand(6)
+        b = copy(a)
+        flip_stress_components_td!(a)
+        @test a[1] == b[1]
+        @test a[2] == b[4]
+        @test a[3] == b[5]
+        @test a[4] == b[2]
+        @test a[5] == b[6]
+        @test a[6] == b[3]
+    end
+
+    @testset "flip stress components between sbarbot and ENU" begin
+        a = rand(6)
+        b = copy(a)
+        flip_stress_components_sbarbot!(a)
+        @test a[1] == b[4]
+        @test a[2] == b[2]
+        @test a[3] == -b[5]
+        @test a[4] == b[1]
+        @test a[5] == -b[3]
+        @test a[6] == b[6]
+    end
+end
+
 @testset "Stress green's function between SBarbotMeshEntity and OkadaMesh" begin
-    filename = tempname() * ".msh"
-    rfzn = ones(Int64, 5)
-    rfzh = rand(5) |> cumsum
+    f1 = tempname() * ".msh"
+    f2 = tempname() * ".msh"
+    rfzn = ones(Int64, 3)
+    rfzh = rand(3) |> cumsum
     normalize!(rfzh, Inf)
-    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 5, 5, 1.5, 2.0, rfzn, rfzh; filename=filename)
-    ma = read_gmsh_mesh(Val(:SBarbotHex8), filename)
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 3, 3, 1.5, 2.0, rfzn, rfzh; filename=f1)
+    ma = read_gmsh_mesh(Val(:SBarbotHex8), f1)
+
+    @gmsh_do begin
+        reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
+        gmsh.model.addPhysicalGroup(2, [reg-1], 99)
+        gmsh.model.setPhysicalName(2, 99, "FAULT")
+        @addOption begin
+            "Mesh.CharacteristicLengthMax", 10000.0
+            "Mesh.CharacteristicLengthMin", 10000.0
+        end
+        gmsh.model.geo.synchronize()
+        gmsh.model.mesh.generate(2)
+        gmsh.write(f2)
+    end
+    mt = read_gmsh_mesh(Val(:TDTri3), f2)
+
     λ, μ = 1.0, 1.0
     α = (λ + μ) / (λ + 2μ)
     ν = λ / 2 / (λ + μ)
@@ -44,8 +87,21 @@ end
         for _ in 1: 5 # random check 5 position
             i, j, k = rand(1: mf.nx), rand(1: mf.nξ), rand(1: length(ma.tag))
             u = dc3d(ma.x2[k], ma.x1[k], -ma.x3[k], α, 0.0, 45.0, mf.ax[i], mf.aξ[j], ud)
-            σ = stress_components(u, λ, μ)
+            σ = stress_components_dc3d(u, λ, μ)
             @test map(x -> st[x][k, s2i[i,j]], indexST) == σ
+        end
+    end
+
+    function test_td2sbarbot_stress(ft)
+        ud = unit_dislocation(ft)
+        st = stress_greens_func(mt, ma, λ, μ, ft)
+        indexST = Base.OneTo(6)
+        σ = Vector{Float64}(undef, 6)
+        for _ in 1: 5
+            i, j = rand(1: length(mt.tag)), rand(1: length(ma.tag))
+            σ .= td_stress_hs(ma.x2[j], ma.x1[j], -ma.x3[j], mt.A[i], mt.B[i], mt.C[i], ud..., λ, μ)
+            flip_stress_components_td!(σ)
+            @test map(x -> st[x][j,i], indexST) == σ
         end
     end
 
@@ -62,6 +118,20 @@ end
         end
     end
 
+    function test_sbarbot2td_traction(ft)
+        st = stress_greens_func(ma, mt, λ, μ, ft, allcomp)
+        st[1]
+        for (ic, _st) in enumerate(st)
+            uϵ = unit_strain(Val(allcomp[ic]))
+            for _ in 1: 5 # random check 5 position
+                i, j = rand(1: length(mt.tag)), rand(1: length(ma.tag))
+                σ = sbarbot_stress_hex8(mt.y[i], mt.x[i], -mt.z[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+                τ = shear_traction_sbarbot_on_td(ft, σ, mt.ss[i], mt.ds[i], mt.ts[i])
+                @test _st[i,j] == τ
+            end
+        end
+    end
+
     function test_sbarbot_self_stress()
         st = stress_greens_func(ma, λ, μ, allcomp)
         indexST = Base.OneTo(6)
@@ -70,7 +140,7 @@ end
             for _ in 1: 5 # random check 5 position
                 i, j = rand(1: length(ma.tag), 2)
                 σ = sbarbot_stress_hex8(ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
-                coordinate_sbarbot2okada!(σ)
+                flip_stress_components_sbarbot!(σ)
                 @test σ == map(x -> _st[x][i,j], indexST)
             end
         end
@@ -80,8 +150,10 @@ end
     allcomp = (:xx, :xy, :xz, :yz, :yy, :zz)
     foreach(test_okada2sbarbot_stress, allfaulttype)
     foreach(test_sbarbot2okada_traction, allfaulttype)
+    foreach(test_td2sbarbot_stress, allfaulttype)
+    foreach(test_sbarbot2td_traction, allfaulttype)
     test_sbarbot_self_stress()
-    rm(filename)
+    foreach(rm, [f1, f2])
 end
 
 @testset "Shear traction consistency between 2 coordinate system" begin
@@ -101,6 +173,14 @@ end
     τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
     τxy2 = shear_traction_sbarbot_on_okada(STRIKING(), σ, dip)
     @test τxy1 ≈ τxy2
+
+    ss = [1.0, 0.0, 0.0]
+    ds = [0.0, cosd(dip), sind(dip)]
+    ts = ss × ds
+    τyz3 = shear_traction_sbarbot_on_td(DIPPING(), σ, ss, ds, ts)
+    τxy3 = shear_traction_sbarbot_on_td(STRIKING(), σ, ss, ds, ts)
+    @test τyz2 ≈ τyz3
+    @test τxy2 ≈ τxy3
 end
 
 @testset "Shear traction consistency between Quad4 and Tri3 dislocation" begin

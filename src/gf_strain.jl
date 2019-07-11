@@ -27,29 +27,37 @@ the corresponding strain mapping is:
 @inline unit_strain(::Val{:yz}, T=Float64) = [zero(T), zero(T), -one(T), zero(T), zero(T), zero(T)]
 @inline unit_strain(::Val{:zz}, T=Float64) = [zero(T), zero(T), zero(T), zero(T), zero(T), one(T)]
 
-"Shear traction from output of SBarbot green's function."
-function shear_traction_sbarbot_on_okada(::STRIKING, σvec::AbstractVector, dip::T) where T<:Real
+"Shear traction from output of SBarbot green's function on [`dc3d`](@ref)."
+@inline function shear_traction_sbarbot_on_okada(::STRIKING, σvec::AbstractVector, dip::T) where T<:Real
     -σvec[2] * sind(dip) - σvec[5] * cosd(dip)
 end
 
-function shear_traction_sbarbot_on_okada(::DIPPING, σvec::AbstractVector, dip::T) where T<:Real
+@inline function shear_traction_sbarbot_on_okada(::DIPPING, σvec::AbstractVector, dip::T) where T<:Real
     (σvec[6] - σvec[1])/2 * sind(2dip) - σvec[3] * cosd(2dip)
 end
 
-function coordinate_sbarbot2okada!(u::AbstractVector)
+@inline function flip_stress_components_sbarbot!(u::AbstractVector)
     u[1], u[4] = u[4], u[1] # σxx, σyy = σ22, σ11
     u[3], u[5] = -u[5], -u[3] # σxz, σyz = -σ23, -σ13
 end
 
+"Shear traction from output of SBarbot on triangular mesh."
+@inline function shear_traction_sbarbot_on_td(ft::FlatPlaneFault, σvec::V, ss::V, ds::V, ts::V) where V
+    fx = σvec[4] * ts[1] + σvec[2] * ts[2] - σvec[5] * ts[3]
+    fy = σvec[2] * ts[1] + σvec[1] * ts[2] - σvec[3] * ts[3]
+    fz = -σvec[5] * ts[1] - σvec[3] * ts[2] + σvec[6] * ts[3]
+    _shear_traction_td(ft, fx, fy, fz, ss, ds, ts)
+end
+
 """
-    stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault,
+    stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault,
         comp::NTuple{N, Symbol}; kwargs...) where {T, N}
 
 Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref) to [`RectOkadaMesh`](@ref)
 
 ## Arguments
 - `ma::SBarbotMeshEntity{3}`: asthenosphere mesh
-- `mf::RectOkadaMesh`: fault mesh
+- `mf::AbstractMesh{2}`: fault mesh
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
@@ -59,13 +67,20 @@ Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 ## Output
 A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault.
 """
-function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> stress_greens_func(ma, mf, λ, μ, ft, c; kwargs...)
     map(f, comp)
 end
 
-function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
-    st = SharedArray{T}(mf.nx * mf.nξ, length(ma.tag))
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
+    if isa(mf, RectOkadaMesh)
+        num_patch = mf.nx * mf.nξ
+    elseif isa(mf, TDTri3MeshEntity)
+        num_patch = length(mf.tag)
+    else
+        error("Unsupported mesh entity type: $(typeof(mf)).")
+    end
+    st = SharedArray{T}(num_patch, length(ma.tag))
     stress_greens_func!(st, ma, mf, λ, μ, ft, comp; kwargs...)
     return sdata(st)
 end
@@ -90,6 +105,27 @@ function stress_greens_func_chunk!(
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
         st[i,j] = shear_traction_sbarbot_on_okada(ft, σ, mf.dip)
+    end
+end
+
+function stress_greens_func_chunk!(
+    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::TDTri3MeshEntity, λ::T, μ::T, ft::PlaneFault, comp::Symbol;
+    quadrature::Union{Nothing, NTuple}=nothing) where T
+
+    ν = λ / 2 / (λ + μ)
+    σ = Vector{T}(undef, 6)
+    uϵ = unit_strain(Val(comp), T)
+
+    @inbounds @fastmath @simd for sub in subs
+        i, j = sub[1], sub[2] # index of fault, index of volume
+        if isa(ma, SBarbotHex8MeshEntity)
+            sbarbot_stress_hex8!(σ, mf.y[i], mf.x[i], -mf.z[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
+        elseif isa(ma, SBarbotTet4MeshEntity)
+            sbarbot_stress_tet4!(σ, quadrature, mf.y[i], mf.x[i], -mf.z[i], ma.A[j], ma.B[j], ma.C[j], ma.D[j], uϵ..., μ, ν)
+        else
+            error("Unsupported mesh entity type: $(typeof(ma)).")
+        end
+        st[i,j] = shear_traction_sbarbot_on_td(ft, σ, mf.ss[i], mf.ds[i], mf.ts[i])
     end
 end
 
@@ -142,7 +178,7 @@ function stress_greens_func_chunk!(
         else
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
-        coordinate_sbarbot2okada!(σ)
+        flip_stress_components_sbarbot!(σ)
         for ic in indexST
             st[ic][i,j] = σ[ic]
         end
