@@ -96,3 +96,72 @@ myplot = (ind) -> heatmap(log10.(sol.u[ind].x[1]./ms2mmyr)',
     yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")
 snaps = myplot(ind+300)
 plot(snaps)
+
+# !!! example
+#     An equivalent simulation using triangular dislocation Green's function is shown below.
+#     Notice it's far less performant than using rectangular disloction above.
+#     ```julia linenums="1"
+#     using Distributed
+#     addprocs(4)
+#     @everywhere using JuEQ
+#     using GmshTools
+#     using HDF5
+#     using Plots
+#
+#     ## generate mesh
+#     fname = "temp.msh"
+#     @gmsh_do begin
+#         reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
+#         gmsh.model.addPhysicalGroup(2, [reg-1], 99)
+#         gmsh.model.setPhysicalName(2, 99, "FAULT")
+#         @addOption begin
+#             "Mesh.CharacteristicLengthMax", 500.0
+#             "Mesh.CharacteristicLengthMin", 500.0
+#         end
+#         gmsh.model.geo.synchronize()
+#         gmsh.model.mesh.generate(2)
+#         gmsh.write(fname)
+#     end
+#     m = read_gmsh_mesh(Val(:TDTri3), fname; phytag=99)
+#
+#     ## system parameters
+#     λ, μ = 3e10, 3e10
+#     ft = STRIKING()
+#     f0 = 0.6
+#     v0 = 1e-6
+#     vpl = 3.17e-9
+#     cs = 3044.0
+#     η = μ / 2cs
+#     a = ones(size(m.tag)) * 0.015
+#     b = ones(size(m.tag)) * 0.0115
+#     L = ones(size(m.tag)) * 12e-3
+#     left_patch = @. -25e3 ≤ m.x ≤ -5e3
+#     right_patch = @. 5e3 ≤ m.x ≤ 25e3
+#     vert_patch = @. -6e3 ≤ m.z ≤ -1e3
+#     b[(left_patch .| right_patch) .& vert_patch] .= 0.0185
+#     σmax = 5e7
+#     σ = map(z -> min(σmax, 1.5e6 + 18e3 * -z), m.z)
+#
+#     ## visual check
+#     cache = gmsh_vtk_output_cache(fname, 2, 99)
+#     vtk_output("tdp", [a - b, σ], ["a-b", "σ"], cache)
+#
+#     ## compute Green's function
+#     gf = stress_greens_func(m, λ, μ, ft)
+#     h5write("tdgf.h5", "gf", gf)
+#     gf = h5read("tdgf.h5", "gf")
+#
+#     ## assemble prob
+#     p = RateStateQuasiDynamicProperty(a, b, L, σ, η, vpl, f0, v0)
+#     vinit = ones(size(m.tag)) * vpl
+#     θinit = L ./ vinit ./ 1.1
+#     uinit = ArrayPartition(vinit, θinit)
+#     prob = assemble(m, gf, p, uinit, (0., 18. * 365 * 86400))
+#     sol = wsolve(prob, VCABM3(), "temp.h5", 500, 𝐕𝚯, ["v", "θ"], "t"; rtol=1e-6, atol=1e-6)
+#
+#     ## results
+#     t = h5read("temp.h5", "t")
+#     v = h5read("temp.h5", "v")
+#     maxv = dropdims(mapslices(maximum, v, dims=[1]); dims=1)
+#     plot(t / 365 / 86400, log10.(maxv), markershape=:circle, markersize=0.2)
+#     ```
