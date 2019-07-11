@@ -85,7 +85,7 @@ end
 gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
 gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
 gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
-gen_alloc(mf::OkadaMesh, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
+gen_alloc(mf::AbstractMesh{2}, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
 gen_alloc(mesh::TDTri3MeshEntity) = gen_alloc(length(mesh.tag); T=eltype(mesh.x))
 
 ## traction & stress rate operators
@@ -112,7 +112,7 @@ end
     end
 end
 
-"Traction rate within 1-D elastic plane."
+"Traction rate within 1-D elastic plane or unstructured mesh."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::TractionRateAllocMatrix) where T<:Number
     mul!(alloc.dτ_dt, gf, alloc.relv)
 end
@@ -142,8 +142,12 @@ end
 end
 
 "Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
-@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::TractionRateAllocation) where T
+@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::TractionRateAllocFFTConv) where T
     BLAS.gemv!('N', one(T), gf, vec(alloc.relvnp), zero(T), vec(dσ))
+end
+
+@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::TractionRateAllocMatrix) where T
+    BLAS.gemv!('N', one(T), gf, alloc.relv, zero(T), vec(dσ))
 end
 
 "Stress rate within inelastic entity."
