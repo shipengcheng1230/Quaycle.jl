@@ -3,6 +3,7 @@ export vtk_output, vtm_output, vti_output
 
 const gmshcelltype2vtkcelltype = Dict(
     1 => VTKCellTypes.VTK_LINE,
+    2 => VTKCellTypes.VTK_TRIANGLE,
     3 => VTKCellTypes.VTK_QUAD,
     4 => VTKCellTypes.VTK_TETRA,
     5 => VTKCellTypes.VTK_HEXAHEDRON,

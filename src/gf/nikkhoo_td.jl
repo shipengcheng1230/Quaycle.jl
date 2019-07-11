@@ -349,17 +349,17 @@ end
     return ux + uy + uz, vx + vy + vz, wx + wy + wz
 end
 
-@inline function _TDstrain_HarFunc(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T, At::M) where {T, V, M}
+@inline function _TDstrain_HarFunc(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T, At::M) where {T, V, M}
     bx, by, bz = Ts, Ss, Ds
     bX, bY, bZ = coord_trans(bx, by, bz, At)
-    exx1, eyy1, ezz1, exy1, exz1, eyz1 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P1, P2, mu, lambda)
-    exx2, eyy2, ezz2, exy2, exz2, eyz2 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P2, P3, mu, lambda)
-    exx3, eyy3, ezz3, exy3, exz3, eyz3 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P3, P1, mu, lambda)
+    exx1, eyy1, ezz1, exy1, exz1, eyz1 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P1, P2, lambda, mu)
+    exx2, eyy2, ezz2, exy2, exz2, eyz2 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P2, P3, lambda, mu)
+    exx3, eyy3, ezz3, exy3, exz3, eyz3 = AngSetupFSC_S(X, Y, Z, bX, bY, bZ, P3, P1, lambda, mu)
     return exx1 + exx2 + exx3, eyy1 + eyy2 + eyy3, ezz1 + ezz2 + ezz3, exy1 + exy2 + exy3, exz1 + exz2 + exz3, eyz1 + eyz2 + eyz3
 end
 
-@inline function AngSetupFSC_S(X::T, Y::T, Z::T, bX::T, bY::T, bZ::T, PA::V, PB::V, mu::T, lambda::T) where {T, V}
-    nu = 1 / (1 + lambda / mu) / 2
+@inline function AngSetupFSC_S(X::T, Y::T, Z::T, bX::T, bY::T, bZ::T, PA::V, PB::V, lambda::T, mu::T) where {T, V}
+    nu = lambda / (mu + lambda) / 2
     sv1, sv2, sv3 = PB[1] - PA[1], PB[2] - PA[2], PB[3] - PA[3]
     svr = hypot(sv1, sv2, sv3)
     beta = acos(-sv3 / svr)
@@ -770,13 +770,13 @@ end
     return v11, v22, v33, v12, v13, v23
 end
 
-function td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+function td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
     A = transform_matrix(P1, P2, P3)
-    _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
+    _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu, A')
 end
 
 """
-    td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
 
 Compute stress risen from triangular dislocation in elastic *fullspace*.
     Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
@@ -785,8 +785,8 @@ Compute stress risen from triangular dislocation in elastic *fullspace*.
 ## Arguments
 The same as [`td_stress_hs`](@ref)
 """
-function td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
-    exx, eyy, ezz, exy, exz, eyz = td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda)
+function td_stress_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
+    exx, eyy, ezz, exy, exz, eyz = td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu)
     return _strain2stress(exx, eyy, ezz, exy, exz, eyz, lambda, mu)
 end
 
@@ -801,8 +801,8 @@ end
     return σxx, σyy, σzz, σxy, σxz, σyz
 end
 
-@inline function _td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T, At::M) where {T, V, M}
-    nu = 1 / (1 + lambda / mu) / 2
+@inline function _td_strain_fs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T, At::M) where {T, V, M}
+    nu = lambda / (mu + lambda) / 2
     bx, by, bz = Ts, Ss, Ds
     p1, p2, p3 = [zeros(T, 3) for _ in 1: 3]
     x, y, z = coord_trans(X - P2[1], Y - P2[2], Z - P2[3], At)
@@ -951,10 +951,10 @@ end
     return Exx, Eyy, Ezz, Exy, Exz, Eyz
 end
 
-function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
     A = transform_matrix(P1, P2, P3)
-    strms11, strms22, strms33, strms12, strms13, strms23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
-    strfsc11, strfsc22, strfsc33, strfsc12, strfsc13, strfsc23 = _TDstrain_HarFunc(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A)
+    strms11, strms22, strms33, strms12, strms13, strms23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu, A')
+    strfsc11, strfsc22, strfsc33, strfsc12, strfsc13, strfsc23 = _TDstrain_HarFunc(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu, A)
     P1[3] *= -one(T)
     P2[3] *= -one(T)
     P3[3] *= -one(T)
@@ -965,7 +965,7 @@ function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T
         A[3,2] *= -one(T)
         A[3,3] *= -one(T)
     end
-    stris11, stris22, stris33, stris12, stris13, stris23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda, A')
+    stris11, stris22, stris33, stris12, stris13, stris23 = _td_strain_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu, A')
     if allatsurface
         stris13 *= -one(T)
         stris23 *= -one(T)
@@ -983,7 +983,7 @@ function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T
 end
 
 """
-    td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
+    td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
 
 Compute stress risen from triangular dislocation in elastic *halfspace*.
     Please see [original version (in supporting information)](https://academic.oup.com/gji/article/201/2/1119/572006#86405752)
@@ -993,15 +993,15 @@ Compute stress risen from triangular dislocation in elastic *halfspace*.
 - `X`, `Y`, `Z`: observational coordinates
 - `P1`, `P2`, `P3`: three triangular vertices coordinates respectively
 - `Ss`, `Ds`, `Ts`: triangular dislocation vector, Strike-slip, Dip-slip, Tensile-slip respectively
-- `mu`: shear modulus
 - `lambda`: Lamé's first parameter
+- `mu`: shear modulus
 
 ## Output
 By order: ``σ_{xx}``, ``σ_{yy}``, ``σ_{zz}``,
     ``σ_{xy}``, ``σ_{xz}``, ``σ_{yz}``. Please be aware of its different order, where principle components
     come first, against [`sbarbot_stress_hex8`](@ref) and [`sbarbot_stress_tet4`](@ref) aside from coordinate system difference.
 """
-function td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, mu::T, lambda::T) where {T, V}
-    exx, eyy, ezz, exy, exz, eyz = td_strain_hs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, mu, lambda)
+function td_stress_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, lambda::T, mu::T) where {T, V}
+    exx, eyy, ezz, exy, exz, eyz = td_strain_hs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, lambda, mu)
     return _strain2stress(exx, eyy, ezz, exy, exz, eyz, lambda, mu)
 end

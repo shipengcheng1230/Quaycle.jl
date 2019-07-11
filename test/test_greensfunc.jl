@@ -3,7 +3,7 @@ using GmshTools
 using FastGaussQuadrature
 using LinearAlgebra
 using JuEQ:
-    unit_dislocation, unit_strain,
+    unit_dislocation, unit_strain, shear_traction_td,
     shear_traction_sbarbot_on_okada, shear_traction_dc3d,
     stress_components, coordinate_sbarbot2okada!,
     ViscoelasticCompositeGreensFunction,
@@ -101,6 +101,51 @@ end
     τxy1 = shear_traction_dc3d(STRIKING(), u, λ, μ, dip)
     τxy2 = shear_traction_sbarbot_on_okada(STRIKING(), σ, dip)
     @test τxy1 ≈ τxy2
+end
+
+@testset "Shear traction consistency between Quad4 and Tri3 dislocation" begin
+    θ = rand() * 90
+    mo = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, θ)
+    i, j = rand(1: mo.nx), rand(1: mo.nξ)
+    m, n = rand(1: mo.nx), rand(1: mo.nξ)
+    λ, μ = 2.0, 1.0
+    α = (λ + μ) / (λ + 2μ)
+    ν = λ / 2 / (λ + μ)
+    disl = [1.0, 1.0, 2.0]
+    ss = [1.0, 0.0, 0.0]
+    ds = [0.0, cosd(θ), sind(θ)]
+    ts = ss × ds
+    E = Matrix{Float64}(undef, 3, 3)
+
+    uo = dc3d(mo.x[i], mo.y[j], mo.z[j], α, mo.dep, mo.dip, mo.ax[m], mo.aξ[n], disl)
+    E[1,1] = uo[4]
+    E[2,2] = uo[8]
+    E[3,3] = uo[12]
+    E[1,2] = (uo[5] + uo[7]) / 2
+    E[1,3] = (uo[6] + uo[10]) / 2
+    E[2,3] = (uo[9] + uo[11]) / 2
+    E[2,1] = E[1,2]
+    E[3,1] = E[1,3]
+    E[3,2] = E[2,3]
+
+    cx, cy, cz = mo.x[m], mo.y[n], mo.z[n]
+    p1 = [cx - mo.Δx/2, cy + mo.Δξ/2 * cosd(mo.dip), cz + mo.Δξ/2 * sind(mo.dip)]
+    p2 = [cx + mo.Δx/2, cy + mo.Δξ/2 * cosd(mo.dip), cz + mo.Δξ/2 * sind(mo.dip)]
+    p3 = [cx + mo.Δx/2, cy - mo.Δξ/2 * cosd(mo.dip), cz - mo.Δξ/2 * sind(mo.dip)]
+    p4 = [cx - mo.Δx/2, cy - mo.Δξ/2 * cosd(mo.dip), cz - mo.Δξ/2 * sind(mo.dip)]
+
+    σtd1 = td_stress_hs(mo.x[i], mo.y[j], mo.z[j], p1, p4, p3, disl..., λ, μ)
+    σtd2 = td_stress_hs(mo.x[i], mo.y[j], mo.z[j], p3, p2, p1, disl..., λ, μ)
+    σ = map(+, σtd1, σtd2) |> collect
+
+    fdo = shear_traction_dc3d(DIPPING(), uo, λ, μ, mo.dip)
+    fso = shear_traction_dc3d(STRIKING(), uo, λ, μ, mo.dip)
+
+    fdt = shear_traction_td(DIPPING(), σ, ss, ds, ts)
+    fst = shear_traction_td(STRIKING(), σ, ss, ds, ts)
+
+    @test fdo ≈ fdt
+    @test fso ≈ fst
 end
 
 @testset "Consistency of shear traction of SBarbot green's function" begin

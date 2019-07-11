@@ -86,6 +86,7 @@ gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
 gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
 gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
 gen_alloc(mf::OkadaMesh, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
+gen_alloc(mesh::TDTri3MeshEntity) = gen_alloc(length(mesh.tag); T=eltype(mesh.x))
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T

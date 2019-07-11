@@ -100,7 +100,7 @@ end
 @inline function shear_traction_dc3d(::DIPPING, u::AbstractVector, λ::T, μ::T, dip::T) where T
     σzz = (λ + 2μ) * u[12] + λ * u[4] + λ * u[8]
     σyy = (λ + 2μ) * u[8] + λ * u[4] + λ * u[12]
-    τyz = μ * (u[11] + u[9])    
+    τyz = μ * (u[11] + u[9])
     (σzz - σyy)/2 * sind(2dip) + τyz * cosd(2dip)
 end
 
@@ -108,6 +108,34 @@ end
     σxy = μ * (u[5] + u[7])
     σxz = μ * (u[6] + u[10])
     -σxy * sind(dip) + σxz * cosd(dip)
+end
+
+function stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
+    nume = length(mesh.tag)
+    st = SharedArray{T}(nume, nume)
+    stress_greens_func!(st, mesh, λ, μ, ft; kwargs...)
+    return sdata(st)
+end
+
+function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault) where T
+    ud = unit_dislocation(ft, T)
+    σvec = Vector{T}(undef, 6)
+    @inbounds @fastmath @simd for sub in subs
+        i, j = sub[1], sub[2] # index of recv, index of src
+        σvec .= td_stress_hs(mesh.x[i], mesh.y[i], mesh.z[i], mesh.A[j], mesh.B[j], mesh.C[j], ud..., λ, μ)
+        st[i,j] = shear_traction_td(ft, σvec, mesh.ss[i], mesh.ds[i], mesh.ts[i])
+    end
+end
+
+@inline _shear_traction_td(::DIPPING, fx::T, fy::T, fz::T, ss::V, ds::V, ts::V) where {T, V} = fx * ds[1] + fy * ds[2] + fz * ds[3]
+@inline _shear_traction_td(::STRIKING, fx::T, fy::T, fz::T, ss::V, ds::V, ts::V) where {T, V} = fx * ss[1] + fy * ss[2] + fz * ss[3]
+
+"Compute shear traction from Tri3 dislocation."
+@inline function shear_traction_td(ft::FlatPlaneFault, σvec::AbstractVector, ss::V, ds::V, ts::V) where {T, V}
+    fx = σvec[1] * ts[1] + σvec[4] * ts[2] + σvec[5] * ts[3]
+    fy = σvec[4] * ts[1] + σvec[2] * ts[2] + σvec[6] * ts[3]
+    fz = σvec[5] * ts[1] + σvec[6] * ts[2] + σvec[3] * ts[3]
+    _shear_traction_td(ft, fx, fy, fz, ss, ds, ts)
 end
 
 ## okada displacement - stress green's function, src on the fault but recv in the other volume

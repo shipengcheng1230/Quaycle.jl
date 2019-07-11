@@ -80,7 +80,6 @@ end
         u_td2 = td_disp_hs(x, y, -depth_obs, p3, p4, p1, disl..., 0.25)
         ux_td, uy_td, uz_td = map(+, u_td1, u_td2)
         @test ux_td ≈ ux && uy_td ≈ uy && uz_td ≈ uz
-
         E[1,1] = u_okada[4]
         E[2,2] = u_okada[8]
         E[3,3] = u_okada[12]
@@ -90,7 +89,6 @@ end
         E[2,1] = E[1,2]
         E[3,1] = E[1,3]
         E[3,2] = E[2,3]
-
         E′ = A' * E * A
         ϵ_td1 = td_strain_hs(x, y, -depth_obs, p1, p2, p3, disl..., 1.0, 1.0)
         ϵ_td2 = td_strain_hs(x, y, -depth_obs, p3, p4, p1, disl..., 1.0, 1.0)
