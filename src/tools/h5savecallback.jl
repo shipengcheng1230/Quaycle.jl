@@ -185,6 +185,7 @@ function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, get
     cb = (u, t, integrator) -> h5savebuffercbkernel(u, t, integrator, bf, getu)
     fcb = FunctionCallingCallback(cb)
     sol = solve(prob, alg; save_everystep=false, callback=fcb, kwargs...)
+    _trigger_save(bf, ptrs, 0.0) # in case `solve` terminates earlier
     h5writeattr(file, tstr, Dict("retcode" => string(sol.retcode)))
     return sol
 end
