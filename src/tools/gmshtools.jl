@@ -217,15 +217,27 @@ end
 tag2linearindice(tags::AbstractVecOrMat) = Dict(tags[k] => k for k in 1: length(tags))
 
 ## mesh IO
-function _get_num_element_node(etype)
-    @gmsh_do begin
-        gmsh.model.mesh.getElementProperties(etype)[4]
-    end
-end
+_get_num_element_node(etype::Integer) = __getElementProperties__(etype)[4]
+_get_element_dim(etype::Integer) = __getElementProperties__(etype)[2]
+_check_element_type(given::Integer, target::Integer) =
+    @assert given == target "Got element type $(__getElementProperties__(given)[1]), should be $(__getElementProperties__(target)[1])."
 
-function _get_element_dim(etype)
-    @gmsh_do begin
-        gmsh.model.mesh.getElementProperties(etype)[2]
+# https://github.com/shipengcheng1230/GmshTools.jl/issues/1
+const ELEMENT_PROPERTIES = Dict(
+    1 => ("Line 2", 1, 1, 2),
+    2 => ("Triangle 3", 2, 1, 3),
+    3 => ("Quadrilateral 4", 2, 1, 4),
+    4 => ("Tetrahedron 4", 3, 1, 4),
+    5 => ("Hexahedron 8", 3, 1, 8)
+)
+
+function __getElementProperties__(etype::Integer)
+    if BLAS.vendor() == :mkl
+        ELEMENT_PROPERTIES[etype]
+    else
+        @gmsh_do begin
+            gmsh.model.mesh.getElementProperties(etype)
+        end
     end
 end
 
@@ -264,12 +276,6 @@ function _get_all_elements_in_physical_group(f, pdim::Integer, ptag::Integer)
     end
 end
 
-function _check_element_type(given::Integer, target::Integer)
-    @gmsh_do begin
-        @assert given == target "Got element type $(gmsh.model.mesh.getElementProperties(given)[1]), should be $(gmsh.model.mesh.getElementProperties(target)[1])."
-    end
-end
-
 function _get_entity_tags_in_physical_group(f, pdim::Integer, ptag::Integer)
     ptag < 0 ? ptag :
         @gmsh_open f begin
@@ -277,7 +283,7 @@ function _get_entity_tags_in_physical_group(f, pdim::Integer, ptag::Integer)
         end
 end
 
-macro _check_and_get_mesh_entity(ecode)
+macro _check_and_get_mesh_entity(f, phytag, ecode)
     esc(quote
         nodes = _get_nodes(f)
         edim = _get_element_dim($(ecode))
@@ -314,7 +320,7 @@ Read the mesh and construct mesh entity infomation for SBarbot Hex8 Green's func
     look on the node ordering for one element to ensure the x-, y-extent are correctly resolved by change `reverse` accordingly.
 """
 function read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString; phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
-    @_check_and_get_mesh_entity(5)
+    @_check_and_get_mesh_entity(f, phytag, 5)
     x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     q1, q2, q3, L, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 6]
     @inbounds @fastmath @simd for i in 1: numelements
@@ -356,7 +362,7 @@ Read the mesh and construct mesh entity infomation for SBarbot Tet4 Green's func
     this case, your mesh must contain only one element type, which should be Tet4.
 """
 function read_gmsh_mesh(::Val{:SBarbotTet4}, f::AbstractString; phytag::Integer=-1)
-    @_check_and_get_mesh_entity(4)
+    @_check_and_get_mesh_entity(f, phytag, 4)
     x2, x1, x3 = centers[1: 3: end], centers[2: 3: end], -centers[3: 3: end]
     A, B, C, D = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 4]
     @inbounds @fastmath @simd for i in 1: numelements
@@ -391,7 +397,7 @@ Read the mesh and construct mesh entity infomation for triangular Green's functi
     this case, your mesh must contain only one element type, which should be Tri3.
 """
 function read_gmsh_mesh(::Val{:TDTri3}, f::AbstractString; phytag::Integer=-1)
-    @_check_and_get_mesh_entity(2)
+    @_check_and_get_mesh_entity(f, phytag, 2)
     x, y, z = centers[1: 3: end], centers[2: 3: end], centers[3: 3: end]
     A, B, C, ss, ds, ts = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 6]
     @inbounds @fastmath @simd for i ∈ 1: numelements
