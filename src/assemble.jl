@@ -127,14 +127,13 @@ function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMa
 end
 
 """
-    assemble(mf::AbstractMesh, gf::AbstractArray,
-        p::RateStateQuasiDynamicProperty, u0::AbstractArray, tspan::NTuple{2};
+    assemble(gf::AbstractArray, p::RateStateQuasiDynamicProperty,
+        u0::AbstractArray, tspan::NTuple{2};
         flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), kwargs...)
 
 Assemble the `ODEProblem` for elastic fault.
 
 ##  Extra Arguments
-- `mf::AbstractMesh`: fault mesh, currently only support [`OkadaMesh`](@ref)
 - `gf::AbstractArray`: green's function associated with `fs.mesh` and `p.λ` & `p.μ`
 - `p::RateStateQuasiDynamicProperty`: all system properties
 - `u0::ArrayPartition`: initial condition. By rule of order in this package:
@@ -147,22 +146,20 @@ Assemble the `ODEProblem` for elastic fault.
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(
-    mf::AbstractMesh, gf::AbstractArray, p::RateStateQuasiDynamicProperty, u0::ArrayPartition, tspan::NTuple{2};
+    gf::AbstractArray, p::RateStateQuasiDynamicProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
-    alloc = gen_alloc(mf)
-    _assemble(p, alloc, gf, u0, tspan, flf, se)
+    _assemble(gf, p, u0, tspan, flf, se)
 end
 
 """
-    assemble(fas::LithAsthSpace, gf::ViscoelasticCompositeGreensFunction,
-        p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
+    assemble(gf::ViscoelasticCompositeGreensFunction, p::ViscoelasticMaxwellProperty,
+        u0::ArrayPartition, tspan::NTuple{2};
         flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),)
 
 Assemble the `ODEProblem` for elastic fault plus viscoelastic relaxation.
 
 ## Arguments
-- `fas::LithAsthSpace`: containing fault mesh, fault type and asthenosphere mesh
 - `gf::ViscoelasticCompositeGreensFunction`: green's function associated with the composite space `fas`
 - `p::ViscoelasticCompositeGreensFunction`: all system properties
 - `u0::ArrayPartition`: initial condition. By rule of order in this package:
@@ -177,14 +174,14 @@ Assemble the `ODEProblem` for elastic fault plus viscoelastic relaxation.
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
 """
 function assemble(
-    fas::LithAsthSpace, gf::ViscoelasticCompositeGreensFunction, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
+    gf::ViscoelasticCompositeGreensFunction, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
     flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
     )
-    alloc = gen_alloc(fas.me, fas.mv, length(p.pv.dϵref))
-    _assemble(p, alloc, gf, u0, tspan, flf, se)
+    _assemble(gf, p, u0, tspan, flf, se)
 end
 
-function _assemble(p::AbstractProperty, alloc::AbstractAllocation, gf, u0, tspan, flf, se)
+@inline function _assemble(gf, p::AbstractProperty, u0, tspan, flf, se)
+    alloc = gen_alloc(gf)::AbstractAllocation
     f! = (du, u, p, t) -> ∂u∂t(du, u, p, alloc, gf, flf, se)
     return ODEProblem(f!, u0, tspan, p)
 end

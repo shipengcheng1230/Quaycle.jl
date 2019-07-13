@@ -76,7 +76,7 @@ plot(p1, p2, layout=(2, 1))
 vinit = vpl .* ones(mesh.nx, mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
 u0 = ArrayPartition(vinit, θ0)
-prob = assemble(mesh, gf, prop, u0, (0., 18.)); nothing
+prob = assemble(gf, prop, u0, (0., 18.)); nothing
 
 # Afterwards, solve ODEs problem:
 
@@ -156,7 +156,7 @@ plot(snaps)
 #     vinit = ones(size(m.tag)) * vpl
 #     θinit = L ./ vinit ./ 1.1
 #     uinit = ArrayPartition(vinit, θinit)
-#     prob = assemble(m, gf, p, uinit, (0., 18. * 365 * 86400))
+#     prob = assemble(gf, p, uinit, (0., 18. * 365 * 86400))
 #     sol = wsolve(prob, VCABM3(), "temp.h5", 500, 𝐕𝚯, ["v", "θ"], "t"; rtol=1e-6, atol=1e-6)
 #
 #     ## results

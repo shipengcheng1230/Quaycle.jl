@@ -1,7 +1,7 @@
 using Test
 using HDF5
 
-@testset "Property" begin
+@testset "property save and read" begin
     function test_equal(p)
         tmpfile = tempname()
         @store tmpfile p

@@ -1,4 +1,4 @@
-export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝐄′, 𝐕𝚯𝚬𝚺, 𝐕𝚬′
+export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝚬′, 𝐕𝚯𝚬𝚺, 𝐕𝚬′
 
 """
     @h5savecallback(filename, tend, nsteps, usize, T)
@@ -148,7 +148,7 @@ end
 
 # https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/785
 "Retrieve **velocity**, **state** and **strain rate**."
-𝐕𝚯𝐄′(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3])
+𝐕𝚯𝚬′(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3])
 "Retrieve **velocity**, **state**, **strain** and **stress**."
 𝐕𝚯𝚬𝚺(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3], u.x[4])
 "Retrieve **velocity**, **state** and **strain**."

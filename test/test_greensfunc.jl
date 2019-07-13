@@ -287,7 +287,7 @@ end
     gfos = stress_greens_func(mf, me, λ, μ, ft)
     gfso = stress_greens_func(me, mf, λ, μ, ft, comp)
     gfss = stress_greens_func(me, λ, μ, comp)
-    gg = cat_greensfunc(gfoo, gfos, gfso, gfss)
+    gg = compose_stress_greens_func(gfoo, gfos, gfso, gfss)
 
     @testset "concatenate components of green's function" begin
         @test gg.ee == gfoo
@@ -296,7 +296,7 @@ end
         @test gg.vv == hcat([vcat(x...) for x in gfss]...)
     end
 
-    alos = gen_alloc(mf, me, length(comp))
+    alos = gen_alloc(gg)
     ϵ = rand(length(me.tag), length(comp))
     ϵ₀ = rand(length(comp))
     v = rand(mf.nx, mf.nξ)

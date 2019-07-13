@@ -82,11 +82,14 @@ function gen_alloc(nume::I, numϵ::I, numσ::I; T=Float64) where I<:Integer
     return StressRateAllocMatrix(nume, numϵ, numσ, reldϵ, σ′, ς′)
 end
 
-gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
-gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
-gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
-gen_alloc(mf::AbstractMesh{2}, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
-gen_alloc(mesh::TDTri3MeshEntity) = gen_alloc(length(mesh.tag); T=eltype(mesh.x))
+# gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
+# gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
+# gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
+# gen_alloc(mf::AbstractMesh{2}, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
+# gen_alloc(mesh::TDTri3MeshEntity) = gen_alloc(length(mesh.tag); T=eltype(mesh.x))
+gen_alloc(gf::AbstractMatrix) = gen_alloc(size(gf, 1))
+gen_alloc(gf::AbstractArray{T, 3}) where T<:Complex = gen_alloc(size(gf, 1), size(gf, 2))
+gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(gen_alloc(gf.ee), gen_alloc(gf.nume, gf.numϵ, gf.numσ))
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T

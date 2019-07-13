@@ -60,7 +60,7 @@ prop = RateStateQuasiDynamicProperty(a=a, b=b, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0
 θz = @. L / v0 * exp(a / b0 * log(2v0 / vinit * sinh((τz - η * vinit) / a / σ)) - f0 / b0)
 vz = fill(vinit, size(mesh.ξ))
 u0 = ArrayPartition(vz, θz)
-prob = assemble(mesh, gf, prop,  u0, (0.0, tf)); nothing
+prob = assemble(gf, prop,  u0, (0.0, tf)); nothing
 
 # Check our depth profile now.
 
