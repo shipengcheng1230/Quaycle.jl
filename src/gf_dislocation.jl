@@ -112,7 +112,7 @@ end
 end
 
 """
-    stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault) where T
+    stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
 
 Compute traction Green's function in 2-D elastic fault in [`TDTri3MeshEntity`](@ref).
 
@@ -216,6 +216,11 @@ Compute stress Green's function from fault mesh to asthenosphere mesh.
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
+
+### KWARGS Arguments
+The same as previously mentioned:
+- `nrept::Integer`
+- `buffer_ratio::Real`
 
 ## Output
 The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
