@@ -395,8 +395,10 @@ Read the mesh and construct mesh entity infomation for triangular Green's functi
 - `f`: mesh file name
 - `phytag`: physical tag for targeting volume entity. If smaller than `0`, retrieve all elements in all 2-dimensional entities. If in
     this case, your mesh must contain only one element type, which should be Tri3.
+- `atol`: absolute tolerance, by default `1e-12`, to determine whether the triangle is parallel to axis.
+    If this reading procedure does not resolve the slip direction correctly, try to lower this value.
 """
-function read_gmsh_mesh(::Val{:TDTri3}, f::AbstractString; phytag::Integer=-1)
+function read_gmsh_mesh(::Val{:TDTri3}, f::AbstractString; phytag::Integer=-1, atol::Real=1e-12)
     @_check_and_get_mesh_entity(f, phytag, 2)
     x, y, z = centers[1: 3: end], centers[2: 3: end], centers[3: 3: end]
     A, B, C, ss, ds, ts = [[Vector{Float64}(undef, 3) for _ in 1: numelements] for _ in 1: 6]
@@ -407,7 +409,7 @@ function read_gmsh_mesh(::Val{:TDTri3}, f::AbstractString; phytag::Integer=-1)
         A[i][1], A[i][2], A[i][3] = nodes[2][3tag1-2], nodes[2][3tag1-1], nodes[2][3tag1]
         B[i][1], B[i][2], B[i][3] = nodes[2][3tag2-2], nodes[2][3tag2-1], nodes[2][3tag2]
         C[i][1], C[i][2], C[i][3] = nodes[2][3tag3-2], nodes[2][3tag3-1], nodes[2][3tag3]
-        triangle_geometric_vector!(A[i], B[i], C[i], ss[i], ds[i], ts[i])
+        triangle_geometric_vector!(A[i], B[i], C[i], ss[i], ds[i], ts[i]; atol=atol)
     end
     TDTri3MeshEntity(x, y, z, A, B, C, ss, ds, ts, es[2][1])
 end

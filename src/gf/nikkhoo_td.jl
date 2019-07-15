@@ -64,7 +64,7 @@ Compute displacement risen from triangular dislocation in elastic *halfspace*.
 By order: ``u_x``, ``u_y``, ``u_z``
 """
 function td_disp_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, nu::T) where {T, V}
-    @assert (Z ≤ zero(T) && P1[3] ≤ zero(T) && P2[3] ≤ zero(T) && P3[3] ≤ zero(T))  "Half-space solution: Z coordinates μst be negative!"
+    @assert (Z ≤ zero(T) && P1[3] ≤ zero(T) && P2[3] ≤ zero(T) && P3[3] ≤ zero(T))  "Half-space solution: Z coordinates must be negative!"
     A = transform_matrix(P1, P2, P3)
     ueMS, unMS, uvMS = _td_disp_fs(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, nu, A')
     ueFSC, unFSC, uvFSC = _td_disp_harmonic_func(X, Y, Z, P1, P2, P3, Ss, Ds, Ts, nu, A)
