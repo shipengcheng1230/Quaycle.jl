@@ -63,6 +63,7 @@ end
     p2 = [-p1[1], -p1[2], -2.0]
     p4 = [p1[1] + w * cosd(dip) * cosd(strike), p1[2] - w * cosd(dip) * sind(strike), p1[3] - w * sind(dip)]
     p3 = [p4[1] - l * sind(strike), p4[2] - l * cosd(strike), p4[3]]
+    p′ = map(deepcopy, [p1, p2, p3, p4])
 
     xs = range(-3.0, 3.0; step=1.0)
     ys = range(-3.0, 3.0; step=1.0)
@@ -95,4 +96,5 @@ end
         ϵ = collect(ϵ_td1) + collect(ϵ_td2)
         @test ϵ[1] ≈ E′[1,1] && ϵ[2] ≈ E′[2,2] && ϵ[3] ≈ E′[3,3] && ϵ[4] ≈ E′[1,2] && ϵ[5] ≈ E′[1,3] && ϵ[6] ≈ E′[2,3]
     end
+    @test p′ == [p1, p2, p3, p4] # test if pts coordinates have been changed
 end

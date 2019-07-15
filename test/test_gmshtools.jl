@@ -201,7 +201,7 @@ end
         a, b, c = A \ [-1; -1; -1]
         ts = (p2 - p1) × (p3 - p1) |> normalize!
         ss = normalize([a, -b, 0.0])
-        ds = ts × ss
+        ds = ts × ss |> normalize
 
         @gmsh_do begin
             @addPoint begin

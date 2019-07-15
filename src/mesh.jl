@@ -196,7 +196,7 @@ using Reduce
 R"(mat((A[1], A[2], A[3]), (B[1], B[2], B[3]), (C[1], C[2], C[3])))^(-1) * mat((-1), (-1), (-1))" |> rcall
 ```
 """
-function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where V <: AbstractVector{T} where T
+function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V; atol=1e-12) where V <: AbstractVector{T} where T
     ts .= normal_vector(A, B, C)
     if ts[3] < zero(T) || (ts[3] ≈ zero(T) && ts[2] > zero(T)) # point to hanging wall
         ts .*= -one(T)
@@ -209,13 +209,13 @@ function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where
         ss .= NaN, NaN, NaN
         ds .= NaN, NaN, NaN
         ts .= zero(T), zero(T), one(T)
-    elseif ts[1] ≈ zero(T) # parallel -x
+    elseif isapprox(ts[1], zero(T); atol=atol) # parallel -x
         ss .= one(T), zero(T), zero(T)
         ds .= cross(ts, ss)
-    elseif ts[2] ≈ zero(T) # parallel -y
+    elseif isapprox(ts[2], zero(T); atol=atol) # parallel -y
         ss .= zero(T), one(T), zero(T)
         ds .= cross(ts, ss)
-    elseif ts[3] ≈ zero(T) # parallel -z
+    elseif isapprox(ts[3], zero(T); atol=atol) # parallel -z
         ds .= zero(T), zero(T), one(T)
         ss .= cross(ds, ts)
     else
@@ -228,6 +228,7 @@ function triangle_geometric_vector!(A::V, B::V, C::V, ss::V, ds::V, ts::V) where
         if a < zero(T) ss .*= -one(T) end # to positive x-axis
         normalize!(ss)
         ds .= cross(ts, ss)
+        normalize!(ds)
     end
 end
 

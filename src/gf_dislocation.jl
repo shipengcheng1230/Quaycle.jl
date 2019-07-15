@@ -67,14 +67,15 @@ function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, m
     end
 end
 
-function stress_greens_func_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=zero(T)) where T
+function stress_greens_func_chunk!(st::SharedArray{T, 3}, subs::AbstractArray, mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=0) where T
+    @assert buffer_ratio ≥ 0 "Argument `buffer_ratio` must be ≥ 0."
     ud = unit_dislocation(ft, T)
     lrept = (buffer_ratio + one(T)) * (mesh.Δx * mesh.nx)
     u = Vector{T}(undef, 12)
     α = (λ + μ) / (λ + 2μ)
     @inbounds for sub in subs
         i, j, l = sub[1], sub[2], sub[3]
-        okada_gf_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
+        dc3d_periodic_bc!(u, mesh.x[i], mesh.y[j], mesh.z[j], α, mesh.dep, mesh.dip, mesh.ax[1], mesh.aξ[l], ud, nrept, lrept)
         st[i,j,l] = shear_traction_dc3d(ft, u, λ, μ, mesh.dip)
     end
 end
@@ -84,7 +85,7 @@ Periodic summation of green's function.
 - `lrept` represents jumping periodic block for simulating locked region at along-strike edge.
 - `nrept` represents number of blocks to be summed.
 """
-function okada_gf_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
+function dc3d_periodic_bc!(u::AbstractVector{T}, x::T, y::T, z::T, α::T, depth::T, dip::T, al::AbstractVector{T}, aw::AbstractVector{T}, disl::AbstractVector{T},
     nrept::Integer, lrept::T) where {T<:Real}
     fill!(u, zero(T))
     @fastmath @simd for i = -nrept: nrept
@@ -120,6 +121,12 @@ Compute traction Green's function in 2-D elastic fault in [`TDTri3MeshEntity`](@
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
+
+### KWARGS Arguments
+- `nrept::Integer`: number of periodic summation is performed
+- `buffer_ratio::Real`: ratio of length of buffer zone (along-strike) to that of fault (along-strike).
+    Notice the direction of strike is the average value of `mesh.ss` and the length is the strike projected
+    maximum horizontal expansion.
 """
 function stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T
     nume = length(mesh.tag)
@@ -128,12 +135,15 @@ function stress_greens_func(mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneF
     return sdata(st)
 end
 
-function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::TDTri3MeshEntity, λ::T, μ::T, ft::FlatPlaneFault) where T
+function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::TDTri3MeshEntity,
+    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=0, buffer_ratio::Real=0) where T
+
+    vrept = nrept == 0 ? zeros(T, 3) : td_periodic_vec(mesh, buffer_ratio)
     ud = unit_dislocation(ft, T)
     σvec = Vector{T}(undef, 6)
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of recv, index of src
-        σvec .= td_stress_hs(mesh.x[i], mesh.y[i], mesh.z[i], mesh.A[j], mesh.B[j], mesh.C[j], ud..., λ, μ)
+        td_periodic_bc!(σvec, mesh.x[i], mesh.y[i], mesh.z[i], mesh.A[j], mesh.B[j], mesh.C[j], ud..., λ, μ, nrept, vrept)
         st[i,j] = shear_traction_td(ft, σvec, mesh.ss[i], mesh.ds[i], mesh.ts[i])
     end
 end
@@ -169,9 +179,29 @@ end
 
 "Flip the output from [`td_stress_hs`](@ref) in accordance to [`stress_components_dc3d`](@ref)."
 @inline function flip_stress_components_td!(σ::T) where T<:AbstractVector
+    # σxx, σyy, σzz, σxy, σxz, σyz ⟶ σxx, σxy, σxz, σyy, σyz, σzz
     σ[2], σ[4] = σ[4], σ[2]
     σ[3], σ[6] = σ[6], σ[3]
     σ[3], σ[5] = σ[5], σ[3]
+end
+
+function td_periodic_bc!(σ::V,
+    X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, λ::T, μ::T,
+    nrept::I, vrept::V) where {T, V, I}
+
+    fill!(σ, zero(T))
+    @fastmath @simd for i ∈ -nrept: nrept
+        σ .+= td_stress_hs(X, Y, Z, P1 + i * vrept, P2 + i * vrept, P3 + i * vrept, Ss, Ds, Ts, λ, μ)
+    end
+end
+
+function td_periodic_vec(mt::TDTri3MeshEntity, buffer_ratio::Real=0)
+    @assert buffer_ratio ≥ 0 "Argument `buffer_ratio` must be ≥ 0."
+    # maximum horizontal expansion project on the average strike direction
+    rangeX = map(c -> extrema(map(x -> x[1], c)) |> y -> y[2] - y[1], [mt.A, mt.B, mt.C]) |> maximum
+    rangeY = map(c -> extrema(map(x -> x[2], c)) |> y -> y[2] - y[1], [mt.A, mt.B, mt.C]) |> maximum
+    avgss = reduce(+, mt.ss) |> normalize
+    vrept = [rangeX * avgss[1], rangeY * avgss[2], zero(eltype(avgss))] * (buffer_ratio + 1)
 end
 
 """
@@ -219,7 +249,7 @@ function stress_greens_func_chunk!(
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
         q = i2s[j] # return (ix, iξ)
-        okada_gf_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
+        dc3d_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
         stress_components_dc3d!(σ, u, λ, μ)
         for ind in indexST
             st[ind][i,j] = σ[ind]
@@ -229,15 +259,16 @@ end
 
 function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::TDTri3MeshEntity, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::FlatPlaneFault) where {T<:Real, N, I<:Integer}
+    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=0, buffer_ratio::Real=0) where {T<:Real, N, I<:Integer}
 
+    vrept = nrept == 0 ? zeros(T, 3) : td_periodic_vec(mf, buffer_ratio)
     ud = unit_dislocation(ft)
     σ = Vector{T}(undef, 6)
     indexST = Base.OneTo(6)
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
-        σ .= td_stress_hs(ma.x2[i], ma.x1[i], -ma.x3[i], mf.A[j], mf.B[j], mf.C[j], ud..., λ, μ)
+        td_periodic_bc!(σ, ma.x2[i], ma.x1[i], -ma.x3[i], mf.A[j], mf.B[j], mf.C[j], ud..., λ, μ, nrept, vrept)
         flip_stress_components_td!(σ)
         for ind in indexST
             st[ind][i,j] = σ[ind]

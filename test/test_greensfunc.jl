@@ -51,22 +51,36 @@ end
     end
 end
 
-@testset "Stress green's function between SBarbotMeshEntity and OkadaMesh" begin
-    f1 = tempname() * ".msh"
-    f2 = tempname() * ".msh"
+@testset "Stress green's function between SBarbotMeshEntity and OkadaMesh/TDTri3MeshEntity" begin
+    f1 = "temp1.msh"
+    f2 = "temp2.msh"
     rfzn = ones(Int64, 3)
     rfzh = rand(3) |> cumsum
     normalize!(rfzh, Inf)
     gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 3, 3, 1.5, 2.0, rfzn, rfzh; filename=f1)
     ma = read_gmsh_mesh(Val(:SBarbotHex8), f1)
-
+    dip = 30.0
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, dip)
     @gmsh_do begin
-        reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
-        gmsh.model.addPhysicalGroup(2, [reg-1], 99)
+        @addPoint begin
+            -50.0, 0.0, 0.0, 0.0, 1
+            50.0, 0.0, 0.0, 0.0, 2
+            50.0, -50.0 * cosd(dip), -50.0 * sind(dip), 0.0, 3
+            -50.0, -50.0 * cosd(dip), -50.0 * sind(dip), 0.0, 4
+        end
+        @addLine begin
+            1, 2, 1
+            2, 3, 2
+            3, 4, 3
+            4, 1, 4
+        end
+        gmsh.model.geo.addCurveLoop([1, 2, 3, 4], 1)
+        gmsh.model.geo.addPlaneSurface([1], 1)
+        gmsh.model.addPhysicalGroup(2, [1], 99)
         gmsh.model.setPhysicalName(2, 99, "FAULT")
         @addOption begin
-            "Mesh.CharacteristicLengthMax", 10000.0
-            "Mesh.CharacteristicLengthMin", 10000.0
+            "Mesh.CharacteristicLengthMax", 10.0
+            "Mesh.CharacteristicLengthMin", 10.0
         end
         gmsh.model.geo.synchronize()
         gmsh.model.mesh.generate(2)
@@ -77,7 +91,6 @@ end
     λ, μ = 1.0, 1.0
     α = (λ + μ) / (λ + 2μ)
     ν = λ / 2 / (λ + μ)
-    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 20.0, 20.0, 45.0)
     s2i = LinearIndices((mf.nx, mf.nξ))
 
     function test_okada2sbarbot_stress(ft)
@@ -86,7 +99,7 @@ end
         indexST = Base.OneTo(6)
         for _ in 1: 5 # random check 5 position
             i, j, k = rand(1: mf.nx), rand(1: mf.nξ), rand(1: length(ma.tag))
-            u = dc3d(ma.x2[k], ma.x1[k], -ma.x3[k], α, 0.0, 45.0, mf.ax[i], mf.aξ[j], ud)
+            u = dc3d(ma.x2[k], ma.x1[k], -ma.x3[k], α, 0.0, dip, mf.ax[i], mf.aξ[j], ud)
             σ = stress_components_dc3d(u, λ, μ)
             @test map(x -> st[x][k, s2i[i,j]], indexST) == σ
         end
@@ -154,6 +167,15 @@ end
     foreach(test_sbarbot2td_traction, allfaulttype)
     test_sbarbot_self_stress()
     foreach(rm, [f1, f2])
+
+    @testset "periodic summation convergence between dc3d and td towards sbarbot" begin
+        ft = rand(allfaulttype)
+        mtxrd = stress_greens_func(mf, ma, λ, μ, ft; nrept=2, buffer_ratio=1)
+        mtxtd = stress_greens_func(mt, ma, λ, μ, ft; nrept=2, buffer_ratio=1)
+        relvrd = ones(mf.nx * mf.nξ)
+        relvtd = ones(length(mt.tag))
+        @test map(i -> mtxrd[i] * relvrd ≈ mtxtd[i] * relvtd, 1: 6) |> all
+    end
 end
 
 @testset "Shear traction consistency between 2 coordinate system" begin
