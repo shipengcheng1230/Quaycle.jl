@@ -582,6 +582,12 @@
 <li><code>μ::T</code>: shear modulus</li>
 <li><code>ft::FlatPlaneFault</code>: fault type, either <a href="../interface_mesh/#JuEQ.DIPPING"><code>DIPPING()</code></a> or <a href="../interface_mesh/#JuEQ.STRIKING"><code>STRIKING()</code></a></li>
 </ul>
+<p><strong>KWARGS Arguments</strong></p>
+<p>The same as previously mentioned:</p>
+<ul>
+<li><code>nrept::Integer</code></li>
+<li><code>buffer_ratio::Real</code></li>
+</ul>
 <p><strong>Output</strong></p>
 <p>The output is a tuple of 6 matrix, each corresponds <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>,     <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>.</p>
 <p><a id='JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.LineOkadaMesh,T,T,JuEQ.FlatPlaneFault}} where T' href='#JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.LineOkadaMesh,T,T,JuEQ.FlatPlaneFault}} where T'>#</a>
@@ -626,7 +632,7 @@
 </ul>
 <p><a id='JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.TDTri3MeshEntity,T,T,JuEQ.FlatPlaneFault}} where T' href='#JuEQ.stress_greens_func-Union{Tuple{T}, Tuple{JuEQ.TDTri3MeshEntity,T,T,JuEQ.FlatPlaneFault}} where T'>#</a>
 <strong><code>JuEQ.stress_greens_func</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">mesh</span><span class="o">::</span><span class="n">TDTri3MeshEntity</span><span class="p">,</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">FlatPlaneFault</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">stress_greens_func</span><span class="p">(</span><span class="n">mesh</span><span class="o">::</span><span class="n">TDTri3MeshEntity</span><span class="p">,</span> <span class="n">λ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">μ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ft</span><span class="o">::</span><span class="n">FlatPlaneFault</span><span class="p">;</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
 </pre></div>
 </td></tr></table>
 
