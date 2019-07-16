@@ -5,7 +5,7 @@ using Logging
 
 using JuEQ: indice2tag, geo_okada_rect, geo_box_extruded_from_surfaceXY,
     _get_all_elements_in_physical_group, _get_entity_tags_in_physical_group,
-    _get_centers, _get_num_element_node
+    _get_centers, _get_element_node_num
 
 @testset "Gmsh Okada Line" begin
     filename = tempname() * ".msh"
@@ -296,12 +296,12 @@ end
     e1 = _get_all_elements_in_physical_group(filename, 2, faulttag[1])
     entag1=  _get_entity_tags_in_physical_group(filename, 2, faulttag[1])
     c1 = _get_centers(filename, e1[1][1], entag1)
-    nnode1 = _get_num_element_node(e1[1][1])
+    nnode1 = _get_element_node_num(e1[1][1])
 
     e2 = _get_all_elements_in_physical_group(filename, 3, asthenospheretag[1])
     entag2=  _get_entity_tags_in_physical_group(filename, 3, asthenospheretag[1])
     c2 = _get_centers(filename, e2[1][1], entag2)
-    nnode2 = _get_num_element_node(e2[1][1])
+    nnode2 = _get_element_node_num(e2[1][1])
 
     @test length(e1[2][1]) == mf1.nx * mf1.nξ + mf2.nx * mf2.nξ
     @test length(e1[3][1]) == length(e1[2][1]) * nnode1

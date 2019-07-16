@@ -217,27 +217,14 @@ end
 tag2linearindice(tags::AbstractVecOrMat) = Dict(tags[k] => k for k in 1: length(tags))
 
 ## mesh IO
-_get_num_element_node(etype::Integer) = __getElementProperties__(etype)[4]
-_get_element_dim(etype::Integer) = __getElementProperties__(etype)[2]
+_get_element_node_num(etype::Integer) = _get_element_properties(etype)[4]
+_get_element_dim(etype::Integer) = _get_element_properties(etype)[2]
 _check_element_type(given::Integer, target::Integer) =
-    @assert given == target "Got element type $(__getElementProperties__(given)[1]), should be $(__getElementProperties__(target)[1])."
+    @assert given == target "Got element type $(_get_element_properties(given)[1]), should be $(_get_element_properties(target)[1])."
 
-# https://github.com/shipengcheng1230/GmshTools.jl/issues/1
-const ELEMENT_PROPERTIES = Dict(
-    1 => ("Line 2", 1, 1, 2),
-    2 => ("Triangle 3", 2, 1, 3),
-    3 => ("Quadrilateral 4", 2, 1, 4),
-    4 => ("Tetrahedron 4", 3, 1, 4),
-    5 => ("Hexahedron 8", 3, 1, 8)
-)
-
-function __getElementProperties__(etype::Integer)
-    if BLAS.vendor() == :mkl
-        ELEMENT_PROPERTIES[etype]
-    else
-        @gmsh_do begin
-            gmsh.model.mesh.getElementProperties(etype)
-        end
+function _get_element_properties(etype::Integer)
+    @gmsh_do begin
+        gmsh.model.mesh.getElementProperties(etype)
     end
 end
 
@@ -291,7 +278,7 @@ macro _check_and_get_mesh_entity(f, phytag, ecode)
         @assert length(unique(es[1])) == 1 "More than one element type found."
         _check_element_type(es[1][1], $(ecode))
         numelements = length(es[2][1])
-        numnodes = _get_num_element_node(es[1][1])
+        numnodes = _get_element_node_num(es[1][1])
         entag = _get_entity_tags_in_physical_group(f, edim, phytag)
         centers = _get_centers(f, es[1][1], entag)
     end)
@@ -419,7 +406,7 @@ function gmsh_write_vtk_cache(file, phydim, phytag)
     nodes = _get_nodes(file)
     es = _get_all_elements_in_physical_group(file, phydim, phytag)
     @assert length(unique(es[1])) == 1 "More than one element type found."
-    nnode = _get_num_element_node(es[1][1])
+    nnode = _get_element_node_num(es[1][1])
     etag = es[2][1]
     celltype = gmshcelltype2vtkcelltype[es[1][1]]
     nume = length(es[2][1])
