@@ -27,7 +27,7 @@ struct VTKUnStructuredCache{C, P, V} <: ParaviewOutputCache
 end
 
 # This works only for scalar data, meaning `u` will be flattened
-_map_data(cache::VTKStructuredScalarConversionCache, u::AbstractArray) = map(i -> cache.dat[i] = u[cache.tagmap[cache.etag[i]]], cache.lidx)
+_map_data(cache::VTKStructuredScalarConversionCache, u::AbstractArray) = map(i -> cache.dat[i] = u[cache.tagmap[cache.tag[i]]], cache.lidx)
 _map_data(cache::VTKStructuredScalarConversionCache, u::Number) = cache.dat .= u
 
 function _write_cell_data(vtkfile, u, ustr, cache::VTKStructuredScalarConversionCache)
