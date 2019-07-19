@@ -92,11 +92,23 @@ end
     BLAS.blascopy!(6alloc.nume, σ, 1, alloc.σ′, 1)
     @inbounds @fastmath @threads for i = 1: alloc.nume
         σkk = (σ[i,1] + σ[i,4] + σ[i,6]) / 3
+        # diagonal part
         alloc.σ′[i,1] -= σkk
         alloc.σ′[i,4] -= σkk
         alloc.σ′[i,6] -= σkk
+        # symmetry part
+        alloc.σ′[i,2] *= 2
+        alloc.σ′[i,3] *= 2
+        alloc.σ′[i,5] *= 2
     end
+    # deviatoric stress norm: ς′ = |σ′| = sqrt(σ′:σ′) = sqrt(tr(σ′ᵀσ′))
     @strided alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
+    @inbounds @fastmath @threads for i = 1: alloc.nume
+        # reverse back
+        alloc.σ′[i,2] /= 2
+        alloc.σ′[i,3] /= 2
+        alloc.σ′[i,5] /= 2
+    end
 end
 
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)

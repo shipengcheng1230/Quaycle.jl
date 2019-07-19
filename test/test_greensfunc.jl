@@ -378,6 +378,6 @@ end
     σ′[:,6] -= σkk
     deviatoric_stress!(σ, alv)
     @test alv.σ′ ≈ σ′
-    ς′ = map(x -> norm(σ′[x,:]), 1: alv.nume)
+    ς′ = map(x -> norm([σ′[x,1], σ′[x,4], σ′[x,6], 2σ′[x,2], 2σ′[x,3], 2σ′[x,5]]), 1: alv.nume)
     @test alv.ς′ ≈ ς′
 end
