@@ -93,7 +93,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#public-interface" tabindex="1" class="md-skip">
+      <a href="#visualize" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -400,6 +400,8 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
+      
+    
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
         Visualize
@@ -412,6 +414,8 @@
       
 <nav class="md-nav md-nav--secondary">
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
@@ -478,6 +482,8 @@
 <nav class="md-nav md-nav--secondary">
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
@@ -508,9 +514,8 @@
                   <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_visualize.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>Visualize</h1>
-                
-                <p>post-processing# Visualize</p>
+                <p><a id='Visualize-1'></a></p>
+<h1 id="visualize">Visualize<a class="headerlink" href="#visualize" title="Permanent link">&para;</a></h1>
 <p>This package provides some utilities for writing results to VTK (vts, vti, vtu, vtm, pvd, etc...)   file for postprocessing with <a href="https://www.paraview.org/">Paraview</a>. Data cache for   writing results are also implemented where users could explore other meshing tools.</p>
 <p>One short note is that if you store 6 components vector, for example <span><span class="MathJax_Preview">σ</span><script type="math/tex">σ</script></span>,   <a href="https://www.paraview.org/">Paraview</a> will interpret them in the order of   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>.   Whereas in our <a href="../interface_assemble/#JuEQ.assemble-Tuple{AbstractArray,RateStateQuasiDynamicProperty,ArrayPartition,Tuple{T,T} where T}"><code>assemble</code></a> for stress, the order, same as e.g OpenFOAM, is   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>.</p>
 <p>Notice that these function are not fully tested. If you encounter any problem,   please file an issue with your MWE.</p>
