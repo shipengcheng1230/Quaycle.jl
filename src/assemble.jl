@@ -114,8 +114,9 @@ end
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
-            ςⁿ⁻¹ = alloc.ς′[i]^(p.n[i]-1)
-            dϵ[i,j] = (p.disl[i] * ςⁿ⁻¹ + p.diff[i]) * alloc.σ′[i,j]
+            ςⁿ⁻¹ = alloc.ς′[i] ^ (p.n[i] - 1)
+            # index of strain `j` and stress `p.dϵind[j]` must match
+            dϵ[i,j] = (p.disl[i] * ςⁿ⁻¹ + p.diff[i]) * alloc.σ′[i,p.dϵind[j]]
         end
     end
 end

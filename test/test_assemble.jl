@@ -59,7 +59,7 @@ using GmshTools
         pe = RateStateQuasiDynamicProperty([rand(mf.nx, mf.nξ) for _ in 1: 4]..., rand(4)...)
         pdisl = DislocationCreepProperty([rand(length(ma.tag)) for _ in 1: 10]...)
         pdiff = DiffusionCreepProperty([rand(length(ma.tag)) for _ in 1: 11]...)
-        pc = compose(pe, rand(3), pdisl, pdiff)
+        pc = compose(pe, rand(3), [:xx, :xy, :xz], pdisl, pdiff)
         v0 = rand(mf.nx, mf.nξ)
         θ0 = rand(mf.nx, mf.nξ)
         ϵ0 = rand(length(ma.tag), 3)
