@@ -1,4 +1,4 @@
-post-processing# Visualize
+# Visualize
 
 This package provides some utilities for writing results to VTK (vts, vti, vtu, vtm, pvd, etc...)
   file for postprocessing with [Paraview](https://www.paraview.org/). Data cache for
