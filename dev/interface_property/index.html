@@ -598,8 +598,9 @@
 <li><code>diff</code>: diffusion creep</li>
 <li><code>peie</code>: Peierls mechanisms</li>
 <li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
+<li><code>dϵind</code>: index of strain components</li>
 </ul>
-<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L11' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L12' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.ViscoelasticMaxwellProperty' href='#JuEQ.ViscoelasticMaxwellProperty'>#</a>
 <strong><code>JuEQ.ViscoelasticMaxwellProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>Composite property for viscoelastic rheology of maxwell representation.</p>
@@ -608,9 +609,9 @@
 <li><code>pe::RateStateQuasiDynamicProperty</code>: elastic rate-and-state system property</li>
 <li><code>pv::CompositePlasticDeformationProperty</code>: composite plastic deformation system property</li>
 </ul>
-<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),Any,Vararg{Any,N} where N}} where T'>#</a>
+<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T'>#</a>
 <strong><code>JuEQ.compose</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">dϵname</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
 </pre></div>
 </td></tr></table>
 
@@ -619,6 +620,7 @@
 <ul>
 <li><code>pe::RateStateQuasiDynamicProperty{T}</code>: elastic rate-and-state system property</li>
 <li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
+<li><code>dϵname</code>: strain components name symbol</li>
 <li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
 </ul>
 <p><a id='JuEQ.composite_factor-Tuple{DislocationCreepProperty}' href='#JuEQ.composite_factor-Tuple{DislocationCreepProperty}'>#</a>
