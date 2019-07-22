@@ -13,8 +13,8 @@ using JuEQ: dϵ_dt
     dϵ1 = @. pvm.pv.disl * τ^(pvm.pv.n - 1) * σ
     dϵ2 = @. pvm.pv.diff * σ
 
-    dϵ1′ = dϵ_dt.(Ref(DislocationCreep()), p1.A, σ, τ, p1.n, p1.fH₂0, p1.r, p1.α, p1.ϕ, p1.Q, p1.P, p1.Ω, p1.T)
-    dϵ2′ = dϵ_dt.(Ref(DiffusionCreep()), p2.A, σ, p2.d, p2.m, p2.fH₂0, p2.r, p2.α, p2.ϕ, p2.Q, p2.P, p2.Ω, p2.T)
+    dϵ1′ = dϵ_dt.(Ref(DislocationCreep()), p1.A, σ, τ, p1.n, p1.COH, p1.r, p1.α, p1.ϕ, p1.Q, p1.P, p1.Ω, p1.T)
+    dϵ2′ = dϵ_dt.(Ref(DiffusionCreep()), p2.A, σ, p2.d, p2.m, p2.COH, p2.r, p2.α, p2.ϕ, p2.Q, p2.P, p2.Ω, p2.T)
 
     @test dϵ1 ≈ dϵ1′
     @test dϵ2 ≈ dϵ2′

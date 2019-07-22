@@ -6,14 +6,14 @@ abstract type DeformationMechanism end
 # Karato 2008, Deformation of Earth Materials
 @doc raw"""
 ```math
-\dot{ϵ} = A σ′ d^{-m} f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
+\dot{ϵ} = A σ′ d^{-m} C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 ```
 """
 struct DiffusionCreep <: DeformationMechanism end
 
 @doc raw"""
 ```math
-\dot{ϵ} = A τ^{n-1} σ′ f_{\mathrm{H}_{2}\mathrm{O}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
+\dot{ϵ} = A τ^{n-1} σ′ C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 ```
 """
 struct DislocationCreep <: DeformationMechanism end
@@ -28,10 +28,10 @@ struct Peierls <: DeformationMechanism end # high stress / low temperature
 const 𝙍 = float(PhysicalConstants.CODATA2014.R).val # ideal gas constant
 
 # stress driven plastic deformation
-function dϵ_dt(::DislocationCreep, A, σ, τ, n, fH₂0, r, α, ϕ, Q, P, Ω, T)
-    A * τ^(n-1) * σ * fH₂0^r * exp(α * ϕ) * exp(-(Q + P * Ω) / 𝙍 / T)
+function dϵ_dt(::DislocationCreep, A, σ, τ, n, COH, r, α, ϕ, Q, P, Ω, T)
+    A * τ^(n-1) * σ * COH^r * exp(α * ϕ) * exp(-(Q + P * Ω) / 𝙍 / T)
 end
 
-function dϵ_dt(::DiffusionCreep, A, σ, d, m, fH₂0, r, α, ϕ, Q, P, Ω, T)
-    A * σ * d^(-m) * fH₂0^r * exp(α * ϕ) * exp(-(Q + P * Ω) / 𝙍 / T)
+function dϵ_dt(::DiffusionCreep, A, σ, d, m, COH, r, α, ϕ, Q, P, Ω, T)
+    A * σ * d^(-m) * COH^r * exp(α * ϕ) * exp(-(Q + P * Ω) / 𝙍 / T)
 end

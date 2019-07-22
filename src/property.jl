@@ -115,7 +115,7 @@ System properties for plastic deformation of *dislocation creep*.
 ## Fields
 - `A`: prefactor
 - `n`: power law stress exponent
-- `fH₂0`: water content
+- `COH`: water content
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -127,7 +127,7 @@ System properties for plastic deformation of *dislocation creep*.
 @with_kw struct DislocationCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
     n::V # power law stress exponent
-    fH₂0::V # water content
+    COH::V # water content
     r::V # water fugacity exponent
     α::V # melting constant
     ϕ::V # melting fraction
@@ -146,7 +146,9 @@ System properties for plastic deformation of *diffusion creep*.
 - `A`: prefactor
 - `d`: grain size
 - `m`: grain size exponent
-- `fH₂0`: water content
+- `COH`: water content.
+    Some references may refer it as water fugacity ``f_{\mathrm{H_{2} O}}``, which is misleading. Since fugacity
+    has the same dimension of chemical potential (Pa) while water content is dimensionless.
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -159,7 +161,7 @@ System properties for plastic deformation of *diffusion creep*.
     A::V # prefactor
     d::V # grain size
     m::V # grain size exponent
-    fH₂0::V # water content
+    COH::V # water content
     r::V # water fugacity exponent
     α::V # melting constant
     ϕ::V # melting fraction
@@ -196,8 +198,8 @@ Compute an equivalent factor for levarage recomputing during ODE solving.
 ## Arguments
 - `pv::PlasticDeformationProperty`: plastic deformation system property
 """
-composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
-composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.fH₂0^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
+composite_factor(pv::DislocationCreepProperty) = @. pv.A * pv.COH^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
+composite_factor(pv::DiffusionCreepProperty) = @. pv.A * pv.d^(-pv.m) * pv.COH^(pv.r) * exp(pv.α * pv.ϕ) * exp(-(pv.Q + pv.P * pv.Ω) / 𝙍 / pv.T)
 function composite_factor(pv::PeierlsProperty) end
 
 """
@@ -237,8 +239,8 @@ _map_strain_index(::Val{:zz}) = 6
 const prop_field_names = Dict(
     :SingleDofRSFProperty => ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0"),
     :RateStateQuasiDynamicProperty => ("a", "b", "L", "σ", "η", "vpl", "f0", "v0"),
-    :DislocationCreepProperty => ("A", "n", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
-    :DiffusionCreepProperty => ("A", "d", "m", "fH₂0", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
+    :DislocationCreepProperty => ("A", "n", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
+    :DiffusionCreepProperty => ("A", "d", "m", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
     :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "dϵref", "dϵind"),
     )
