@@ -6,8 +6,7 @@ using JuEQ: dϵ_dt
     p2 = DiffusionCreepProperty([rand(5) for _ in 1: 11]...)
     pe = RateStateQuasiDynamicProperty([rand(3, 3) for _ in 1: 4]..., rand(4)...)
 
-    pvm = compose(pe, rand(3), [:yz, :xy, :zz], p1, p2)
-    @test pvm.pv.dϵind == [5, 2, 6]
+    pvm = compose(pe, rand(3), p1, p2)
     σ, τ = [rand(5) for _ in 1: 2]
 
     dϵ1 = @. pvm.pv.disl * τ^(pvm.pv.n - 1) * σ

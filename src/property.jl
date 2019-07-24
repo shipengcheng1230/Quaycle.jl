@@ -91,7 +91,7 @@ Compose all three type of plastic deformation and other strain-related system pr
 - `peie`: Peierls mechanisms
 - `dϵref`: reference strain rate whose length must equal strain components considered
 """
-@with_kw struct CompositePlasticDeformationProperty{U, I, V, VI} <: PlasticDeformationProperty
+@with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
     disl::U # dislocation creep
     n::I # stress exponent in dislocation creep
     diff::U # diffusion creep
@@ -112,7 +112,7 @@ System properties for plastic deformation of *dislocation creep*.
 ## Fields
 - `A`: prefactor
 - `n`: power law stress exponent
-- `COH`: water content
+- `COH`: water content[^1]
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -120,6 +120,10 @@ System properties for plastic deformation of *dislocation creep*.
 - `P`: pressure
 - `Ω`: activation volume
 - `T`: temperature
+
+[^1]:
+    Some references may refer it as water fugacity ``f_{\mathrm{H_{2} O}}``, which is misleading. Since fugacity
+    has the same dimension of chemical potential (Pa) while water content is dimensionless.
 """
 @with_kw struct DislocationCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -143,9 +147,7 @@ System properties for plastic deformation of *diffusion creep*.
 - `A`: prefactor
 - `d`: grain size
 - `m`: grain size exponent
-- `COH`: water content.
-    Some references may refer it as water fugacity ``f_{\mathrm{H_{2} O}}``, which is misleading. Since fugacity
-    has the same dimension of chemical potential (Pa) while water content is dimensionless.
+- `COH`: water content[^1]
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -206,8 +208,7 @@ Create maxwell viscoelastic system given both rate-and-state and plastic propert
 
 ## Arguments
 - `pe::RateStateQuasiDynamicProperty{T}`: elastic rate-and-state system property
-- `dϵref`: reference strain rate whose length must equal strain components considered
-- `dϵname`: strain components name symbol
+- `dϵref`: reference strain rate whose *length* must equal to and *order* same as strain components considered
 - `pvs...`: different type of plastic deformation system properties but no more than three
 """
 function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, pvs...) where T

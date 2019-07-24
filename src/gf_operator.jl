@@ -36,7 +36,7 @@ struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, V
     numdiag::I
     ϵ2σ::VI
 
-    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V, ϵcomp::NT, σcomp::NT) where {I, T, V, NT}
+    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V, ϵcomp::NTuple, σcomp::NTuple) where {I, T, V}
         isdiag = [Float64(x ∈ _diagcomponent) for x in σcomp]
         ϵ2σ = [findfirst(_x -> _x == x, unique(σcomp)) for x in unique(ϵcomp)]
         new{T, V, I, typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)), ϵ2σ)
@@ -67,7 +67,7 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
 end
 
 "Generate 3-D computation allocation for computing stress rate."
-function gen_alloc(nume::I, numϵ::I, numσ::I, ϵcomp::NT, σcomp::NT; T=Float64) where {I<:Integer, N, NT}
+function gen_alloc(nume::I, numϵ::I, numσ::I, ϵcomp::NTuple, σcomp::NTuple; T=Float64) where {I<:Integer}
     reldϵ = Matrix{T}(undef, nume, numϵ)
     σ′ = Matrix{T}(undef, nume, numσ)
     ς′ = Vector{T}(undef, nume)

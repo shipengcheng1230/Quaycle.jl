@@ -61,8 +61,7 @@ Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
-- `ϵcomp`: the strain ϵcomponent(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
-    `:yy`, `:yz`, `:zz` or tuple of a few ones
+- `ϵcomp`: the strain ϵcomponent(s) to be considered
 
 ## Output
 A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault.
@@ -130,8 +129,8 @@ function stress_greens_func_chunk!(
 end
 
 """
-    stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::NTuple{N, Symbol};
-        kwargs...) where {T, N}
+    stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T,
+        ϵcomp::NTuple{N1, Symbol}, σcomp::NTuple{N2, Symbol}; kwargs...) where {T, N1, N2}
 
 Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
 
@@ -139,16 +138,15 @@ Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 - `ma::SBarbotMeshEntity{3}`: asthenosphere mesh
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
-- `ϵcomp`: the strain ϵcomponent(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
-    `:yy`, `:yz`, `:zz` or tuple of a few ones
+- `ϵcomp`: the strain ϵcomponent(s) to be considered
+- `σcomp::NTuple{N, Symbol}`: stress components to consider
 
 ## Output
-A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain, w.r.t. `ϵcomp`
-    to the stress ϵcomponents, whose order is
-    ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``, ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``,
-    each of which is a matrix, within asthenosphere.
+A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain component, w.r.t. `ϵcomp`
+    to the stress ϵcomponents, whose order is ``σ_{ij}`` whose order is the same as `σcomp`,
+    each of which is a matrix.
 """
-function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::NTuple{N, Symbol}, σcomp::NTuple{N, Symbol}; kwargs...) where {T, N}
+function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::NTuple{N1, Symbol}, σcomp::NTuple{N2, Symbol}; kwargs...) where {T, N1, N2}
     f = (x) -> stress_greens_func(ma, λ, μ, x, σcomp; kwargs...)
     map(f, ϵcomp)
 end

@@ -90,9 +90,12 @@ end
 
 @inline function deviatoric_stress!(σ::AbstractVecOrMat{T}, alloc::StressRateAllocation) where T
     BLAS.blascopy!(alloc.numσ * alloc.nume, σ, 1, alloc.σ′, 1)
-    if alloc.numdiag ≠ 0
+    if alloc.numdiag > 1
         BLAS.gemv!('N', one(T), σ, alloc.isdiag, zero(T), alloc.ς′) # store `σkk` into `ς′`
-        @strided alloc.ς′ ./= alloc.numdiag # this is not rigorously correct if only partial diagonal are considered
+        # this is not rigorously correct if only one diagonal are considered
+        # in such case, that one diagonal is considered as deviatoric component
+        # otherwise, no strain rate will be on that ever
+        @strided alloc.ς′ ./= alloc.numdiag
         BLAS.ger!(-one(T), alloc.ς′, alloc.isdiag, alloc.σ′)
     end
     # deviatoric stress norm: ς′ = |σ′| = sqrt(σ′:σ′) = sqrt(tr(σ′ᵀσ′)), we omit the √2 before the symmetry part

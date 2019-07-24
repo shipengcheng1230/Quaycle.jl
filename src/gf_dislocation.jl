@@ -205,8 +205,9 @@ function td_periodic_vec(mt::TDTri3MeshEntity, buffer_ratio::Real=0)
 end
 
 """
-    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
-        kwargs...) where {T<:Real, I<:Integer}
+    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3},
+        λ::T, μ::T, ft::FlatPlaneFault,
+        σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
 
 Compute stress Green's function from fault mesh to asthenosphere mesh.
 
@@ -216,6 +217,7 @@ Compute stress Green's function from fault mesh to asthenosphere mesh.
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
+- `σcomp::NTuple{N, Symbol}`: stress components to consider
 
 ### KWARGS Arguments
 The same as previously mentioned:
@@ -223,8 +225,8 @@ The same as previously mentioned:
 - `buffer_ratio::Real`
 
 ## Output
-The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
-    ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``.
+The output is a tuple of `length(σcomp)` matrix, each corresponds ``σ_{ij}`` in the same order
+    as given by `σcomp`.
 """
 function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
     if isa(mf, RectOkadaMesh)

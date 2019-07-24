@@ -44,6 +44,7 @@ markdown_extensions:
   - fenced_code
   - mdx_math
   - admonition
+  - footnotes
   - pymdownx.highlight:
       css_class: codehilite
       linenums: true
@@ -92,4 +93,3 @@ nav:
     - Rheology: 'interface_rheology.md'
     - Visualize: 'interface_visualize.md'
   - Acknowledge: 'acknowledge.md'
-  - License: 'LICENSE.md'

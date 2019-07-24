@@ -52,7 +52,7 @@ include("gf_dislocation.jl")
 include("gf_strain.jl")
 
 ## composite green's function
-struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray, I<:Integer, V<:NTuple}
+@with_kw struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray, I<:Integer, V1<:NTuple, V2<:NTuple}
     ee::U # elastic ⟷ elastic
     ev::T # elastic ⟷ inelastic
     ve::T # inelastic ⟷ elastic
@@ -60,12 +60,15 @@ struct ViscoelasticCompositeGreensFunction{T<:AbstractMatrix, U<:AbstractArray, 
     nume::I
     numϵ::I
     numσ::I
-    ϵcomp::V
-    σcomp::V
+    ϵcomp::V1
+    σcomp::V2
+
+    @assert ϵcomp ⊆ σcomp "Strain components must be a subset of stress components."
 end
 
 """
-    compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple)
+    compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple{N, <:Tuple},
+        ϵcomp::NTuple, σcomp::NTuple) where N
 
 Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
     a way to update traction/stress rate using only one BLAS call. It does nothing
@@ -73,12 +76,15 @@ Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
     [`stress_greens_func`](@ref) and [`stress_greens_func`](@ref).
 
 ## Arguments
-- `ee`: traction Green's function within the elastic fault
-- `ev`: stress Green's function from elastic fault to inelastic asthenosphere
-- `ve`: traction Green's function inelastic asthenosphere to elastic fault
-- `vv`: stress Green's function within inelastic asthenosphere
+- `ee::AbstractArray`: traction Green's function within the elastic fault
+- `ev::NTuple`: stress Green's function from elastic fault to inelastic asthenosphere
+- `ve::NTuple`: traction Green's function inelastic asthenosphere to elastic fault
+- `vv::NTuple`: stress Green's function within inelastic asthenosphere
+- `ϵcomp`: strain component to be considered, must be a subset of `σcomp`
+- `σcomp`: stress component to be considered
 """
-function compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple, ϵcomp::NTuple, σcomp::NTuple)
+function compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple{N, <:Tuple}, ϵcomp::NTuple, σcomp::NTuple) where N
+    # TODO this only applies for tuple-style, need to make adaption for singleton array
     numσ, numϵ = length(ev), length(ve)
     σindex, ϵindex = Base.OneTo(numσ), Base.OneTo(numϵ)
     m, n = size(ev[1]) # number of inelastic elements, number of fault patches
@@ -98,8 +104,7 @@ end
 Shortcut function for computing all 4 Green's function for viscoelastic relaxation.
     Arguments stays the same as [`stress_greens_func`](@ref).
 """
-function compose_stress_greens_func(mf::AbstractMesh{2}, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple{N, <:Symbol}, σcomp::NTuple{N, Symbol}) where {T, N}
-    @assert ϵcomp ⊆ σcomp "Strain components must be a subset of stress components."
+function compose_stress_greens_func(mf::AbstractMesh{2}, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple, σcomp::NTuple) where T
     ee = stress_greens_func(mf, λ, μ, ft)
     ev = stress_greens_func(mf, me, λ, μ, ft, σcomp)
     ve = stress_greens_func(me, mf, λ, μ, ft, ϵcomp)
