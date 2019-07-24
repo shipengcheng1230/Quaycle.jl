@@ -21,6 +21,7 @@ using Base.Threads
 using LinearAlgebra
 using SharedArrays
 
+include("index.jl")
 include("friction.jl")
 include("rheology.jl")
 include("property.jl")

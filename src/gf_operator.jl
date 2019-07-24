@@ -1,8 +1,8 @@
 ## Allocation for inplace operations
 abstract type AbstractAllocation{dim} end
 abstract type TractionRateAllocation{dim} <: AbstractAllocation{dim} end
-abstract type StressRateAllocation{dim} <: AbstractAllocation{dim} end
-abstract type CompositeAllocation{dim} <: AbstractAllocation{dim} end
+abstract type StressRateAllocation <: AbstractAllocation{-1} end
+abstract type CompositeAllocation <: AbstractAllocation{-1} end
 
 struct TractionRateAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: TractionRateAllocation{1}
     dims::Dims{1}
@@ -25,35 +25,27 @@ struct TractionRateAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Com
     pf::P # real-value-FFT forward operator
 end
 
-struct StressRateAllocMatrix{dim, T<:AbstractMatrix, V<:AbstractVector, I<:Integer} <: StressRateAllocation{dim} # unstructured mesh
+struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, VI} <: StressRateAllocation # unstructured mesh
     nume::I # number of unstructured mesh elements
     numϵ::I # number of strain components considered
     numσ::I # number of independent stress components
     reldϵ::T # relative strain rate
     σ′::T # deviatoric stress, <matrix>
     ς′::V # norm of deviatoric stress, <vector>
+    isdiag::V # `1` if diagonal else `0`
+    numdiag::I
+    ϵ2σ::VI
 
-    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V) where {I, T, V, M}
-        if numσ == 6
-            dim = 3
-        elseif numσ == 3
-            dim = 2 # plane stress, remain further implementation
-        elseif numσ == 2
-            dim = 1 # antiplane stress, remain further implementation
-        else
-            error("Number of independent stress components should either be 6 (3-D) or 3 (2-D plane) or 2 (2-D antiplane).")
-        end
-        new{dim, T, V, I}(nume, numϵ, numσ, reldϵ, σ′, ς′)
+    function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V, ϵcomp::NTuple, σcomp::NTuple) where {I, T, V}
+        isdiag = [Float64(x ∈ _diagcomponent) for x in σcomp]
+        ϵ2σ = [findfirst(_x -> _x == x, unique(σcomp)) for x in unique(ϵcomp)]
+        new{T, V, I, typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)), ϵ2σ)
     end
 end
 
-struct ViscoelasticCompositeAlloc{dim, A, B} <: CompositeAllocation{dim}
+struct ViscoelasticCompositeAlloc{A, B} <: CompositeAllocation
     e::A # traction rate allocation
     v::B # stress rate allocation
-
-    function ViscoelasticCompositeAlloc(e::TractionRateAllocation{N}, v::StressRateAllocMatrix) where N
-        new{N, typeof(e), typeof(v)}(e, v)
-    end
 end
 
 "Generate 1-D computation allocation for computing traction rate."
@@ -75,21 +67,16 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
 end
 
 "Generate 3-D computation allocation for computing stress rate."
-function gen_alloc(nume::I, numϵ::I, numσ::I; T=Float64) where I<:Integer
+function gen_alloc(nume::I, numϵ::I, numσ::I, ϵcomp::NTuple, σcomp::NTuple; T=Float64) where {I<:Integer}
     reldϵ = Matrix{T}(undef, nume, numϵ)
     σ′ = Matrix{T}(undef, nume, numσ)
     ς′ = Vector{T}(undef, nume)
-    return StressRateAllocMatrix(nume, numϵ, numσ, reldϵ, σ′, ς′)
+    return StressRateAllocMatrix(nume, numϵ, numσ, reldϵ, σ′, ς′, ϵcomp, σcomp)
 end
 
-# gen_alloc(mesh::LineOkadaMesh) = gen_alloc(mesh.nξ; T=typeof(mesh.Δξ))
-# gen_alloc(mesh::RectOkadaMesh) = gen_alloc(mesh.nx, mesh.nξ; T=typeof(mesh.Δx))
-# gen_alloc(me::SBarbotMeshEntity{3}, numϵ::Integer) = gen_alloc(length(me.tag), numϵ, 6; T=eltype(me.x1))
-# gen_alloc(mf::AbstractMesh{2}, me::SBarbotMeshEntity{3}, numϵ::Integer) = ViscoelasticCompositeAlloc(gen_alloc(mf), gen_alloc(me, numϵ))
-# gen_alloc(mesh::TDTri3MeshEntity) = gen_alloc(length(mesh.tag); T=eltype(mesh.x))
 gen_alloc(gf::AbstractMatrix) = gen_alloc(size(gf, 1))
 gen_alloc(gf::AbstractArray{T, 3}) where T<:Complex = gen_alloc(size(gf, 1), size(gf, 2))
-gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(gen_alloc(gf.ee), gen_alloc(gf.nume, gf.numϵ, gf.numσ))
+gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(gen_alloc(gf.ee), gen_alloc(gf.nume, gf.numϵ, gf.numσ, gf.ϵcomp, gf.σcomp))
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T

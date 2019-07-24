@@ -88,25 +88,25 @@ function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::RateStateQuasi
     dvdθ_dt!(se, dv, dθ, v, θ, p, alloc)
 end
 
-@inline function deviatoric_stress!(σ::AbstractVecOrMat, alloc::StressRateAllocation{3})
-    BLAS.blascopy!(6alloc.nume, σ, 1, alloc.σ′, 1)
-    @inbounds @fastmath @threads for i = 1: alloc.nume
-        σkk = (σ[i,1] + σ[i,4] + σ[i,6]) / 3
-        # diagonal part
-        alloc.σ′[i,1] -= σkk
-        alloc.σ′[i,4] -= σkk
-        alloc.σ′[i,6] -= σkk
+@inline function deviatoric_stress!(σ::AbstractVecOrMat{T}, alloc::StressRateAllocation) where T
+    BLAS.blascopy!(alloc.numσ * alloc.nume, σ, 1, alloc.σ′, 1)
+    if alloc.numdiag > 1
+        BLAS.gemv!('N', one(T), σ, alloc.isdiag, zero(T), alloc.ς′) # store `σkk` into `ς′`
+        # this is not rigorously correct if only one diagonal are considered
+        # in such case, that one diagonal is considered as deviatoric component
+        # otherwise, no strain rate will be on that ever
+        @strided alloc.ς′ ./= alloc.numdiag
+        BLAS.ger!(-one(T), alloc.ς′, alloc.isdiag, alloc.σ′)
     end
     # deviatoric stress norm: ς′ = |σ′| = sqrt(σ′:σ′) = sqrt(tr(σ′ᵀσ′)), we omit the √2 before the symmetry part
     @strided alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
 end
 
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
+    @strided alloc.ς′ .^= (p.n .- 1) # precompute `ςⁿ⁻¹`
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
-            ςⁿ⁻¹ = alloc.ς′[i] ^ (p.n[i] - 1)
-            # index of strain `j` and stress `p.dϵind[j]` must match
-            dϵ[i,j] = (p.disl[i] * ςⁿ⁻¹ + p.diff[i]) * alloc.σ′[i,p.dϵind[j]]
+            dϵ[i,j] = (p.disl[i] * alloc.ς′[i] + p.diff[i]) * alloc.σ′[i,alloc.ϵ2σ[j]]
         end
     end
 end
