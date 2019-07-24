@@ -36,7 +36,7 @@ end
     (σvec[6] - σvec[1])/2 * sind(2dip) - σvec[3] * cosd(2dip)
 end
 
-@inline function flip_stress_components_sbarbot!(u::AbstractVector)
+@inline function flip_stress_ϵcomponents_sbarbot!(u::AbstractVector)
     u[1], u[4] = u[4], u[1] # σxx, σyy = σ22, σ11
     u[3], u[5] = -u[5], -u[3] # σxz, σyz = -σ23, -σ13
 end
@@ -51,7 +51,7 @@ end
 
 """
     stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault,
-        comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+        ϵcomp::NTuple{N, Symbol}; kwargs...) where {T, N}
 
 Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref) to [`RectOkadaMesh`](@ref)
 
@@ -61,18 +61,18 @@ Compute traction Green's function from [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
-- `comp`: the strain component(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
+- `ϵcomp`: the strain ϵcomponent(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
     `:yy`, `:yz`, `:zz` or tuple of a few ones
 
 ## Output
 A tuple of ``n`` matrix, each represents interaction from one strain to the traction on fault.
 """
-function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple{N, Symbol}; kwargs...) where {T, N}
     f = (c) -> stress_greens_func(ma, mf, λ, μ, ft, c; kwargs...)
-    map(f, comp)
+    map(f, ϵcomp)
 end
 
-function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, comp::Symbol; kwargs...) where T
+function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, ϵcomp::Symbol; kwargs...) where T
     if isa(mf, RectOkadaMesh)
         num_patch = mf.nx * mf.nξ
     elseif isa(mf, TDTri3MeshEntity)
@@ -81,17 +81,17 @@ function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T
         error("Unsupported mesh entity type: $(typeof(mf)).")
     end
     st = SharedArray{T}(num_patch, length(ma.tag))
-    stress_greens_func!(st, ma, mf, λ, μ, ft, comp; kwargs...)
+    stress_greens_func!(st, ma, mf, λ, μ, ft, ϵcomp; kwargs...)
     return sdata(st)
 end
 
 function stress_greens_func_chunk!(
-    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, comp::Symbol;
+    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::RectOkadaMesh, λ::T, μ::T, ft::PlaneFault, ϵcomp::Symbol;
     quadrature::Union{Nothing, NTuple}=nothing) where T
 
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
-    uϵ = unit_strain(Val(comp), T)
+    uϵ = unit_strain(Val(ϵcomp), T)
     i2s = CartesianIndices((mf.nx, mf.nξ))
 
     @inbounds @fastmath @simd for sub in subs
@@ -109,12 +109,12 @@ function stress_greens_func_chunk!(
 end
 
 function stress_greens_func_chunk!(
-    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::TDTri3MeshEntity, λ::T, μ::T, ft::PlaneFault, comp::Symbol;
+    st::SharedArray{T, 2}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, mf::TDTri3MeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::Symbol;
     quadrature::Union{Nothing, NTuple}=nothing) where T
 
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
-    uϵ = unit_strain(Val(comp), T)
+    uϵ = unit_strain(Val(ϵcomp), T)
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of fault, index of volume
@@ -130,7 +130,7 @@ function stress_greens_func_chunk!(
 end
 
 """
-    stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol};
+    stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::NTuple{N, Symbol};
         kwargs...) where {T, N}
 
 Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBarbotHex8MeshEntity`](@ref)
@@ -139,35 +139,37 @@ Compute stress Green's function within [`SBarbotTet4MeshEntity`](@ref) or [`SBar
 - `ma::SBarbotMeshEntity{3}`: asthenosphere mesh
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
-- `comp`: the strain component(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
+- `ϵcomp`: the strain ϵcomponent(s) to be considered. Either a singleton of `:xx`, `:xy`, `:xz`,
     `:yy`, `:yz`, `:zz` or tuple of a few ones
 
 ## Output
-A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain, w.r.t. `comp`
-    to the stress components, whose order is
+A tuple of ``n`` tuple of matrix, each tuple represents interaction from one strain, w.r.t. `ϵcomp`
+    to the stress ϵcomponents, whose order is
     ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``, ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``,
     each of which is a matrix, within asthenosphere.
 """
-function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::NTuple{N, Symbol}; kwargs...) where {T, N}
-    f = (c) -> stress_greens_func(ma, λ, μ, c; kwargs...)
-    map(f, comp)
+function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::NTuple{N, Symbol}, σcomp::NTuple{N, Symbol}; kwargs...) where {T, N}
+    f = (x) -> stress_greens_func(ma, λ, μ, x, σcomp; kwargs...)
+    map(f, ϵcomp)
 end
 
-function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol; kwargs...) where T
+function stress_greens_func(ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::Symbol, σcomp::NTuple{N, Symbol}; kwargs...) where {T, N}
     numelements = length(ma.tag)
-    st = ntuple(_ -> SharedArray{T}(numelements, numelements), Val(6))
-    stress_greens_func!(st, ma, λ, μ, comp; kwargs...)
-    return ntuple(x -> st[x] |> sdata, 6)
+    numσ = length(σcomp)
+    st = ntuple(_ -> SharedArray{T}(numelements, numelements), Val(numσ))
+    stress_greens_func!(st, ma, λ, μ, ϵcomp, σcomp; kwargs...)
+    return ntuple(x -> st[x] |> sdata, numσ)
 end
 
 function stress_greens_func_chunk!(
-    st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, λ::T, μ::T, comp::Symbol;
+    st::NTuple{N, <:SharedArray}, subs::AbstractArray, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ϵcomp::Symbol, σcomp::NTuple{N, Symbol};
     quadrature::Union{Nothing, NTuple}=nothing) where {T, N}
 
     ν = λ / 2 / (λ + μ)
     σ = Vector{T}(undef, 6)
-    uϵ = unit_strain(Val(comp), T)
-    indexST = Base.OneTo(6)
+    uϵ = unit_strain(Val(ϵcomp), T)
+    σindex = [_ϵσindex(Val(x)) for x in σcomp]
+    indexST = Base.OneTo(length(σcomp))
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of recv, index of src
@@ -178,9 +180,9 @@ function stress_greens_func_chunk!(
         else
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
-        flip_stress_components_sbarbot!(σ)
+        flip_stress_ϵcomponents_sbarbot!(σ)
         for ic in indexST
-            st[ic][i,j] = σ[ic]
+            st[ic][i,j] = σ[σindex[ic]]
         end
     end
 end
