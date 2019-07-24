@@ -36,7 +36,7 @@ end
     (σvec[6] - σvec[1])/2 * sind(2dip) - σvec[3] * cosd(2dip)
 end
 
-@inline function flip_stress_ϵcomponents_sbarbot!(u::AbstractVector)
+@inline function flip_stress_components_sbarbot!(u::AbstractVector)
     u[1], u[4] = u[4], u[1] # σxx, σyy = σ22, σ11
     u[3], u[5] = -u[5], -u[3] # σxz, σyz = -σ23, -σ13
 end
@@ -180,7 +180,7 @@ function stress_greens_func_chunk!(
         else
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
-        flip_stress_ϵcomponents_sbarbot!(σ)
+        flip_stress_components_sbarbot!(σ)
         for ic in indexST
             st[ic][i,j] = σ[σindex[ic]]
         end

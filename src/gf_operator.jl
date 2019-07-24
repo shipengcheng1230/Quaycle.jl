@@ -39,7 +39,7 @@ struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, V
     function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V, ϵcomp::NT, σcomp::NT) where {I, T, V, NT}
         isdiag = [Float64(x ∈ _diagcomponent) for x in σcomp]
         ϵ2σ = [findfirst(_x -> _x == x, unique(σcomp)) for x in unique(ϵcomp)]
-        new{T, V, I, typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)))
+        new{T, V, I, typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)), ϵ2σ)
     end
 end
 
