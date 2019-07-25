@@ -46,11 +46,6 @@ function __init__()
         include("tools/gmshtools.jl")
     end
 
-    @require PyPlot="d330b81b-6aea-500a-939a-2ce795aea3ee" begin
-        using .PyPlot
-        include("tools/pyplottools.jl")
-    end
-
     include(joinpath(@__DIR__, "config.jl"))
 end
 
