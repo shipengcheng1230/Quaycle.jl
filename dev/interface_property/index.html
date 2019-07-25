@@ -456,18 +456,6 @@
   </li>
 
     
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../LICENSE.md" title="License" class="md-nav__link">
-      License
-    </a>
-  </li>
-
-    
   </ul>
 </nav>
                   </div>
@@ -557,7 +545,7 @@
 <ul>
 <li><code>A</code>: prefactor</li>
 <li><code>n</code>: power law stress exponent</li>
-<li><code>COH</code>: water content</li>
+<li><code>COH</code>: water content<sup id="fnref2:1"><a class="footnote-ref" href="#fn:1">1</a></sup></li>
 <li><code>r</code>: water fugacity exponent</li>
 <li><code>α</code>: melting constant</li>
 <li><code>ϕ</code>: melting fraction</li>
@@ -566,7 +554,7 @@
 <li><code>Ω</code>: activation volume</li>
 <li><code>T</code>: temperature</li>
 </ul>
-<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L16' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L20' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.DiffusionCreepProperty' href='#JuEQ.DiffusionCreepProperty'>#</a>
 <strong><code>JuEQ.DiffusionCreepProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>System properties for plastic deformation of <em>diffusion creep</em>.     Please refer <a href="https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06">(Hirth &amp; Kohlstedt, 2003)</a>     for concrete units of each factor.</p>
@@ -575,7 +563,7 @@
 <li><code>A</code>: prefactor</li>
 <li><code>d</code>: grain size</li>
 <li><code>m</code>: grain size exponent</li>
-<li><code>COH</code>: water content.   Some references may refer it as water fugacity <span><span class="MathJax_Preview">f_{\mathrm{H_{2} O}}</span><script type="math/tex">f_{\mathrm{H_{2} O}}</script></span>, which is misleading. Since fugacity   has the same dimension of chemical potential (Pa) while water content is dimensionless.</li>
+<li><code>COH</code>: water content<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></li>
 <li><code>r</code>: water fugacity exponent</li>
 <li><code>α</code>: melting constant</li>
 <li><code>ϕ</code>: melting fraction</li>
@@ -584,7 +572,7 @@
 <li><code>Ω</code>: activation volume</li>
 <li><code>T</code>: temperature</li>
 </ul>
-<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L19' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L17' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.PeierlsProperty' href='#JuEQ.PeierlsProperty'>#</a>
 <strong><code>JuEQ.PeierlsProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>System properties for plastic deformation of <em>Peierls Mechanisms</em>. Not implemented yet.</p>
@@ -598,9 +586,8 @@
 <li><code>diff</code>: diffusion creep</li>
 <li><code>peie</code>: Peierls mechanisms</li>
 <li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
-<li><code>dϵind</code>: index of strain components</li>
 </ul>
-<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L12' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/9248bf7687a91fa0cce4bd496889e5cf578b009d/base/#L0-L11' class='documenter-source'>source</a><br></p>
 <p><a id='JuEQ.ViscoelasticMaxwellProperty' href='#JuEQ.ViscoelasticMaxwellProperty'>#</a>
 <strong><code>JuEQ.ViscoelasticMaxwellProperty</code></strong> &mdash; <em>Type</em>.</p>
 <p>Composite property for viscoelastic rheology of maxwell representation.</p>
@@ -609,7 +596,7 @@
 <li><code>pe::RateStateQuasiDynamicProperty</code>: elastic rate-and-state system property</li>
 <li><code>pv::CompositePlasticDeformationProperty</code>: composite plastic deformation system property</li>
 </ul>
-<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T'>#</a>
+<p><a id='JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T' href='#JuEQ.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T'>#</a>
 <strong><code>JuEQ.compose</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">dϵname</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
 </pre></div>
@@ -619,8 +606,7 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>pe::RateStateQuasiDynamicProperty{T}</code>: elastic rate-and-state system property</li>
-<li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
-<li><code>dϵname</code>: strain components name symbol</li>
+<li><code>dϵref</code>: reference strain rate whose <em>length</em> must equal to and <em>order</em> same as strain components considered</li>
 <li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
 </ul>
 <p><a id='JuEQ.composite_factor-Tuple{DislocationCreepProperty}' href='#JuEQ.composite_factor-Tuple{DislocationCreepProperty}'>#</a>
@@ -634,6 +620,14 @@
 <ul>
 <li><code>pv::PlasticDeformationProperty</code>: plastic deformation system property</li>
 </ul>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Some references may refer it as water fugacity <span><span class="MathJax_Preview">f_{\mathrm{H_{2} O}}</span><script type="math/tex">f_{\mathrm{H_{2} O}}</script></span>, which is misleading. Since fugacity has the same dimension of chemical potential (Pa) while water content is dimensionless.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
                 
                   
                 
