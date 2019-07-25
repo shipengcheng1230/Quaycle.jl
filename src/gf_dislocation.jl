@@ -205,9 +205,8 @@ function td_periodic_vec(mt::TDTri3MeshEntity, buffer_ratio::Real=0)
 end
 
 """
-    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3},
-        λ::T, μ::T, ft::FlatPlaneFault,
-        σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
+    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault;
+        kwargs...) where {T<:Real, I<:Integer}
 
 Compute stress Green's function from fault mesh to asthenosphere mesh.
 
@@ -217,7 +216,6 @@ Compute stress Green's function from fault mesh to asthenosphere mesh.
 - `λ::T`: Lamé's first parameter
 - `μ::T`: shear modulus
 - `ft::FlatPlaneFault`: fault type, either [`DIPPING()`](@ref) or [`STRIKING()`](@ref)
-- `σcomp::NTuple{N, Symbol}`: stress components to consider
 
 ### KWARGS Arguments
 The same as previously mentioned:
@@ -225,10 +223,10 @@ The same as previously mentioned:
 - `buffer_ratio::Real`
 
 ## Output
-The output is a tuple of `length(σcomp)` matrix, each corresponds ``σ_{ij}`` in the same order
-    as given by `σcomp`.
+The output is a tuple of 6 matrix, each corresponds ``σ_{xx}``, ``σ_{xy}``, ``σ_{xz}``,
+    ``σ_{yy}``, ``σ_{yz}``, ``σ_{zz}``.
 """
-function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
+function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where {T<:Real, I<:Integer}
     if isa(mf, RectOkadaMesh)
         num_patch = mf.nx * mf.nξ
     elseif isa(mf, TDTri3MeshEntity)
@@ -236,24 +234,22 @@ function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T
     else
         error("Unsupported mesh entity type: $(typeof(mf)).")
     end
-    numσ = length(σcomp)
-    st = ntuple(_ -> SharedArray{T}(length(ma.tag), num_patch), Val(numσ))
-    stress_greens_func!(st, mf, ma, λ, μ, ft, σcomp; kwargs...)
-    return ntuple(x -> st[x] |> sdata, numσ)
+    st = ntuple(_ -> SharedArray{T}(length(ma.tag), num_patch), Val(6))
+    stress_greens_func!(st, mf, ma, λ, μ, ft; kwargs...)
+    return ntuple(x -> st[x] |> sdata, 6)
 end
 
 function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; nrept::Integer=2, buffer_ratio::Real=0.0) where {T<:Real, N, I<:Integer}
+    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=2, buffer_ratio::Real=0.0) where {T<:Real, N, I<:Integer}
 
     ud = unit_dislocation(ft)
     lrept = (buffer_ratio + one(T)) * (mf.Δx * mf.nx)
     α = (λ + μ) / (λ + 2μ)
     u = Vector{T}(undef, 12)
     σ = Vector{T}(undef, 6)
-    σindex = [_ϵσindex(Val(x)) for x in σcomp]
     i2s = CartesianIndices((mf.nx, mf.nξ))
-    indexST = Base.OneTo(length(σcomp))
+    indexST = Base.OneTo(6)
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
@@ -261,27 +257,26 @@ function stress_greens_func_chunk!(
         dc3d_periodic_bc!(u, ma.x2[i], ma.x1[i], -ma.x3[i], α, mf.dep, mf.dip, mf.ax[q[1]], mf.aξ[q[2]], ud, nrept, lrept)
         stress_components_dc3d!(σ, u, λ, μ)
         for ind in indexST
-            st[ind][i,j] = σ[σindex[ind]]
+            st[ind][i,j] = σ[ind]
         end
     end
 end
 
 function stress_greens_func_chunk!(
     st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::TDTri3MeshEntity, ma::SBarbotMeshEntity{3},
-    λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; nrept::Integer=0, buffer_ratio::Real=0) where {T<:Real, N, I<:Integer}
+    λ::T, μ::T, ft::FlatPlaneFault; nrept::Integer=0, buffer_ratio::Real=0) where {T<:Real, N, I<:Integer}
 
     vrept = nrept == 0 ? zeros(T, 3) : td_periodic_vec(mf, buffer_ratio)
     ud = unit_dislocation(ft)
     σ = Vector{T}(undef, 6)
-    σindex = [_ϵσindex(Val(x)) for x in σcomp]
-    indexST = Base.OneTo(length(σcomp))
+    indexST = Base.OneTo(6)
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of volume, index of fault
         td_periodic_bc!(σ, ma.x2[i], ma.x1[i], -ma.x3[i], mf.A[j], mf.B[j], mf.C[j], ud..., λ, μ, nrept, vrept)
         flip_stress_components_td!(σ)
         for ind in indexST
-            st[ind][i,j] = σ[σindex[ind]]
+            st[ind][i,j] = σ[ind]
         end
     end
 end
