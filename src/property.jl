@@ -90,20 +90,17 @@ Compose all three type of plastic deformation and other strain-related system pr
 - `diff`: diffusion creep
 - `peie`: Peierls mechanisms
 - `dϵref`: reference strain rate whose length must equal strain components considered
-- `dϵind`: index of strain components
 """
-@with_kw struct CompositePlasticDeformationProperty{U, I, V, VI} <: PlasticDeformationProperty
+@with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
     disl::U # dislocation creep
     n::I # stress exponent in dislocation creep
     diff::U # diffusion creep
     peie::U # not support yet, set to ZERO
     dϵref::V # reference strain rate
-    dϵind::VI # index of strain components
 
     @assert size(disl) == size(n)
     @assert size(n) == size(diff)
     @assert size(diff) == size(peie)
-    @assert size(dϵref) == size(dϵind)
     @assert length(dϵref) ≤ 6 # no more than 6 in 3D space
 end
 
@@ -115,7 +112,7 @@ System properties for plastic deformation of *dislocation creep*.
 ## Fields
 - `A`: prefactor
 - `n`: power law stress exponent
-- `COH`: water content
+- `COH`: water content[^1]
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -123,6 +120,10 @@ System properties for plastic deformation of *dislocation creep*.
 - `P`: pressure
 - `Ω`: activation volume
 - `T`: temperature
+
+[^1]:
+    Some references may refer it as water fugacity ``f_{\mathrm{H_{2} O}}``, which is misleading. Since fugacity
+    has the same dimension of chemical potential (Pa) while water content is dimensionless.
 """
 @with_kw struct DislocationCreepProperty{V<:AbstractVector} <: PlasticDeformationProperty
     A::V # prefactor
@@ -146,9 +147,7 @@ System properties for plastic deformation of *diffusion creep*.
 - `A`: prefactor
 - `d`: grain size
 - `m`: grain size exponent
-- `COH`: water content.
-    Some references may refer it as water fugacity ``f_{\mathrm{H_{2} O}}``, which is misleading. Since fugacity
-    has the same dimension of chemical potential (Pa) while water content is dimensionless.
+- `COH`: water content[^1]
 - `r`: water fugacity exponent
 - `α`: melting constant
 - `ϕ`: melting fraction
@@ -209,11 +208,10 @@ Create maxwell viscoelastic system given both rate-and-state and plastic propert
 
 ## Arguments
 - `pe::RateStateQuasiDynamicProperty{T}`: elastic rate-and-state system property
-- `dϵref`: reference strain rate whose length must equal strain components considered
-- `dϵname`: strain components name symbol
+- `dϵref`: reference strain rate whose *length* must equal to and *order* same as strain components considered
 - `pvs...`: different type of plastic deformation system properties but no more than three
 """
-function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, dϵname::AbstractVector, pvs...) where T
+function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
     for pv in pvs
@@ -225,16 +223,8 @@ function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, d
             diff .= composite_factor(pv)
         end
     end
-    dϵind = map(x -> _map_strain_index(Val(x)), dϵname)
-    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, dϵref, dϵind))
+    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, dϵref))
 end
-
-_map_strain_index(::Val{:xx}) = 1
-_map_strain_index(::Val{:xy}) = 2
-_map_strain_index(::Val{:xz}) = 3
-_map_strain_index(::Val{:yy}) = 4
-_map_strain_index(::Val{:yz}) = 5
-_map_strain_index(::Val{:zz}) = 6
 
 const prop_field_names = Dict(
     :SingleDofRSFProperty => ("a", "b", "L", "k", "σ", "η", "vpl", "f0", "v0"),
@@ -242,7 +232,7 @@ const prop_field_names = Dict(
     :DislocationCreepProperty => ("A", "n", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :DiffusionCreepProperty => ("A", "d", "m", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
-    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "dϵref", "dϵind"),
+    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "dϵref"),
     )
 
 for (nn, fn) in prop_field_names

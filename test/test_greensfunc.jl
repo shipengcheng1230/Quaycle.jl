@@ -9,7 +9,7 @@ using JuEQ:
     flip_stress_components_td!, shear_traction_sbarbot_on_td,
     ViscoelasticCompositeGreensFunction,
     relative_velocity!, relative_strain_rate!,
-    dτ_dt!, dσ_dt!, deviatoric_stress!, gen_alloc
+    dτ_dt!, dσ_dt!, deviatoric_stress!, gen_alloc, dϵ_dt!
 
 @testset "Unit dislocation for plane fault types" begin
     @test unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
@@ -95,7 +95,7 @@ end
 
     function test_okada2sbarbot_stress(ft)
         ud = unit_dislocation(ft)
-        st = stress_greens_func(mf, ma, λ, μ, ft; nrept=0, buffer_ratio=0)
+        st = stress_greens_func(mf, ma, λ, μ, ft, σcomp; nrept=0, buffer_ratio=0)
         indexST = Base.OneTo(6)
         for _ in 1: 5 # random check 5 position
             i, j, k = rand(1: mf.nx), rand(1: mf.nξ), rand(1: length(ma.tag))
@@ -107,7 +107,7 @@ end
 
     function test_td2sbarbot_stress(ft)
         ud = unit_dislocation(ft)
-        st = stress_greens_func(mt, ma, λ, μ, ft)
+        st = stress_greens_func(mt, ma, λ, μ, ft, σcomp)
         indexST = Base.OneTo(6)
         σ = Vector{Float64}(undef, 6)
         for _ in 1: 5
@@ -116,12 +116,22 @@ end
             flip_stress_components_td!(σ)
             @test map(x -> st[x][j,i], indexST) == σ
         end
+
+        # test flipped stress components
+        σcomp2 = (:yy, :yz, :xx, :zz, :xz, :xy)
+        st2 = stress_greens_func(mt, ma, λ, μ, ft, σcomp2)
+        @test st[1] == st2[3]
+        @test st[2] == st2[6]
+        @test st[3] == st2[5]
+        @test st[4] == st2[1]
+        @test st[5] == st2[2]
+        @test st[6] == st2[4]
     end
 
     function test_sbarbot2okada_traction(ft)
-        st = stress_greens_func(ma, mf, λ, μ, ft, allcomp)
+        st = stress_greens_func(ma, mf, λ, μ, ft, ϵcomp)
         for (ic, _st) in enumerate(st)
-            uϵ = unit_strain(Val(allcomp[ic]))
+            uϵ = unit_strain(Val(ϵcomp[ic]))
             for _ in 1: 5 # random check 5 position
                 i, j, k = rand(1: mf.nx), rand(1: length(ma.tag)), rand(1: mf.nξ)
                 σ = sbarbot_stress_hex8(mf.y[k], mf.x[i], -mf.z[k], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
@@ -132,10 +142,10 @@ end
     end
 
     function test_sbarbot2td_traction(ft)
-        st = stress_greens_func(ma, mt, λ, μ, ft, allcomp)
+        st = stress_greens_func(ma, mt, λ, μ, ft, ϵcomp)
         st[1]
         for (ic, _st) in enumerate(st)
-            uϵ = unit_strain(Val(allcomp[ic]))
+            uϵ = unit_strain(Val(ϵcomp[ic]))
             for _ in 1: 5 # random check 5 position
                 i, j = rand(1: length(mt.tag)), rand(1: length(ma.tag))
                 σ = sbarbot_stress_hex8(mt.y[i], mt.x[i], -mt.z[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
@@ -146,10 +156,10 @@ end
     end
 
     function test_sbarbot_self_stress()
-        st = stress_greens_func(ma, λ, μ, allcomp)
+        st = stress_greens_func(ma, λ, μ, ϵcomp, σcomp)
         indexST = Base.OneTo(6)
         for (ic, _st) in enumerate(st)
-            uϵ = unit_strain(Val(allcomp[ic]))
+            uϵ = unit_strain(Val(ϵcomp[ic]))
             for _ in 1: 5 # random check 5 position
                 i, j = rand(1: length(ma.tag), 2)
                 σ = sbarbot_stress_hex8(ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
@@ -157,10 +167,23 @@ end
                 @test σ == map(x -> _st[x][i,j], indexST)
             end
         end
+
+        σcomp2 = (:yy, :yz, :xx, :zz, :xz, :xy)
+        st2 = stress_greens_func(ma, λ, μ, ϵcomp, σcomp2)
+        for i in 1: length(st)
+            @test st[i][1] == st2[i][3]
+            @test st[i][2] == st2[i][6]
+            @test st[i][3] == st2[i][5]
+            @test st[i][4] == st2[i][1]
+            @test st[i][5] == st2[i][2]
+            @test st[i][6] == st2[i][4]
+        end
     end
 
     allfaulttype = [STRIKING(), DIPPING()]
-    allcomp = (:xx, :xy, :xz, :yz, :yy, :zz)
+    ϵcomp = (:xx, :xy, :xz, :yy, :yz, :zz)
+    σcomp = (:xx, :xy, :xz, :yy, :yz, :zz)
+
     foreach(test_okada2sbarbot_stress, allfaulttype)
     foreach(test_sbarbot2okada_traction, allfaulttype)
     foreach(test_td2sbarbot_stress, allfaulttype)
@@ -170,8 +193,8 @@ end
 
     @testset "periodic summation convergence between dc3d and td towards sbarbot" begin
         ft = rand(allfaulttype)
-        mtxrd = stress_greens_func(mf, ma, λ, μ, ft; nrept=2, buffer_ratio=1)
-        mtxtd = stress_greens_func(mt, ma, λ, μ, ft; nrept=2, buffer_ratio=1)
+        mtxrd = stress_greens_func(mf, ma, λ, μ, ft, σcomp; nrept=2, buffer_ratio=1)
+        mtxtd = stress_greens_func(mt, ma, λ, μ, ft, σcomp; nrept=2, buffer_ratio=1)
         relvrd = ones(mf.nx * mf.nξ)
         relvtd = ones(length(mt.tag))
         @test map(i -> mtxrd[i] * relvrd ≈ mtxtd[i] * relvtd, 1: 6) |> all
@@ -303,13 +326,14 @@ end
     me = read_gmsh_mesh(Val(:SBarbotHex8), tmpfile; phytag=1)
     λ, μ = 1.0, 1.0
     ft = rand([DIPPING(), STRIKING()])
-    comp = (:xx, :xy, :xz, :yy, :yz, :zz)
+    ϵcomp = (:xx, :xy, :xz)
+    σcomp = (:xy, :xz, :xx, :zz, :yz, :yy)
 
     gfoo = stress_greens_func(mf, λ, μ, ft)
-    gfos = stress_greens_func(mf, me, λ, μ, ft)
-    gfso = stress_greens_func(me, mf, λ, μ, ft, comp)
-    gfss = stress_greens_func(me, λ, μ, comp)
-    gg = compose_stress_greens_func(gfoo, gfos, gfso, gfss)
+    gfos = stress_greens_func(mf, me, λ, μ, ft, σcomp)
+    gfso = stress_greens_func(me, mf, λ, μ, ft, ϵcomp)
+    gfss = stress_greens_func(me, λ, μ, ϵcomp, σcomp)
+    gg = compose_stress_greens_func(gfoo, gfos, gfso, gfss, ϵcomp, σcomp)
 
     @testset "concatenate components of green's function" begin
         @test gg.ee == gfoo
@@ -319,8 +343,8 @@ end
     end
 
     alos = gen_alloc(gg)
-    ϵ = rand(length(me.tag), length(comp))
-    ϵ₀ = rand(length(comp))
+    ϵ = rand(length(me.tag), length(ϵcomp))
+    ϵ₀ = rand(length(ϵcomp))
     v = rand(mf.nx, mf.nξ)
     vpl = rand()
 
@@ -337,7 +361,7 @@ end
     @testset "inelastic ⟶ elastic" begin
         fill!(alos.e.dτ_dt, 0.0)
         res = zeros(mf.nx * mf.nξ)
-        for i = 1: length(comp)
+        for i = 1: length(ϵcomp)
             res .+= vec(alos.e.dτ_dt) + gfso[i] * alos.v.reldϵ[:,i]
         end
         dτ_dt!(gg.ve, alos)
@@ -345,19 +369,19 @@ end
     end
 
     @testset "elastic ⟶ inelastic" begin
-        dσ = Matrix{Float64}(undef, length(me.tag), 6)
+        dσ = Matrix{Float64}(undef, length(me.tag), length(σcomp))
         dσ_dt!(dσ, gg.ev, alos.e)
-        for i = 1: 6
+        for i = 1: length(σcomp)
             res = gfos[i] * vec(alos.e.relvnp)
             @test dσ[:,i] ≈ res
         end
     end
 
     @testset "inelastic ⟷ inelastic" begin
-        dσ = rand(length(me.tag), 6)
-        res = zeros(length(me.tag), 6) + dσ
-        for i = 1: 6
-            for j = 1: length(comp)
+        dσ = rand(length(me.tag), length(σcomp))
+        res = zeros(length(me.tag), length(σcomp)) + dσ
+        for i = 1: length(σcomp)
+            for j = 1: length(ϵcomp)
                 res[:,i] .+= gfss[j][i] * alos.v.reldϵ[:,j]
             end
         end
@@ -368,16 +392,31 @@ end
     rm(tmpfile)
 end
 
-@testset "Deviatoric stress and norm" begin
-    alv = gen_alloc(10, 3, 6)
-    σ = rand(10, 6)
-    σkk = (σ[:,1] + σ[:,4] + σ[:,6]) / 3
+@testset "Deviatoric stress and norm / strain rate" begin
+    ϵcomp = (:xx, :xy, :xz)
+    σcomp = (:xx, :zz, :xy, :xz, :yy, :yz) # 1, 2, 5 are diagonal components
+    alv = gen_alloc(10, length(ϵcomp), length(σcomp), ϵcomp, σcomp)
+    σ = rand(10, length(σcomp))
+    σkk = (σ[:,1] + σ[:,2] + σ[:,5]) / 3
     σ′ = copy(σ)
     σ′[:,1] -= σkk
-    σ′[:,4] -= σkk
-    σ′[:,6] -= σkk
-    deviatoric_stress!(σ, alv)
-    @test alv.σ′ ≈ σ′
-    ς′ = map(x -> norm([σ′[x,1], σ′[x,4], σ′[x,6], σ′[x,2], σ′[x,3], σ′[x,5]]), 1: alv.nume)
-    @test alv.ς′ ≈ ς′
+    σ′[:,2] -= σkk
+    σ′[:,5] -= σkk
+
+    @testset "deviatoric stress" begin
+        deviatoric_stress!(σ, alv)
+        @test alv.σ′ ≈ σ′
+        ς′ = map(x -> norm(σ′[x,:]), 1: alv.nume)
+        @test alv.ς′ ≈ ς′
+    end
+
+    @testset "strain rate" begin
+        p = CompositePlasticDeformationProperty([rand(10) for _ in 1: 4]..., rand(length(ϵcomp)))
+        dϵ′ = @. p.disl * alv.ς′ ^ (p.n - 1) * alv.σ′ + p.diff * alv.σ′
+        dϵ = rand(10, length(ϵcomp))
+        dϵ_dt!(dϵ, p, alv)
+        @test dϵ[:,1] ≈ dϵ′[:,1]
+        @test dϵ[:,2] ≈ dϵ′[:,3]
+        @test dϵ[:,3] ≈ dϵ′[:,4]
+    end
 end
