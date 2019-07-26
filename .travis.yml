@@ -21,8 +21,8 @@ addons:
     packages:
     - libgfortran3
     - libglu1
-    - libXcursor1
-    - libXrender1
+    - libxcursor1
+    - libxrender1
     - libxft2
     - libxinerama1
 after_success:
