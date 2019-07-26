@@ -19,7 +19,12 @@ branches:
 addons:
   apt:
     packages:
-    - libgfortran
+    - libgfortran3
+    - libglu1
+    - libXcursor1
+    - libXrender1
+    - libxft2
+    - libxinerama1
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
   - julia --project=test/coverage test/coverage/coverage.jl
