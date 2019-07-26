@@ -14,7 +14,6 @@ using BlockArrays
 using Strided
 using WriteVTK
 using Formatting
-using ProgressMeter
 
 using Distributed
 using Base.Threads
@@ -28,6 +27,7 @@ include("property.jl")
 include("mesh.jl")
 include("space.jl")
 include("gf.jl")
+include("derivative.jl")
 include("assemble.jl")
 include("visualize.jl")
 
