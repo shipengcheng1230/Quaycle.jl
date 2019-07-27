@@ -202,7 +202,7 @@ end
 function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
     @gmsh_open file begin
         pos = Iterators.product(1: mesh.nx, 1: mesh.nξ)
-        @static if VersionNumber(gmsh.GMSH_API_VERSION_MAJOR, gmsh.GMSH_API_VERSION_MINOR) < v"4.3"
+        if VersionNumber(gmsh.GMSH_API_VERSION_MAJOR, gmsh.GMSH_API_VERSION_MINOR) < v"4.3"
             map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]])[1] |> Int, pos)
         else
             map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]], 2)[1] |> Int, pos)
@@ -213,8 +213,11 @@ end
 "Compute `[i] => tag` from [`LineOkadaMesh`](@ref) to unstructured mesh file."
 function indice2tag(mesh::LineOkadaMesh, file::AbstractString)
     @gmsh_open file begin
-        pos = 1: mesh.nξ
-        map(p -> gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[p], mesh.z[p], 1)[1] |> Int, pos)
+        if VersionNumber(gmsh.GMSH_API_VERSION_MAJOR, gmsh.GMSH_API_VERSION_MINOR) < v"4.3"
+            map(p -> gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[p], mesh.z[p])[1] |> Int, eachindex(mesh.ξ))
+        else
+            map(p -> gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[p], mesh.z[p], 1)[1] |> Int, eachindex(mesh.ξ))
+        end
     end
 end
 

@@ -1,6 +1,4 @@
 using JuEQ
-using GmshTools
-using Test
 
 const TESTDIR = @__DIR__
 const TESTFILES = filter(x -> startswith(x, "test_") && endswith(x, ".jl"), readdir(TESTDIR))
