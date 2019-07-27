@@ -52,7 +52,7 @@ end
         i2t = indice2tag(mesh, fname)
         @gmsh_open fname begin
             i = rand(1: mesh.nξ)
-            @test gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[i], mesh.z[i], 1)[1] == i2t[i]
+            @test gmsh.model.mesh.getElementByCoordinates(0.0, mesh.y[i], mesh.z[i])[1] == i2t[i]
         end
         rm(fname)
     end
@@ -63,7 +63,7 @@ end
         i2t = indice2tag(mesh, fname)
         @gmsh_open fname begin
             i, j = rand(1: mesh.nx), rand(1: mesh.nξ)
-            @test gmsh.model.mesh.getElementByCoordinates(mesh.x[i], mesh.y[j], mesh.z[j], 2)[1] == i2t[i,j]
+            @test gmsh.model.mesh.getElementByCoordinates(mesh.x[i], mesh.y[j], mesh.z[j])[1] == i2t[i,j]
         end
         rm(fname)
     end
