@@ -202,7 +202,11 @@ end
 function indice2tag(mesh::RectOkadaMesh, file::AbstractString)
     @gmsh_open file begin
         pos = Iterators.product(1: mesh.nx, 1: mesh.nξ)
-        map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]], 2)[1] |> Int, pos)
+        @static if VersionNumber(gmsh.GMSH_API_VERSION_MAJOR, gmsh.GMSH_API_VERSION_MINOR) < v"4.3"
+            map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]])[1] |> Int, pos)
+        else
+            map(p -> gmsh.model.mesh.getElementByCoordinates(mesh.x[p[1]], mesh.y[p[2]], mesh.z[p[2]], 2)[1] |> Int, pos)
+        end
     end
 end
 
