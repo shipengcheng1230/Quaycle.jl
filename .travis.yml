@@ -16,6 +16,15 @@ branches:
   only:
     - master
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+addons:
+  apt:
+    packages:
+    - libgfortran3
+    - libglu1
+    - libxcursor1
+    - libxrender1
+    - libxft2
+    - libxinerama1
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
   - julia --project=test/coverage test/coverage/coverage.jl
