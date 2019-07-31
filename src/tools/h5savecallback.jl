@@ -123,7 +123,7 @@ function h5savebuffercbkernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
 end
 
 function _trigger_copy(b::H5SaveBuffer, ptrs, t)
-    b.tbuffer[b.count[1]] = t
+    b.tbuffer[b.count] = t
     for i ∈ b.uiter
         b.ubuffer[b.ustrs[i]][b.idxs[i]..., b.count] .= ptrs[i]
     end
