@@ -42,7 +42,6 @@ function stress_greens_func(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFaul
     stress_greens_func!(st, mesh, λ, μ, ft; kwargs...)
 
     function __convert_to_fourier_domain__()
-        FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
         x1 = zeros(T, 2 * mesh.nx - 1)
         p1 = plan_rfft(x1, flags=parameters["FFT"]["FLAG"])
         st_dft = Array{Complex{T}}(undef, mesh.nx, mesh.nξ, mesh.nξ)

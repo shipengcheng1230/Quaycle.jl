@@ -53,7 +53,6 @@ gen_alloc(nξ::Integer; T=Float64) = TractionRateAllocMatrix((nξ,), [Vector{T}(
 
 "Generate 2-D computation allocation for computing traction rate."
 function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
-    FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
 

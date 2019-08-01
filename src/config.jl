@@ -1,6 +1,5 @@
 ## Global Performace Settings
 
-"""Global settings."""
 parameters = Dict(
     "FFT" => Dict(
         # FFTW threads
@@ -15,3 +14,4 @@ parameters = Dict(
 )
 
 BLAS.set_num_threads(parameters["BLAS"]["NUM_THREADS"])
+FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
