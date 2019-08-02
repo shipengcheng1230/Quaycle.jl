@@ -25,7 +25,7 @@ struct TractionRateAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Com
     pf::P # real-value-FFT forward operator
 end
 
-struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, VI} <: StressRateAllocation # unstructured mesh
+struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, TUD<:Tuple, TUM<:Tuple} <: StressRateAllocation # unstructured mesh
     nume::I # number of unstructured mesh elements
     numϵ::I # number of strain components considered
     numσ::I # number of independent stress components
@@ -33,13 +33,17 @@ struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, V
     σ′::T # deviatoric stress, <matrix>
     ς′::V # norm of deviatoric stress, <vector>
     isdiag::V # `1` if diagonal else `0`
-    numdiag::I
-    ϵ2σ::VI
+    numdiag::I # number of diagonal components
+    diagcoef::TUD # `1//2` if diagonal else `1`
+    ϵ2σ::TUM # index mapping from strain to stress
 
     function StressRateAllocMatrix(nume::I, numϵ::I, numσ::I, reldϵ::T, σ′::T, ς′::V, ϵcomp::NTuple, σcomp::NTuple) where {I, T, V}
-        isdiag = [Float64(x ∈ _diagcomponent) for x in σcomp]
-        ϵ2σ = [findfirst(_x -> _x == x, unique(σcomp)) for x in unique(ϵcomp)]
-        new{T, V, I, typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)), ϵ2σ)
+        _isdiag = map(x -> x ∈ _diagcomponent, σcomp)
+        isdiag = map(Float64, _isdiag) |> collect # BLAS call use `Float64`
+        diagcoef = map(x -> ifelse(x, 0.5, 1.0), _isdiag) # off-diagonal components are twice-summed
+        ϵ2σ = map(x -> findfirst(_x -> _x ≡ x, unique(σcomp)), ϵcomp)
+        @assert nothing ∉ ϵ2σ "Found unmatched strain components."
+        new{T, V, I, typeof(diagcoef), typeof(ϵ2σ)}(nume, numϵ, numσ, reldϵ, σ′, ς′, isdiag, Int(sum(isdiag)), diagcoef, ϵ2σ)
     end
 end
 
@@ -49,10 +53,10 @@ struct ViscoelasticCompositeAlloc{A, B} <: CompositeAllocation
 end
 
 "Generate 1-D computation allocation for computing traction rate."
-gen_alloc(nξ::Integer; T=Float64) = TractionRateAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 4]...)
+gen_alloc(nξ::Integer, ::Val{T}) where T = TractionRateAllocMatrix((nξ,), [Vector{T}(undef, nξ) for _ in 1: 4]...)
 
 "Generate 2-D computation allocation for computing traction rate."
-function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
+function gen_alloc(nx::I, nξ::I, ::Val{T}) where {I<:Integer, T}
     x1 = Matrix{T}(undef, 2 * nx - 1, nξ)
     p1 = plan_rfft(x1, 1, flags=parameters["FFT"]["FLAG"])
 
@@ -66,15 +70,15 @@ function gen_alloc(nx::I, nξ::I; T=Float64) where I <: Integer
 end
 
 "Generate 3-D computation allocation for computing stress rate."
-function gen_alloc(nume::I, numϵ::I, numσ::I, ϵcomp::NTuple, σcomp::NTuple; T=Float64) where {I<:Integer}
+function gen_alloc(nume::I, numϵ::I, numσ::I, ϵcomp::NTuple, σcomp::NTuple, dtype::Val{T}=Val(Float64)) where {I<:Integer, T}
     reldϵ = Matrix{T}(undef, nume, numϵ)
     σ′ = Matrix{T}(undef, nume, numσ)
     ς′ = Vector{T}(undef, nume)
     return StressRateAllocMatrix(nume, numϵ, numσ, reldϵ, σ′, ς′, ϵcomp, σcomp)
 end
 
-gen_alloc(gf::AbstractMatrix) = gen_alloc(size(gf, 1))
-gen_alloc(gf::AbstractArray{T, 3}) where T<:Complex = gen_alloc(size(gf, 1), size(gf, 2))
+gen_alloc(gf::AbstractMatrix{T}) where T = gen_alloc(size(gf, 1), Val(T))
+gen_alloc(gf::AbstractArray{T, 3}) where T<:Complex{U} where U = gen_alloc(size(gf, 1), size(gf, 2), Val(U))
 gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(gen_alloc(gf.ee), gen_alloc(gf.nume, gf.numϵ, gf.numσ, gf.ϵcomp, gf.σcomp))
 
 ## traction & stress rate operators

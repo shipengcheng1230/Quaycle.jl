@@ -1,6 +1,6 @@
 ## Global Performace Settings
 
-parameters = Dict(
+const parameters = Dict(
     "FFT" => Dict(
         # FFTW threads
         "NUM_THREADS" => Threads.nthreads(),

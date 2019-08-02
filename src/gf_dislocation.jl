@@ -41,7 +41,7 @@ function stress_greens_func(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFaul
     st = SharedArray{T}(mesh.nx, mesh.nξ, mesh.nξ)
     stress_greens_func!(st, mesh, λ, μ, ft; kwargs...)
 
-    function __convert_to_fourier_domain__()
+    if fourier_domain
         x1 = zeros(T, 2 * mesh.nx - 1)
         p1 = plan_rfft(x1, flags=parameters["FFT"]["FLAG"])
         st_dft = Array{Complex{T}}(undef, mesh.nx, mesh.nξ, mesh.nξ)
@@ -50,9 +50,9 @@ function stress_greens_func(mesh::RectOkadaMesh, λ::T, μ::T, ft::FlatPlaneFaul
             st_dft[:,j,l] .= p1 * [st[:,j,l]; reverse(st[2:end,j,l])]
         end
         return st_dft
+    else
+        sdata(st)
     end
-
-    fourier_domain ? __convert_to_fourier_domain__() : sdata(st)
 end
 
 function stress_greens_func_chunk!(st::SharedArray{T, 2}, subs::AbstractArray, mesh::LineOkadaMesh, λ::T, μ::T, ft::FlatPlaneFault; ax_ratio::Real=12.5) where T
@@ -238,7 +238,7 @@ function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T
     numσ = length(σcomp)
     st = ntuple(_ -> SharedArray{T}(length(ma.tag), num_patch), Val(numσ))
     stress_greens_func!(st, mf, ma, λ, μ, ft, σcomp; kwargs...)
-    return ntuple(x -> st[x] |> sdata, numσ)
+    return map(sdata, st)
 end
 
 function stress_greens_func_chunk!(

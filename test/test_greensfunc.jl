@@ -406,7 +406,9 @@ end
     @testset "deviatoric stress" begin
         deviatoric_stress!(σ, alv)
         @test alv.σ′ ≈ σ′
-        ς′ = map(x -> norm(σ′[x,:]), 1: alv.nume)
+        ς′ = map(x -> norm([
+            σ′[x,1], σ′[x,2], σ′[x,3], σ′[x,4], σ′[x,5], σ′[x,6], σ′[x,3], σ′[x,4], σ′[x,6]
+            ]) / √2, 1: alv.nume)
         @test alv.ς′ ≈ ς′
     end
 

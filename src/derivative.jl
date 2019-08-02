@@ -22,7 +22,7 @@ end
 @inline function dv_dθ_dt(::RForm, se::SE, v::T, θ::T, a::T, b::T, L::T, k::T, σ::T, η::T, vpl::T, f0::T, v0::T,
     ) where {T<:Number, SE<:StateEvolutionLaw}
     ψ1 = exp((f0 + b * log(v0 * clamp(θ, zero(T), Inf) / L)) / a) / 2v0
-    ψ2 = σ * ψ1 / sqrt(1 + (v * ψ1)^2)
+    ψ2 = σ * ψ1 / √(1 + (v * ψ1)^2)
     dμdv = a * ψ2
     dμdθ = b / θ * v * ψ2
     dθdt = dθ_dt(se, v, θ, L)
@@ -57,15 +57,21 @@ end
 @inline function deviatoric_stress!(σ::AbstractVecOrMat{T}, alloc::StressRateAllocation) where T
     BLAS.blascopy!(alloc.numσ * alloc.nume, σ, 1, alloc.σ′, 1)
     if alloc.numdiag > 1
-        BLAS.gemv!('N', one(T), σ, alloc.isdiag, zero(T), alloc.ς′) # store `σkk` into `ς′`
         # this is not rigorously correct if only one diagonal are considered
         # in such case, that one diagonal is considered as deviatoric component
-        # otherwise, no strain rate will be on that ever
+        # otherwise, no strain rate will be on that component ever
+        BLAS.gemv!('N', one(T), σ, alloc.isdiag, zero(T), alloc.ς′) # store `σkk` into `ς′`
         @strided alloc.ς′ ./= alloc.numdiag
         BLAS.ger!(-one(T), alloc.ς′, alloc.isdiag, alloc.σ′)
     end
-    # deviatoric stress norm: ς′ = |σ′| = sqrt(σ′:σ′) = sqrt(tr(σ′ᵀσ′)), we omit the √2 before the symmetry part
-    @strided alloc.ς′ .= sqrt.(vec(sum(abs2, alloc.σ′; dims=2))) # for higher precision use `hypot` or `norm`
+    # deviatoric stress norm: ς′ = |σ′| = √(σ′:σ′) = √(tr(σ′ᵀσ′))
+    fill!(alloc.ς′, zero(T))
+    @inbounds @fastmath @threads for i in eachindex(alloc.ς′)
+        for j in 1: alloc.numσ
+            alloc.ς′[i] += alloc.σ′[i,j] ^ 2 * alloc.diagcoef[j] # for higher precision use `hypot` or `norm`
+        end
+        alloc.ς′[i] = √(alloc.ς′[i])
+    end
 end
 
 @inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
