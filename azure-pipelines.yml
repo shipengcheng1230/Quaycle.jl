@@ -55,15 +55,15 @@ jobs:
 - job: Windows
   timeoutInMinutes: 360
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   strategy:
     matrix:
-      Julia 1.1 (W64):
+      Julia 1.2 (W64):
         ARCH: x64
-        JULIA_VERSION: '1.1.1-win64'
+        JULIA_VERSION: '1.2.0-rc2-win64'
   steps:
   - powershell: |
-      wget https://julialang-s3.julialang.org/bin/winnt/$(ARCH)/1.1/julia-$(JULIA_VERSION).exe -OutFile julia-$(JULIA_VERSION).exe
+      wget https://julialang-s3.julialang.org/bin/winnt/$(ARCH)/1.2/julia-$(JULIA_VERSION).exe -OutFile julia-$(JULIA_VERSION).exe
       Start-Process -FilePath .\julia-$(JULIA_VERSION).exe -ArgumentList "/S /D=C:\julia" -NoNewWindow -Wait
     displayName: 'Install Julia'
   - powershell: |
