@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_HDF5/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_HDF5/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>HDF5 Utility - JuEQ.jl</title>
+        <title>HDF5 Utility - Quaycle.jl</title>
       
     
     
@@ -102,7 +102,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon">landscape</i>
           
@@ -115,7 +115,7 @@
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           
             <span class="md-header-nav__topic">
-              JuEQ.jl
+              Quaycle.jl
             </span>
             <span class="md-header-nav__topic">
               
@@ -161,7 +161,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -170,7 +170,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
           </div>
@@ -194,12 +194,12 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
       
         <i class="md-icon">landscape</i>
       
     </a>
-    JuEQ.jl
+    Quaycle.jl
   </label>
   
     <div class="md-nav__source">
@@ -208,7 +208,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -217,7 +217,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
     </div>
@@ -499,7 +499,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_HDF5.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_HDF5.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <p><a id='HDF5-Utilities-1'></a></p>
@@ -510,7 +510,7 @@
 3
 4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">pkg</span><span class="o">&gt;</span> <span class="n">add</span> <span class="n">HDF5</span>
 
-<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">JuEQ</span>
+<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">Quaycle</span>
 <span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">HDF5</span>
 </pre></div>
 </td></tr></table>
@@ -519,8 +519,8 @@
 <p>It's worth mention that <a href="https://github.com/JuliaIO/JLD.jl">JLD</a> and <a href="https://github.com/JuliaIO/JLD2.jl">JLD2</a> are also excellent alternatives but they storing the whole type information that may broke read when this package changes or remove certain type definitions. Users may choose them as auxiliary tools.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.store-Tuple{AbstractString,JuEQ.AbstractProperty}' href='#JuEQ.store-Tuple{AbstractString,JuEQ.AbstractProperty}'>#</a>
-<strong><code>JuEQ.store</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.store-Tuple{AbstractString,Quaycle.AbstractProperty}' href='#Quaycle.store-Tuple{AbstractString,Quaycle.AbstractProperty}'>#</a>
+<strong><code>Quaycle.store</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">store</span><span class="p">(</span><span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">,</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -531,8 +531,8 @@
 <li><code>filename::AbstractString</code>: file name to be used</li>
 <li><code>p::AbstractProperty</code>: property to be saved</li>
 </ul>
-<p><a id='JuEQ.@getprop-Tuple{Any}' href='#JuEQ.@getprop-Tuple{Any}'>#</a>
-<strong><code>JuEQ.@getprop</code></strong> &mdash; <em>Macro</em>.</p>
+<p><a id='Quaycle.@getprop-Tuple{Any}' href='#Quaycle.@getprop-Tuple{Any}'>#</a>
+<strong><code>Quaycle.@getprop</code></strong> &mdash; <em>Macro</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@getprop</span> <span class="n">filename</span>
 </pre></div>
 </td></tr></table>
@@ -542,8 +542,8 @@
 <ul>
 <li><code>filename</code>: file name. Assume it   has one and only one kind of property group.</li>
 </ul>
-<p><a id='JuEQ.@store-Tuple{Any,Any}' href='#JuEQ.@store-Tuple{Any,Any}'>#</a>
-<strong><code>JuEQ.@store</code></strong> &mdash; <em>Macro</em>.</p>
+<p><a id='Quaycle.@store-Tuple{Any,Any}' href='#Quaycle.@store-Tuple{Any,Any}'>#</a>
+<strong><code>Quaycle.@store</code></strong> &mdash; <em>Macro</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@store</span> <span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span>
 </pre></div>
 </td></tr></table>
@@ -554,8 +554,8 @@
 <li><code>filename::AbstractString</code>: file name to be used</li>
 <li><code>p::AbstractProperty</code>: property to be saved</li>
 </ul>
-<p><a id='JuEQ.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}' href='#JuEQ.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}'>#</a>
-<strong><code>JuEQ.wsolve</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}' href='#Quaycle.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}'>#</a>
+<strong><code>Quaycle.wsolve</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">wsolve</span><span class="p">(</span><span class="n">prob</span><span class="o">::</span><span class="n">ODEProblem</span><span class="p">,</span> <span class="n">alg</span><span class="o">::</span><span class="n">OrdinaryDiffEqAlgorithm</span><span class="p">,</span>
     <span class="n">file</span><span class="p">,</span> <span class="n">nstep</span><span class="p">,</span> <span class="n">getu</span><span class="p">,</span> <span class="n">ustrs</span><span class="p">,</span> <span class="n">tstr</span><span class="p">;</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
@@ -571,23 +571,23 @@
 <li><code>ustr::AbstractVector</code>: list of names to be assigned for each components, whose   length must equal the length of <code>getu</code> output</li>
 <li><code>tstr::AbstractString</code>: name of time data</li>
 </ul>
-<p><a id='JuEQ.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}' href='#JuEQ.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
-<strong><code>JuEQ.𝐕𝚬′</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}' href='#Quaycle.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
+<strong><code>Quaycle.𝐕𝚬′</code></strong> &mdash; <em>Method</em>.</p>
 <p>Retrieve <strong>velocity</strong> and <strong>strain rate</strong></p>
-<p><a id='JuEQ.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>JuEQ.𝐕𝚯</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>Quaycle.𝐕𝚯</code></strong> &mdash; <em>Method</em>.</p>
 <p>Retrieve <strong>velocity</strong> and <strong>state</strong>.</p>
-<p><a id='JuEQ.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>JuEQ.𝐕𝚯𝚬</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>Quaycle.𝐕𝚯𝚬</code></strong> &mdash; <em>Method</em>.</p>
 <p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain</strong>.</p>
-<p><a id='JuEQ.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}' href='#JuEQ.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
-<strong><code>JuEQ.𝐕𝚯𝚬′</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}' href='#Quaycle.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
+<strong><code>Quaycle.𝐕𝚯𝚬′</code></strong> &mdash; <em>Method</em>.</p>
 <p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain rate</strong>.</p>
-<p><a id='JuEQ.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#JuEQ.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>JuEQ.𝐕𝚯𝚬𝚺</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
+<strong><code>Quaycle.𝐕𝚯𝚬𝚺</code></strong> &mdash; <em>Method</em>.</p>
 <p>Retrieve <strong>velocity</strong>, <strong>state</strong>, <strong>strain</strong> and <strong>stress</strong>.</p>
-<p><a id='JuEQ.@h5savecallback-NTuple{5,Any}' href='#JuEQ.@h5savecallback-NTuple{5,Any}'>#</a>
-<strong><code>JuEQ.@h5savecallback</code></strong> &mdash; <em>Macro</em>.</p>
+<p><a id='Quaycle.@h5savecallback-NTuple{5,Any}' href='#Quaycle.@h5savecallback-NTuple{5,Any}'>#</a>
+<strong><code>Quaycle.@h5savecallback</code></strong> &mdash; <em>Macro</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@h5savecallback</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tend</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">usize</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -657,7 +657,7 @@
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
           </div>
         
         powered by

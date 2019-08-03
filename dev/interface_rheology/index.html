@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_rheology/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_rheology/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>Rheology - JuEQ.jl</title>
+        <title>Rheology - Quaycle.jl</title>
       
     
     
@@ -102,7 +102,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon">landscape</i>
           
@@ -115,7 +115,7 @@
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           
             <span class="md-header-nav__topic">
-              JuEQ.jl
+              Quaycle.jl
             </span>
             <span class="md-header-nav__topic">
               
@@ -161,7 +161,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -170,7 +170,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
           </div>
@@ -194,12 +194,12 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
       
         <i class="md-icon">landscape</i>
       
     </a>
-    JuEQ.jl
+    Quaycle.jl
   </label>
   
     <div class="md-nav__source">
@@ -208,7 +208,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -217,7 +217,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
     </div>
@@ -513,7 +513,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_rheology.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_rheology.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <p><a id='Rheology-1'></a></p>
@@ -521,8 +521,8 @@
 <p>This package implements plastic deformation as the key for modeling asthenosphere dynamics. Currently, only <code>DiffusionCreep</code> and <code>DislocationCreep</code> are supported.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.DiffusionCreep' href='#JuEQ.DiffusionCreep'>#</a>
-<strong><code>JuEQ.DiffusionCreep</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.DiffusionCreep' href='#Quaycle.DiffusionCreep'>#</a>
+<strong><code>Quaycle.DiffusionCreep</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \dot{ϵ} = A σ′ d^{-m} C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
@@ -531,8 +531,8 @@
 \dot{ϵ} = A σ′ d^{-m} C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 </script>
 </div>
-<p><a id='JuEQ.DislocationCreep' href='#JuEQ.DislocationCreep'>#</a>
-<strong><code>JuEQ.DislocationCreep</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.DislocationCreep' href='#Quaycle.DislocationCreep'>#</a>
+<strong><code>Quaycle.DislocationCreep</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \dot{ϵ} = A τ^{n-1} σ′ C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
@@ -541,8 +541,8 @@
 \dot{ϵ} = A τ^{n-1} σ′ C_{\mathrm{OH}} ^{r} \exp{\left(αϕ\right)} \exp{\left(- \frac{Q + PV}{RT}\right)}
 </script>
 </div>
-<p><a id='JuEQ.Peierls' href='#JuEQ.Peierls'>#</a>
-<strong><code>JuEQ.Peierls</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.Peierls' href='#Quaycle.Peierls'>#</a>
+<strong><code>Quaycle.Peierls</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \dot{ϵ} = \dot{ϵ_{P}}\left(\frac{σ}{G}\right)^{2} \exp{\left(-\frac{ΔF_{k}^{o}}{RT}\left(1 - \left(\frac{σ}{σ_{P}}\right)^{r}\right)^{s}\right)}
@@ -613,7 +613,7 @@
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
           </div>
         
         powered by

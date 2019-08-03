@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_mesh/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_mesh/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>Mesh - JuEQ.jl</title>
+        <title>Mesh - Quaycle.jl</title>
       
     
     
@@ -102,7 +102,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon">landscape</i>
           
@@ -115,7 +115,7 @@
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           
             <span class="md-header-nav__topic">
-              JuEQ.jl
+              Quaycle.jl
             </span>
             <span class="md-header-nav__topic">
               
@@ -161,7 +161,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -170,7 +170,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
           </div>
@@ -194,12 +194,12 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
       
         <i class="md-icon">landscape</i>
       
     </a>
-    JuEQ.jl
+    Quaycle.jl
   </label>
   
     <div class="md-nav__source">
@@ -208,7 +208,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -217,7 +217,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
     </div>
@@ -513,7 +513,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_mesh.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_mesh.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <p><a id='Mesh-1'></a></p>
@@ -523,7 +523,7 @@
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2
 3</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">pkg</span><span class="o">&gt;</span> <span class="n">add</span> <span class="n">GmshTools</span>
-<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">JuEQ</span>
+<span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">Quaycle</span>
 <span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">GmshTools</span>
 </pre></div>
 </td></tr></table>
@@ -531,8 +531,8 @@
 <p>Users are encouraged to read <a href="https://gitlab.onelab.info/gmsh/gmsh/blob/master/api/gmsh.jl">Gmsh Julia API</a> for more comprehensive operations.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T' href='#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T'>#</a>
-<strong><code>JuEQ.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T' href='#Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T'>#</a>
+<strong><code>Quaycle.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">LineOkada</span><span class="p">},</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -544,8 +544,8 @@
 <li><code>Δξ</code>: downdip interval</li>
 <li><code>dip</code>: dipping angle</li>
 </ul>
-<p><a id='JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T' href='#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T'>#</a>
-<strong><code>JuEQ.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T' href='#Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T'>#</a>
+<strong><code>Quaycle.gen_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">RectOkada</span><span class="p">},</span> <span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δx</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -559,8 +559,8 @@
 <li><code>Δξ</code>: downdip interval</li>
 <li><code>dip</code>: dipping angle</li>
 </ul>
-<p><a id='JuEQ.gen_gmsh_mesh-Tuple{JuEQ.LineOkadaMesh}' href='#JuEQ.gen_gmsh_mesh-Tuple{JuEQ.LineOkadaMesh}'>#</a>
-<strong><code>JuEQ.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_gmsh_mesh-Tuple{Quaycle.LineOkadaMesh}' href='#Quaycle.gen_gmsh_mesh-Tuple{Quaycle.LineOkadaMesh}'>#</a>
+<strong><code>Quaycle.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_gmsh_mesh</span><span class="p">(</span><span class="n">mf</span><span class="o">::</span><span class="n">OkadaMesh</span><span class="p">;</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -569,10 +569,10 @@
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>mf::OkadaMesh</code>: the structured mesh</li>
-<li><code>kwargs...</code>: stay the same as other methods for <a href="./#JuEQ.gen_gmsh_mesh-Tuple{JuEQ.LineOkadaMesh}"><code>gen_gmsh_mesh</code></a></li>
+<li><code>kwargs...</code>: stay the same as other methods for <a href="./#Quaycle.gen_gmsh_mesh-Tuple{Quaycle.LineOkadaMesh}"><code>gen_gmsh_mesh</code></a></li>
 </ul>
-<p><a id='JuEQ.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T' href='#JuEQ.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{JuEQ.RectOkadaMesh,Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T'>#</a>
-<strong><code>JuEQ.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Quaycle.RectOkadaMesh,Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T' href='#Quaycle.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Quaycle.RectOkadaMesh,Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T'>#</a>
+<strong><code>Quaycle.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2
 3
@@ -586,8 +586,8 @@
 </td></tr></table>
 
 <p>Generate a mesh combinating <a href="@ref"><code>RectOkadaMesh</code></a> and <code>BoxHexExtrudeFromSurface</code> mesh for asthenosphere.     The first argument is the corresponding <a href="@ref"><code>RectOkadaMesh</code></a>, the rest ones stay the same.</p>
-<p><a id='JuEQ.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T' href='#JuEQ.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T'>#</a>
-<strong><code>JuEQ.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T' href='#Quaycle.gen_gmsh_mesh-Union{Tuple{I}, Tuple{T}, Tuple{Val{:BoxHexExtrudeFromSurface},T,T,T,T,T,T,I,I,T,T,AbstractArray{T,1} where T,AbstractArray{T,1} where T}} where I where T'>#</a>
+<strong><code>Quaycle.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2
 3
@@ -608,8 +608,8 @@
 <li><code>rfzn</code>: number of cells along z-axis, please refer <code>numElements</code> in <code>gmsh.model.geo.extrude</code></li>
 <li><code>rfzh</code>: accumulated height of cells along z-axis, please refer <code>heights</code> in <code>gmsh.model.geo.extrude</code></li>
 </ul>
-<p><a id='JuEQ.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T' href='#JuEQ.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T'>#</a>
-<strong><code>JuEQ.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T' href='#Quaycle.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T'>#</a>
+<strong><code>Quaycle.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">LineOkada</span><span class="p">},</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">;</span>
     <span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span><span class="o">=</span><span class="s">&quot;temp.msh&quot;</span><span class="p">,</span> <span class="n">reg</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
@@ -622,9 +622,9 @@
 <li><code>filename::AbstractString="temp.msh"</code>: name of the generated mesh file. The file ext will be automatically handled by Gmsh.</li>
 <li><code>reg::Integer=1</code>: the starting tag for entity of any dimension</li>
 </ul>
-<p>The rest arguments stay the same as <a href="./#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T"><code>gen_mesh</code></a>.</p>
-<p><a id='JuEQ.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T' href='#JuEQ.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T'>#</a>
-<strong><code>JuEQ.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p>The rest arguments stay the same as <a href="./#Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T"><code>gen_mesh</code></a>.</p>
+<p><a id='Quaycle.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T' href='#Quaycle.gen_gmsh_mesh-Union{Tuple{T}, Tuple{Val{:RectOkada},T,T,T,T,T}} where T'>#</a>
+<strong><code>Quaycle.gen_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gen_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">RectOkada</span><span class="p">},</span> <span class="n">x</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">ξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δx</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">Δξ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">dip</span><span class="o">::</span><span class="n">T</span><span class="p">;</span>
     <span class="n">filename</span><span class="o">::</span><span class="kt">AbstractString</span><span class="o">=</span><span class="s">&quot;temp.msh&quot;</span><span class="p">,</span> <span class="n">reg</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
@@ -637,9 +637,9 @@
 <li><code>filename::AbstractString="temp.msh"</code>: name of the generated mesh file. The file ext will be automatically handled by Gmsh.</li>
 <li><code>reg::Integer=1</code>: the starting tag for entity of any dimension</li>
 </ul>
-<p>The rest arguments stay the same as <a href="./#JuEQ.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T"><code>gen_mesh</code></a>.</p>
-<p><a id='JuEQ.gmsh_vtk_output_cache-Union{Tuple{I}, Tuple{AbstractString,I,I}} where I<:Integer' href='#JuEQ.gmsh_vtk_output_cache-Union{Tuple{I}, Tuple{AbstractString,I,I}} where I<:Integer'>#</a>
-<strong><code>JuEQ.gmsh_vtk_output_cache</code></strong> &mdash; <em>Method</em>.</p>
+<p>The rest arguments stay the same as <a href="./#Quaycle.gen_mesh-Union{Tuple{T}, Tuple{Val{:LineOkada},T,T,T}} where T"><code>gen_mesh</code></a>.</p>
+<p><a id='Quaycle.gmsh_vtk_output_cache-Union{Tuple{I}, Tuple{AbstractString,I,I}} where I<:Integer' href='#Quaycle.gmsh_vtk_output_cache-Union{Tuple{I}, Tuple{AbstractString,I,I}} where I<:Integer'>#</a>
+<strong><code>Quaycle.gmsh_vtk_output_cache</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gmsh_vtk_output_cache</span><span class="p">(</span><span class="n">file</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">,</span> <span class="n">phydim</span><span class="o">::</span><span class="nb">I</span><span class="p">,</span> <span class="n">phytag</span><span class="o">::</span><span class="nb">I</span><span class="p">)</span> <span class="n">where</span> <span class="nb">I</span><span class="o">&lt;:</span><span class="kt">Integer</span>
 </pre></div>
 </td></tr></table>
@@ -651,8 +651,8 @@
 <li><code>phydim</code>: physical group dimension, which you will querry</li>
 <li><code>phytag</code>: physical group tag associated with <code>phydim</code>. If smaller than 0,   retrieve all entities in physical group whose dimension is <code>phydim</code>. If in this case, only one   such entity, binded with that physical group, shall exist. If you would like to write multi-block data,   create VTK output caches for each physical group.</li>
 </ul>
-<p><a id='JuEQ.gmsh_vtk_output_cache-Union{Tuple{N}, Tuple{AbstractString,JuEQ.OkadaMesh{N}}, Tuple{AbstractString,JuEQ.OkadaMesh{N},Integer}, Tuple{AbstractString,JuEQ.OkadaMesh{N},Integer,Any}} where N' href='#JuEQ.gmsh_vtk_output_cache-Union{Tuple{N}, Tuple{AbstractString,JuEQ.OkadaMesh{N}}, Tuple{AbstractString,JuEQ.OkadaMesh{N},Integer}, Tuple{AbstractString,JuEQ.OkadaMesh{N},Integer,Any}} where N'>#</a>
-<strong><code>JuEQ.gmsh_vtk_output_cache</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.gmsh_vtk_output_cache-Union{Tuple{N}, Tuple{AbstractString,Quaycle.OkadaMesh{N}}, Tuple{AbstractString,Quaycle.OkadaMesh{N},Integer}, Tuple{AbstractString,Quaycle.OkadaMesh{N},Integer,Any}} where N' href='#Quaycle.gmsh_vtk_output_cache-Union{Tuple{N}, Tuple{AbstractString,Quaycle.OkadaMesh{N}}, Tuple{AbstractString,Quaycle.OkadaMesh{N},Integer}, Tuple{AbstractString,Quaycle.OkadaMesh{N},Integer,Any}} where N'>#</a>
+<strong><code>Quaycle.gmsh_vtk_output_cache</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">gmsh_vtk_output_cache</span><span class="p">(</span><span class="n">file</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">,</span> <span class="n">mf</span><span class="o">::</span><span class="n">OkadaMesh</span><span class="p">{</span><span class="n">N</span><span class="p">},</span> <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="kt">Float64</span><span class="p">)</span> <span class="n">where</span> <span class="n">N</span>
 </pre></div>
 </td></tr></table>
@@ -665,8 +665,8 @@
 <li><code>phytag::Integer=-1</code>: physical group tag associated with fault mesh in the mesh file. If smaller than 0,   retrieve all entities in physical group whose dimension is determined by <code>mf</code>. If in this case, only one   such entity, assumed to be the fault, shall exist.</li>
 <li><code>datatype=Float64</code>: data type for temporary array storing the mapped data</li>
 </ul>
-<p><a id='JuEQ.read_gmsh_mesh-Tuple{Val{:SBarbotHex8},AbstractString}' href='#JuEQ.read_gmsh_mesh-Tuple{Val{:SBarbotHex8},AbstractString}'>#</a>
-<strong><code>JuEQ.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.read_gmsh_mesh-Tuple{Val{:SBarbotHex8},AbstractString}' href='#Quaycle.read_gmsh_mesh-Tuple{Val{:SBarbotHex8},AbstractString}'>#</a>
+<strong><code>Quaycle.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">read_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">SBarbotHex8</span><span class="p">},</span> <span class="n">f</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">;</span>
     <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rotate</span><span class="o">::</span><span class="kt">Number</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">false</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">false</span><span class="p">)</span>
@@ -687,8 +687,8 @@
 <li>This function can only be used for Hex8 element with each element lying parallel to z-axis.</li>
 <li>The <code>check</code> procedure is not complete for arbitrary strike angle (0 &lt; θ &lt; 90). The user should take a close   look on the node ordering for one element to ensure the x-, y-extent are correctly resolved by change <code>reverse</code> accordingly.</li>
 </ul>
-<p><a id='JuEQ.read_gmsh_mesh-Tuple{Val{:SBarbotTet4},AbstractString}' href='#JuEQ.read_gmsh_mesh-Tuple{Val{:SBarbotTet4},AbstractString}'>#</a>
-<strong><code>JuEQ.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.read_gmsh_mesh-Tuple{Val{:SBarbotTet4},AbstractString}' href='#Quaycle.read_gmsh_mesh-Tuple{Val{:SBarbotTet4},AbstractString}'>#</a>
+<strong><code>Quaycle.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">read_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">SBarbotTet4</span><span class="p">},</span> <span class="n">f</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">;</span> <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -699,8 +699,8 @@
 <li><code>f</code>: mesh file name</li>
 <li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 3-dimensional entities. If in   this case, your mesh must contain only one element type, which should be Tet4.</li>
 </ul>
-<p><a id='JuEQ.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}' href='#JuEQ.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}'>#</a>
-<strong><code>JuEQ.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}' href='#Quaycle.read_gmsh_mesh-Tuple{Val{:TDTri3},AbstractString}'>#</a>
+<strong><code>Quaycle.read_gmsh_mesh</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">read_gmsh_mesh</span><span class="p">(</span><span class="o">::</span><span class="kt">Val</span><span class="p">{</span><span class="o">:</span><span class="n">TDTri3</span><span class="p">},</span> <span class="n">f</span><span class="o">::</span><span class="kt">AbstractString</span><span class="p">;</span> <span class="n">phytag</span><span class="o">::</span><span class="kt">Integer</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -712,11 +712,11 @@
 <li><code>phytag</code>: physical tag for targeting volume entity. If smaller than <code>0</code>, retrieve all elements in all 2-dimensional entities. If in   this case, your mesh must contain only one element type, which should be Tri3.</li>
 <li><code>atol</code>: absolute tolerance, by default <code>1e-12</code>, to determine whether the triangle is parallel to axis.   If this reading procedure does not resolve the slip direction correctly, try to lower this value.</li>
 </ul>
-<p><a id='JuEQ.DIPPING' href='#JuEQ.DIPPING'>#</a>
-<strong><code>JuEQ.DIPPING</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.DIPPING' href='#Quaycle.DIPPING'>#</a>
+<strong><code>Quaycle.DIPPING</code></strong> &mdash; <em>Type</em>.</p>
 <p>Dipping, indicate dislocation occurs at downdip direction.</p>
-<p><a id='JuEQ.STRIKING' href='#JuEQ.STRIKING'>#</a>
-<strong><code>JuEQ.STRIKING</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.STRIKING' href='#Quaycle.STRIKING'>#</a>
+<strong><code>Quaycle.STRIKING</code></strong> &mdash; <em>Type</em>.</p>
 <p>Striking, indicate dislocation occurs at strike direction.</p>
 <p><a id='References-1'></a></p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
@@ -778,7 +778,7 @@
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
           </div>
         
         powered by

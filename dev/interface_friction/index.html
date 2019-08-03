@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_friction/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_friction/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>Friction - JuEQ.jl</title>
+        <title>Friction - Quaycle.jl</title>
       
     
     
@@ -102,7 +102,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon">landscape</i>
           
@@ -115,7 +115,7 @@
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           
             <span class="md-header-nav__topic">
-              JuEQ.jl
+              Quaycle.jl
             </span>
             <span class="md-header-nav__topic">
               
@@ -161,7 +161,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -170,7 +170,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
           </div>
@@ -194,12 +194,12 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
       
         <i class="md-icon">landscape</i>
       
     </a>
-    JuEQ.jl
+    Quaycle.jl
   </label>
   
     <div class="md-nav__source">
@@ -208,7 +208,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -217,7 +217,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
     </div>
@@ -513,7 +513,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_friction.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_friction.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <p><a id='Friction-1'></a></p>
@@ -521,11 +521,11 @@
 <p>This package adopts what is called <strong>rate-and-state</strong> friction as one of the essential components for modeling fault dynamics. Currently, we only support single state variable <span><span class="MathJax_Preview">θ</span><script type="math/tex">θ</script></span>.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.CForm' href='#JuEQ.CForm'>#</a>
-<strong><code>JuEQ.CForm</code></strong> &mdash; <em>Type</em>.</p>
-<p>Conventional form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
-<p><a id='JuEQ.DieterichStateLaw' href='#JuEQ.DieterichStateLaw'>#</a>
-<strong><code>JuEQ.DieterichStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.CForm' href='#Quaycle.CForm'>#</a>
+<strong><code>Quaycle.CForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Conventional form, see <a href="./#Quaycle.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
+<p><a id='Quaycle.DieterichStateLaw' href='#Quaycle.DieterichStateLaw'>#</a>
+<strong><code>Quaycle.DieterichStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
@@ -534,8 +534,8 @@
 \frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \frac{V θ}{L}
 </script>
 </div>
-<p><a id='JuEQ.PrzStateLaw' href='#JuEQ.PrzStateLaw'>#</a>
-<strong><code>JuEQ.PrzStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.PrzStateLaw' href='#Quaycle.PrzStateLaw'>#</a>
+<strong><code>Quaycle.PrzStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \left(\frac{V θ}{2L}\right)^2
@@ -544,11 +544,11 @@
 \frac{\mathrm{d}θ}{\mathrm{d}t} = 1 - \left(\frac{V θ}{2L}\right)^2
 </script>
 </div>
-<p><a id='JuEQ.RForm' href='#JuEQ.RForm'>#</a>
-<strong><code>JuEQ.RForm</code></strong> &mdash; <em>Type</em>.</p>
-<p>Regularized form, see <a href="./#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
-<p><a id='JuEQ.RuinaStateLaw' href='#JuEQ.RuinaStateLaw'>#</a>
-<strong><code>JuEQ.RuinaStateLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.RForm' href='#Quaycle.RForm'>#</a>
+<strong><code>Quaycle.RForm</code></strong> &mdash; <em>Type</em>.</p>
+<p>Regularized form, see <a href="./#Quaycle.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T"><code>friction</code></a></p>
+<p><a id='Quaycle.RuinaStateLaw' href='#Quaycle.RuinaStateLaw'>#</a>
+<strong><code>Quaycle.RuinaStateLaw</code></strong> &mdash; <em>Type</em>.</p>
 <div>
 <div class="MathJax_Preview">
 \frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\left(\frac{V θ}{L}\right)}
@@ -557,16 +557,16 @@
 \frac{\mathrm{d}θ}{\mathrm{d}t} = -\frac{V θ}{L} * \log{\left(\frac{V θ}{L}\right)}
 </script>
 </div>
-<p><a id='JuEQ.StateEvolutionLaw' href='#JuEQ.StateEvolutionLaw'>#</a>
-<strong><code>JuEQ.StateEvolutionLaw</code></strong> &mdash; <em>Type</em>.</p>
+<p><a id='Quaycle.StateEvolutionLaw' href='#Quaycle.StateEvolutionLaw'>#</a>
+<strong><code>Quaycle.StateEvolutionLaw</code></strong> &mdash; <em>Type</em>.</p>
 <p>Currently support:</p>
 <ul>
-<li><a href="./#JuEQ.DieterichStateLaw"><code>DieterichStateLaw</code></a></li>
-<li><a href="./#JuEQ.RuinaStateLaw"><code>RuinaStateLaw</code></a></li>
-<li><a href="./#JuEQ.PrzStateLaw"><code>PrzStateLaw</code></a></li>
+<li><a href="./#Quaycle.DieterichStateLaw"><code>DieterichStateLaw</code></a></li>
+<li><a href="./#Quaycle.RuinaStateLaw"><code>RuinaStateLaw</code></a></li>
+<li><a href="./#Quaycle.PrzStateLaw"><code>PrzStateLaw</code></a></li>
 </ul>
-<p><a id='JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T' href='#JuEQ.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T'>#</a>
-<strong><code>JuEQ.friction</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T' href='#Quaycle.friction-Union{Tuple{T}, Tuple{CForm,T,T,T,T,T,T,T}} where T'>#</a>
+<strong><code>Quaycle.friction</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">friction</span><span class="p">(</span><span class="o">::</span><span class="n">FrictionLawForm</span><span class="p">,</span> <span class="n">v</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">θ</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">L</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">a</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">b</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">f0</span><span class="o">::</span><span class="n">T</span><span class="p">,</span> <span class="n">v0</span><span class="o">::</span><span class="n">T</span><span class="p">)</span> <span class="n">where</span> <span class="p">{</span><span class="n">T</span><span class="o">&lt;:</span><span class="kt">Number</span><span class="p">}</span>
 </pre></div>
 </td></tr></table>
@@ -656,7 +656,7 @@ f(V, θ) = a \sinh ^{-1}{\left(\frac{V}{2V_0} \exp{\left(\frac{f_0 + b \ln{\left
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
           </div>
         
         powered by

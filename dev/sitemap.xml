@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/bp1/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/examples/generated/bp1/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/examples/generated/otfsync/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/examples/generated/otfsync/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_assemble/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_assemble/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_friction/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_friction/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_greensfun/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_greensfun/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_HDF5/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_HDF5/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_mesh/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_mesh/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_property/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_property/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_rheology/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_rheology/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/interface_visualize/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/interface_visualize/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://github.com/shipengcheng1230/JuEQ.jl/acknowledge/</loc>
+     <loc>https://github.com/shipengcheng1230/Quaycle.jl/acknowledge/</loc>
      <lastmod>2019-08-03</lastmod>
      <changefreq>daily</changefreq>
     </url>

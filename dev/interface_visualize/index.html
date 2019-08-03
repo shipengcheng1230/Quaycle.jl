@@ -13,7 +13,7 @@
         <meta name="description" content="Julia implementations of earthquake cycle simulation">
       
       
-        <link rel="canonical" href="https://github.com/shipengcheng1230/JuEQ.jl/interface_visualize/">
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_visualize/">
       
       
         <meta name="author" content="Pengcheng Shi">
@@ -42,7 +42,7 @@
     
     
       
-        <title>Visualize - JuEQ.jl</title>
+        <title>Visualize - Quaycle.jl</title>
       
     
     
@@ -102,7 +102,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-header-nav__button md-logo">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
           
             <i class="md-icon">landscape</i>
           
@@ -115,7 +115,7 @@
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           
             <span class="md-header-nav__topic">
-              JuEQ.jl
+              Quaycle.jl
             </span>
             <span class="md-header-nav__topic">
               
@@ -161,7 +161,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -170,7 +170,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
           </div>
@@ -194,12 +194,12 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="https://github.com/shipengcheng1230/JuEQ.jl" title="JuEQ.jl" class="md-nav__button md-logo">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
       
         <i class="md-icon">landscape</i>
       
     </a>
-    JuEQ.jl
+    Quaycle.jl
   </label>
   
     <div class="md-nav__source">
@@ -208,7 +208,7 @@
 
   
 
-<a href="https://github.com/shipengcheng1230/JuEQ.jl/" title="Go to repository" class="md-source" data-md-source="github">
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
   
     <div class="md-source__icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -217,7 +217,7 @@
     </div>
   
   <div class="md-source__repository">
-    JuEQ.jl
+    Quaycle.jl
   </div>
 </a>
     </div>
@@ -499,18 +499,18 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/shipengcheng1230/JuEQ.jl/edit/master/docs/interface_visualize.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_visualize.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <p><a id='Visualize-1'></a></p>
 <h1 id="visualize">Visualize<a class="headerlink" href="#visualize" title="Permanent link">&para;</a></h1>
 <p>This package provides some utilities for writing results to VTK (vts, vti, vtu, vtm, pvd, etc...)   file for postprocessing with <a href="https://www.paraview.org/">Paraview</a>. Data cache for   writing results are also implemented where users could explore other meshing tools.</p>
-<p>One short note is that if you store 6 components vector, for example <span><span class="MathJax_Preview">σ</span><script type="math/tex">σ</script></span>,   <a href="https://www.paraview.org/">Paraview</a> will interpret them in the order of   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>.   Whereas in our <a href="../interface_assemble/#JuEQ.assemble-Tuple{AbstractArray,RateStateQuasiDynamicProperty,ArrayPartition,Tuple{T,T} where T}"><code>assemble</code></a> for stress, the order, same as e.g OpenFOAM, is   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>.</p>
+<p>One short note is that if you store 6 components vector, for example <span><span class="MathJax_Preview">σ</span><script type="math/tex">σ</script></span>,   <a href="https://www.paraview.org/">Paraview</a> will interpret them in the order of   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>.   Whereas in our <a href="../interface_assemble/#Quaycle.assemble-Tuple{AbstractArray,RateStateQuasiDynamicProperty,ArrayPartition,Tuple{T,T} where T}"><code>assemble</code></a> for stress, the order, same as e.g OpenFOAM, is   <span><span class="MathJax_Preview">σ_{xx}</span><script type="math/tex">σ_{xx}</script></span>, <span><span class="MathJax_Preview">σ_{xy}</span><script type="math/tex">σ_{xy}</script></span>, <span><span class="MathJax_Preview">σ_{xz}</span><script type="math/tex">σ_{xz}</script></span>, <span><span class="MathJax_Preview">σ_{yy}</span><script type="math/tex">σ_{yy}</script></span>, <span><span class="MathJax_Preview">σ_{yz}</span><script type="math/tex">σ_{yz}</script></span>, <span><span class="MathJax_Preview">σ_{zz}</span><script type="math/tex">σ_{zz}</script></span>.</p>
 <p>Notice that these function are not fully tested. If you encounter any problem,   please file an issue with your MWE.</p>
 <p><a id='Public-Interface-1'></a></p>
 <h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p><a id='JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s44,1} where #s44<:AbstractArray,AbstractArray{#s40,1} where #s40<:AbstractString,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s44,1} where #s44<:AbstractArray,AbstractArray{#s40,1} where #s40<:AbstractString,JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s44,1} where #s44<:AbstractArray,AbstractArray{#s40,1} where #s40<:AbstractString,Quaycle.ParaviewOutputCache}' href='#Quaycle.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s44,1} where #s44<:AbstractArray,AbstractArray{#s40,1} where #s40<:AbstractString,Quaycle.ParaviewOutputCache}'>#</a>
+<strong><code>Quaycle.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtk_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">u</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractVecOrMat</span><span class="p">},</span>
     <span class="n">ustr</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractString</span><span class="p">},</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
@@ -526,8 +526,8 @@
 <li><code>ustr::AbstractVector{&lt;:AbstractString}</code>: list results names to be assigned</li>
 <li><code>cache</code>: cache of data conversion, cell information and nodes information</li>
 </ul>
-<p><a id='JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s46,1} where #s46<:AbstractString,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s46,1} where #s46<:AbstractString,JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s46,1} where #s46<:AbstractString,Quaycle.ParaviewOutputCache}' href='#Quaycle.vtk_output-Tuple{Any,AbstractArray{T,1} where T,AbstractArray{#s46,1} where #s46<:AbstractString,Quaycle.ParaviewOutputCache}'>#</a>
+<strong><code>Quaycle.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
 2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtk_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">u</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractVecOrMat</span><span class="p">},</span>
     <span class="n">ustr</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">AbstractString</span><span class="p">},</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
@@ -542,8 +542,8 @@
 <li><code>ustr::AbstractVector{&lt;:AbstractString}</code>: list results names to be assigned</li>
 <li><code>cache</code>: cache of data conversion, cell information and nodes information</li>
 </ul>
-<p><a id='JuEQ.vtk_output-Tuple{Any,JuEQ.AbstractProperty,JuEQ.ParaviewOutputCache}' href='#JuEQ.vtk_output-Tuple{Any,JuEQ.AbstractProperty,JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.vtk_output-Tuple{Any,Quaycle.AbstractProperty,Quaycle.ParaviewOutputCache}' href='#Quaycle.vtk_output-Tuple{Any,Quaycle.AbstractProperty,Quaycle.ParaviewOutputCache}'>#</a>
+<strong><code>Quaycle.vtk_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtk_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">p</span><span class="o">::</span><span class="n">AbstractProperty</span><span class="p">,</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -557,8 +557,8 @@
 </ul>
 <p><strong>Notice</strong></p>
 <p>Not all <code>AbstractProperty</code> are supported. Only those with well defined <code>fieldnames</code>     are. For multi-block domain property, save them separately.</p>
-<p><a id='JuEQ.vtm_output-Tuple{Any,Any,Any,AbstractArray{#s44,1} where #s44<:JuEQ.ParaviewOutputCache}' href='#JuEQ.vtm_output-Tuple{Any,Any,Any,AbstractArray{#s44,1} where #s44<:JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtm_output</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.vtm_output-Tuple{Any,Any,Any,AbstractArray{#s44,1} where #s44<:Quaycle.ParaviewOutputCache}' href='#Quaycle.vtm_output-Tuple{Any,Any,Any,AbstractArray{#s44,1} where #s44<:Quaycle.ParaviewOutputCache}'>#</a>
+<strong><code>Quaycle.vtm_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtm_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">ustr</span><span class="p">,</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -571,8 +571,8 @@
 <li><code>ustr</code>: list of block to be assigned, each contains a list of results names   to data in that block</li>
 <li><code>cache</code>: list cache corresponding to each block</li>
 </ul>
-<p><a id='JuEQ.vtm_output-Tuple{Any,Any,Any,Any,AbstractArray{#s40,1} where #s40<:JuEQ.ParaviewOutputCache}' href='#JuEQ.vtm_output-Tuple{Any,Any,Any,Any,AbstractArray{#s40,1} where #s40<:JuEQ.ParaviewOutputCache}'>#</a>
-<strong><code>JuEQ.vtm_output</code></strong> &mdash; <em>Method</em>.</p>
+<p><a id='Quaycle.vtm_output-Tuple{Any,Any,Any,Any,AbstractArray{#s40,1} where #s40<:Quaycle.ParaviewOutputCache}' href='#Quaycle.vtm_output-Tuple{Any,Any,Any,Any,AbstractArray{#s40,1} where #s40<:Quaycle.ParaviewOutputCache}'>#</a>
+<strong><code>Quaycle.vtm_output</code></strong> &mdash; <em>Method</em>.</p>
 <table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">vtm_output</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">ustr</span><span class="p">,</span> <span class="n">cache</span><span class="o">::</span><span class="n">ParaviewOutputCache</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
@@ -643,7 +643,7 @@
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
           </div>
         
         powered by
