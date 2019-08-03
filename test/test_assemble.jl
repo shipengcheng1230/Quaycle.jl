@@ -25,7 +25,7 @@ using GmshTools
     @testset "triangular fault mesh" begin
         filename = tempname() * ".msh"
         @gmsh_do begin
-            reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
+            reg = Quaycle.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
             gmsh.model.addPhysicalGroup(2, [reg-1], 99)
             gmsh.model.setPhysicalName(2, 99, "FAULT")
             @addOption begin

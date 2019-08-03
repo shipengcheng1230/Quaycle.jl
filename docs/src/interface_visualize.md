@@ -15,7 +15,7 @@ Notice that these function are not fully tested. If you encounter any problem,
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["visualize.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]

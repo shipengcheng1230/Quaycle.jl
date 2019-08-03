@@ -1,5 +1,5 @@
 using Test
-using JuEQ: dϵ_dt
+using Quaycle: dϵ_dt
 
 @testset "Rheology property" begin
     p1 = DislocationCreepProperty([rand(5) for _ in 1: 10]...)

@@ -23,7 +23,7 @@ Also be aware of the coordinate system difference among all the Green's function
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["gf.jl", "gf_dislocation.jl", "gf_strain.jl", "gf_operator.jl",
          "okada_dc3d.jl", "sbarbot_hex8.jl", "sbarbot_tet4.jl", "nikkhoo_td.jl"]
 Private = false

@@ -1,5 +1,5 @@
 using Test
-using JuEQ: triangle_geometric_vector!
+using Quaycle: triangle_geometric_vector!
 
 @testset "Basic Mesh Generator" begin
     @testset "Line for dc3d" begin

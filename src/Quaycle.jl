@@ -1,4 +1,4 @@
-module JuEQ
+module Quaycle
 
 using Reexport
 

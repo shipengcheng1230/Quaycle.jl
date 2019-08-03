@@ -1,12 +1,12 @@
-site_name:        'JuEQ.jl'
+site_name:        'Quaycle.jl'
 site_description: 'Julia implementations of earthquake cycle simulation'
 site_author:      'Pengcheng Shi'
-site_url:         'https://github.com/shipengcheng1230/JuEQ.jl'
+site_url:         'https://github.com/shipengcheng1230/Quaycle.jl'
 
-repo_name:        'JuEQ.jl'
-repo_url:         'https://github.com/shipengcheng1230/JuEQ.jl'
+repo_name:        'Quaycle.jl'
+repo_url:         'https://github.com/shipengcheng1230/Quaycle.jl'
 
-copyright: 'Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/JuEQ.jl">Pengcheng Shi</a>'
+copyright: 'Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>'
 
 theme:
   name: 'material'

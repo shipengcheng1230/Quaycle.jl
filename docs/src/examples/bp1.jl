@@ -3,7 +3,7 @@
 #
 
 # First, we load the package
-using JuEQ
+using Quaycle
 using Plots
 
 # The prerequisite parameters in this benchmark are list below:

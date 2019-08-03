@@ -7,6 +7,7 @@ trigger:
   branches:
     include:
     - master
+    - releases/*
 
 jobs:
 
@@ -29,7 +30,7 @@ jobs:
 #   - script: |
 #       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using InteractiveUtils; versioninfo()'
 #       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using Pkg; Pkg.instantiate()'
-#       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using Pkg; Pkg.test("JuEQ")'
+#       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using Pkg; Pkg.test("Quaycle")'
 #     displayName: 'Run the tests'
 #
 # - job: macOS
@@ -49,7 +50,7 @@ jobs:
 #   - script: |
 #       ./julia --project=@. -e 'using InteractiveUtils;versioninfo()'
 #       ./julia --project=@. -e 'using Pkg; Pkg.instantiate()'
-#       ./julia --project=@. -e 'using Pkg; Pkg.test("JuEQ")'
+#       ./julia --project=@. -e 'using Pkg; Pkg.test("Quaycle")'
 #     displayName: 'Run the tests'
 
 - job: Windows
@@ -69,5 +70,5 @@ jobs:
   - powershell: |
       C:\julia\bin\julia --project=@. -e 'using InteractiveUtils;versioninfo()'
       C:\julia\bin\julia --project=@. -e 'using Pkg; Pkg.instantiate()'
-      C:\julia\bin\julia --project=@. -e 'using Pkg; Pkg.test(\"JuEQ\")'
+      C:\julia\bin\julia --project=@. -e 'using Pkg; Pkg.test(\"Quaycle\")'
     displayName: 'Run the tests'

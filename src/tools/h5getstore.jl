@@ -14,7 +14,7 @@ macro getprop(filename)
         h5open($(filename), "r") do f
             key = names(f)[1] # only one property at top group
             d = read(f, key)
-            args = [d[x] for x in JuEQ.prop_field_names[Symbol(key)]]
+            args = [d[x] for x in Quaycle.prop_field_names[Symbol(key)]]
             eval(Expr(:call, Symbol(key), args...))
         end
     end)

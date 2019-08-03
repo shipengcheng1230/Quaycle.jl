@@ -2,7 +2,7 @@ using Test
 using GmshTools
 using FastGaussQuadrature
 using LinearAlgebra
-using JuEQ:
+using Quaycle:
     unit_dislocation, unit_strain, shear_traction_td,
     shear_traction_sbarbot_on_okada, shear_traction_dc3d,
     stress_components_dc3d, flip_stress_components_sbarbot!,

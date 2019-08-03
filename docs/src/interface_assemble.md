@@ -12,7 +12,7 @@ which is adopted by default for multiple variables in this package.
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["assemble.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]

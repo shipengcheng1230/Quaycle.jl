@@ -1,4 +1,4 @@
-using JuEQ
+using Quaycle
 
 const TESTDIR = @__DIR__
 const TESTFILES = filter(x -> startswith(x, "test_") && endswith(x, ".jl"), readdir(TESTDIR))

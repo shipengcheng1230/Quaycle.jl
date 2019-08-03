@@ -4,7 +4,7 @@ To use [HDF5](https://github.com/JuliaIO/HDF5.jl) functionality,
 ```julia
 pkg> add HDF5
 
-julia> using JuEQ
+julia> using Quaycle
 julia> using HDF5
 ```
 
@@ -20,7 +20,7 @@ remove certain type definitions. Users may choose them as auxiliary tools.
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["h5getstore.jl", "h5savecallback.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]

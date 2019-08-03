@@ -3,7 +3,7 @@ if Base.HOME_PROJECT[] !== nothing
     Base.HOME_PROJECT[] = abspath(Base.HOME_PROJECT[])
 end
 
-using Documenter, DocumenterMarkdown, JuEQ
+using Documenter, DocumenterMarkdown, Quaycle
 using Plots # to not capture precompilation output
 
 using HDF5
@@ -15,12 +15,12 @@ include("generate.jl")
 
 makedocs(
     doctest=false,
-    modules = [JuEQ],
+    modules = [Quaycle],
     format = Markdown(),
 )
 
 deploydocs(
-  repo = "github.com/shipengcheng1230/JuEQ.jl.git",
+  repo = "github.com/shipengcheng1230/Quaycle.jl.git",
   deps = Deps.pip("pymdown-extensions", "pygments", "mkdocs", "python-markdown-math", "mkdocs-material"),
   target = "site",
   make = () -> run(`mkdocs build`),

@@ -3,7 +3,7 @@ using GmshTools
 using LinearAlgebra
 using Logging
 
-using JuEQ: indice2tag, geo_okada_rect, geo_box_extruded_from_surfaceXY,
+using Quaycle: indice2tag, geo_okada_rect, geo_box_extruded_from_surfaceXY,
     _get_all_elements_in_physical_group, _get_entity_tags_in_physical_group,
     _get_centers, _get_element_node_num
 

@@ -6,12 +6,12 @@
 #     ```julia linenums="1"
 #     using Distributed
 #     addprocs(4); # add # of cores you desire
-#     @everywhere using JuEQ
+#     @everywhere using Quaycle
 #     ```
 
 # First, list all the essential parameters:
 
-using JuEQ
+using Quaycle
 using Plots
 
 ms2mmyr = 365 * 86400 * 1e3

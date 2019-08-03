@@ -4,7 +4,7 @@ This package implements plastic deformation as the key for modeling asthenospher
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["rheology.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]

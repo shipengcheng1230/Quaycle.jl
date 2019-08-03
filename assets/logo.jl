@@ -38,5 +38,5 @@ pt32 = Point(pt3.x + r * sind(-θ), pt3.y + r * cosd(-θ))
 
     fontsize(25)
     fontface("Century Schoolbook L")
-    text("JuEQ.jl", Point(pt3.x + 47, pt3.y), halign=:left, valign=:baseline, angle=30/π)
+    text("Quaycle", Point(pt3.x + 47, pt3.y), halign=:left, valign=:baseline, angle=30/π)
 end 300 300 "logo"

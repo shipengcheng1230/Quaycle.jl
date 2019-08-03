@@ -14,7 +14,7 @@ ViscoelasticMaxwellProperty
 ```
 
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["property.jl"]
 Private = false
 Order = [:function, :constant, :macro]

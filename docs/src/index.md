@@ -1,4 +1,4 @@
-# JuEQ.jl Documentation
+# Quaycle.jl Documentation
 
 ## Overview
 This is a suite for numerically simulating earthquake sequences in [Julia](https://julialang.org/). The purpose of this package is to provide efficient Julia implementations for simulations in the field of earthquake physics.
@@ -19,11 +19,11 @@ Features to be implemented:
 Get the latest version with Julia's package manager:
 
 ```julia
-(v1.1) pkg> add https://github.com/shipengcheng1230/JuEQ.jl
+(v1.1) pkg> add https://github.com/shipengcheng1230/Quaycle.jl
 ```
 
 To load the package:
 
 ```julia
-using JuEQ
+using Quaycle
 ```

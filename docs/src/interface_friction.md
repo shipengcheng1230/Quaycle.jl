@@ -6,7 +6,7 @@ single state variable ``θ``.
 
 ## Public Interface
 ```@autodocs
-Modules = [JuEQ]
+Modules = [Quaycle]
 Pages = ["friction.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]
