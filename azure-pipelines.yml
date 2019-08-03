@@ -17,7 +17,11 @@ jobs:
       tar zxf julia-$(JULIA_VERSION)-linux-x86_64.tar.gz
     displayName: 'Install Julia'
   - script: |
-      ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using InteractiveUtils;versioninfo()'
+      sudo apt-get update
+      sudo apt-get install -y libgfortran3 libglu1 libxcursor1 libxrender1 libxft2 libxinerama1
+    displayName: 'Install dependencies for libgmsh'
+  - script: |
+      ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using InteractiveUtils; versioninfo()'
       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using Pkg; Pkg.instantiate()'
       ./julia-$(JULIA_VERSION)/bin/julia --project=@. -e 'using Pkg; Pkg.test("JuEQ")'
     displayName: 'Run the tests'
