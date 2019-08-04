@@ -63,7 +63,7 @@ p1 = plot((a .- b)', seriestype=:heatmap,
     yflip=true, color=:isolum, aspect_ratio=2, title="a-b",
     );
 
-p2 = heatmap(σ',
+p2 = plot(σ', seriestype=:heatmap,
     xticks=(collect(1: 40: mesh.nx+1), [-40, -20, 0, 20, 40]),
     yticks=(collect(1: 5: mesh.nξ+1), [0, 5, 10, 15, 20]),
     yflip=true, color=:isolum, aspect_ratio=2, title="\\sigma"
@@ -90,7 +90,7 @@ plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (
 # And view some snapshots of ruptures (quasi-dynamic) patterns:
 
 ind = argmax(maxv)
-myplot = (ind) -> heatmap(log10.(sol.u[ind].x[1]./ms2mmyr)',
+myplot = (ind) -> plot(log10.(sol.u[ind].x[1]./ms2mmyr)', seriestype=:heatmap,
     xticks=(collect(1: 40: mesh.nx+1), [-40, -20, 0, 20, 40]),
     yticks=(collect(1: 5: mesh.nξ+1), [0, 5, 10, 15, 20]),
     yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")

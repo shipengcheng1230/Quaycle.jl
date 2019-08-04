@@ -68,7 +68,7 @@ jobs:
       Start-Process -FilePath .\julia-$(JULIA_VERSION).exe -ArgumentList "/S /D=C:\julia" -NoNewWindow -Wait
     displayName: 'Install Julia'
   - powershell: |
-      C:\julia\bin\julia --project=@. -e 'using InteractiveUtils;versioninfo()'
+      C:\julia\bin\julia --project=@. -e 'using InteractiveUtils; versioninfo()'
       C:\julia\bin\julia --project=@. -e 'using Pkg; Pkg.instantiate()'
       C:\julia\bin\julia --project=@. -e 'using Pkg; Pkg.test(\"Quaycle\")'
     displayName: 'Run the tests'
