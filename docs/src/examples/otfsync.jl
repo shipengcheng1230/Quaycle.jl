@@ -84,7 +84,7 @@ sol = solve(prob, VCABM5(), reltol=1e-5, abstol=1e-3); nothing
 
 # Last, take a look at the max velocity time series:
 
-maxv = Quaycle.max_velocity(sol)
+maxv = max_velocity(sol)
 plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (log10 (m/s))", label="")
 
 # And view some snapshots of ruptures (quasi-dynamic) patterns:
