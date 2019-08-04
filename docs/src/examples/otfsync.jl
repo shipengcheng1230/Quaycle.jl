@@ -84,7 +84,7 @@ sol = solve(prob, VCABM5(), reltol=1e-5, abstol=1e-3); nothing
 
 # Last, take a look at the max velocity time series:
 
-maxv = JuEQ.max_velocity(sol)
+maxv = Quaycle.max_velocity(sol)
 plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (log10 (m/s))", label="")
 
 # And view some snapshots of ruptures (quasi-dynamic) patterns:
@@ -103,7 +103,7 @@ plot(snaps)
 #     ```julia linenums="1"
 #     using Distributed
 #     addprocs(4)
-#     @everywhere using JuEQ
+#     @everywhere using Quaycle
 #     using GmshTools
 #     using HDF5
 #     using Plots
@@ -111,7 +111,7 @@ plot(snaps)
 #     ## generate mesh
 #     fname = "temp.msh"
 #     @gmsh_do begin
-#         reg = JuEQ.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
+#         reg = Quaycle.geo_rect_x(-40e3, 0.0, -10e3, 80e3, 0.0, 10e3, 1)
 #         gmsh.model.addPhysicalGroup(2, [reg-1], 99)
 #         gmsh.model.setPhysicalName(2, 99, "FAULT")
 #         @addOption begin
