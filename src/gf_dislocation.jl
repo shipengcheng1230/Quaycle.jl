@@ -284,3 +284,16 @@ function stress_greens_func_chunk!(
         end
     end
 end
+
+## displacement - displacement Green's function
+function disp_greens_func(x::T, y::T, z::T, mf::RectOkadaMesh, α::T; nrept::Integer=2, buffer_ratio::Real=0.0) where T<:Real
+    # TODO
+end
+
+function disp_greens_func(x::T, y::T, z::T, mf::LineOkadaMesh, α::T; ax_ratio::Real=12.5) where T<:Real
+    # TODO
+end
+
+function disp_greens_func(x::T, y::T, z::T, mf::TDTri3MeshEntity, α::T; nrept::Integer=2, buffer_ratio::Real=0.0) where T<:Real
+    # TODO
+end

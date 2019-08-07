@@ -184,3 +184,8 @@ function stress_greens_func_chunk!(
         end
     end
 end
+
+## displacement - strain Green's function
+function disp_greens_func(x::T, y::T, z::T, mf::SBarbotMeshEntity, ν::T) where T<:Real
+    # TODO
+end
