@@ -38,7 +38,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-\.]+">
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.1">
     
     
       
@@ -46,9 +46,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.30686662.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.01803549.css">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
       
       
         
@@ -554,52 +554,6 @@
 <li><code>filename::AbstractString</code>: file name to be used</li>
 <li><code>p::AbstractProperty</code>: property to be saved</li>
 </ul>
-<p><a id='Quaycle.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}' href='#Quaycle.wsolve-Tuple{ODEProblem,OrdinaryDiffEqAlgorithm,Any,Any,Any,Any,Any}'>#</a>
-<strong><code>Quaycle.wsolve</code></strong> &mdash; <em>Method</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1
-2</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">wsolve</span><span class="p">(</span><span class="n">prob</span><span class="o">::</span><span class="n">ODEProblem</span><span class="p">,</span> <span class="n">alg</span><span class="o">::</span><span class="n">OrdinaryDiffEqAlgorithm</span><span class="p">,</span>
-    <span class="n">file</span><span class="p">,</span> <span class="n">nstep</span><span class="p">,</span> <span class="n">getu</span><span class="p">,</span> <span class="n">ustrs</span><span class="p">,</span> <span class="n">tstr</span><span class="p">;</span> <span class="n">kwargs</span><span class="o">...</span><span class="p">)</span>
-</pre></div>
-</td></tr></table>
-
-<p>Write the solution to HDF5 file while solving the ODE. The interface     is exactly the same as     <a href="http://docs.juliadiffeq.org/latest/basics/common_solver_opts.html"><code>solve</code> an <code>ODEProblem</code></a>     except a few more about the saving procedure. Notice, it will set     <code>save_everystep=false</code> so to avoid memory blow up. The return code     will be written as an attribute in <code>tstr</code> data group.</p>
-<p><strong>Extra Arguments</strong></p>
-<ul>
-<li><code>file::AbstractString</code>: name of file to be saved</li>
-<li><code>nstep::Integer</code>: number of steps after which a saving operation will be performed</li>
-<li><code>getu::Function</code>: function handler to extract desired solution for saving</li>
-<li><code>ustr::AbstractVector</code>: list of names to be assigned for each components, whose   length must equal the length of <code>getu</code> output</li>
-<li><code>tstr::AbstractString</code>: name of time data</li>
-</ul>
-<p><a id='Quaycle.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}' href='#Quaycle.𝐕𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
-<strong><code>Quaycle.𝐕𝚬′</code></strong> &mdash; <em>Method</em>.</p>
-<p>Retrieve <strong>velocity</strong> and <strong>strain rate</strong></p>
-<p><a id='Quaycle.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>Quaycle.𝐕𝚯</code></strong> &mdash; <em>Method</em>.</p>
-<p>Retrieve <strong>velocity</strong> and <strong>state</strong>.</p>
-<p><a id='Quaycle.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯𝚬-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>Quaycle.𝐕𝚯𝚬</code></strong> &mdash; <em>Method</em>.</p>
-<p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain</strong>.</p>
-<p><a id='Quaycle.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}' href='#Quaycle.𝐕𝚯𝚬′-Tuple{ArrayPartition,Any,Any}'>#</a>
-<strong><code>Quaycle.𝐕𝚯𝚬′</code></strong> &mdash; <em>Method</em>.</p>
-<p>Retrieve <strong>velocity</strong>, <strong>state</strong> and <strong>strain rate</strong>.</p>
-<p><a id='Quaycle.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}' href='#Quaycle.𝐕𝚯𝚬𝚺-Tuple{ArrayPartition,Vararg{Any,N} where N}'>#</a>
-<strong><code>Quaycle.𝐕𝚯𝚬𝚺</code></strong> &mdash; <em>Method</em>.</p>
-<p>Retrieve <strong>velocity</strong>, <strong>state</strong>, <strong>strain</strong> and <strong>stress</strong>.</p>
-<p><a id='Quaycle.@h5savecallback-NTuple{5,Any}' href='#Quaycle.@h5savecallback-NTuple{5,Any}'>#</a>
-<strong><code>Quaycle.@h5savecallback</code></strong> &mdash; <em>Macro</em>.</p>
-<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="nd">@h5savecallback</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tend</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">usize</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-</pre></div>
-</td></tr></table>
-
-<p>Construct a <code>FunctionCallingCallback</code> for incrementally stored output into HDF5 file.     This callback function only works for naive output arrays whose shape look like <code>A[..., :, :, :, ...]</code>.     It is suggested to use this macro at top-level scope since it contains <code>eval</code>.</p>
-<p><strong>Arguments</strong></p>
-<ul>
-<li><code>filename</code>: file name to be stored</li>
-<li><code>tend</code>: end time of simulation</li>
-<li><code>nsteps</code>: after <code>nsteps</code> steps, a saving operation is performed otherwise caching them</li>
-<li><code>T</code>: type of stored data</li>
-</ul>
                 
                   
                 
@@ -686,7 +640,7 @@
       
     </div>
     
-      <script src="../assets/javascripts/application.245445c6.js"></script>
+      <script src="../assets/javascripts/application.c648116f.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       
