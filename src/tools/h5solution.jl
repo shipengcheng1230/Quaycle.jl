@@ -1,4 +1,4 @@
-export @h5savecallback, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝚬′, 𝐕𝚯𝚬𝚺, 𝐕𝚬′
+export @h5savecallback, h5trimsolution, wsolve, 𝐕𝚯, 𝐕𝚯𝚬, 𝐕𝚯𝚬′, 𝐕𝚯𝚬𝚺, 𝐕𝚬′
 
 """
     @h5savecallback(filename, tend, nsteps, usize, T)
@@ -189,3 +189,41 @@ function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, get
     h5writeattr(file, tstr, Dict("retcode" => string(sol.retcode)))
     return sol
 end
+
+"""
+    h5trimsolution(fin::S, fout::S, tstr, ustrs::AbstractVector,
+        predu::Function, predt::Function=(x)->true; nstep::Integer=10000) where S
+
+Trim the solution in and HDF5 file `fin`, for instance by using [`wsolve`](@ref), according to prediction functions `predu` and `predt`
+    for fields specified by `ustrs`. Time data field is denoted by `tstr`. Outputs are stored in `fout`.
+"""
+function h5trimsolution(fin::S, fout::S, tstr, ustrs::AbstractVector, predu::Function, predt::Function=(_)->true; nstep::Integer=10000) where S
+    h5open(fin, "r") do f1
+        indestnames = names(f1)
+        @assert tstr ∈ indestnames "Unrecoganized time identifier."
+        @assert ustrs ⊆ names(f1) "Unrecoganized solution identifier(s)."
+        td = d_open(f1, tstr)
+        indests = map(x -> d_open(f1, x), ustrs)
+        ptrs = map(x -> _get_ptr(x, 1), indests) |> Tuple
+        b = create_h5buffer(fout, ptrs, Float64[], nstep, Inf, ustrs, tstr)
+
+        h5open(fout, "r+") do f2
+            outtd = d_open(f2, tstr)
+            outdests = map(x -> d_open(f2, x), ustrs)
+            @showprogress 1 for i ∈ 1: length(td)
+                t = td[i][1]
+                if predt(t)
+                    ptrs = map(x -> _get_ptr(x, i), indests)
+                    if predu(ptrs)
+                        _trigger_copy(b, ptrs, t)
+                        b.count > b.nstep && _trigger_save(b, ptrs, t)
+                    end
+                end
+            end
+            _trigger_save(b, (), 0.0)
+        end
+    end
+end
+
+# redundant computation of `axes` and `ndims` here
+@inline _get_ptr(d, i::Integer) = dropdims(d[axes(d)[1:end-1]..., i]; dims=ndims(d))

@@ -14,6 +14,7 @@ using BlockArrays
 using Strided
 using WriteVTK
 using Formatting
+using ProgressMeter
 
 using Distributed
 using Base.Threads
@@ -37,7 +38,7 @@ include("tools/mmapsave.jl")
 function __init__()
     @require HDF5="f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f" begin
         using .HDF5
-        include("tools/h5savecallback.jl")
+        include("tools/h5solution.jl")
         include("tools/h5getstore.jl")
     end
 

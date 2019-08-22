@@ -1,5 +1,6 @@
 using Test
 using HDF5
+using Statistics
 
 @testset "h5savecallback" begin
     @testset "vector output" begin
@@ -71,4 +72,22 @@ using HDF5
         @test h5readattr(tmp, "t")["retcode"] == "Success"
         rm(tmp)
     end
+end
+
+@testset "trim solution" begin
+    t = collect(1.: 10.)
+    v = zeros(5, 10, length(t))
+    v[:,:,1:2:end] .= 2
+    tmp = tempname()
+    tmpout = tempname()
+    h5write(tmp, "t", t)
+    h5write(tmp, "v", v)
+    h5trimsolution(tmp, tmpout, "t", ["v"], u -> mean(u[1]) > 1, t -> t > 2; nstep=10)
+    t′ = h5read(tmpout, "t")
+    v′ = h5read(tmpout, "v")
+    @test length(t′) == 4 # only 3, 5, 7, 9 are qualified
+    @test size(v′, 3) == 4
+    @test minimum(v′) == 2 # only retain large mean components
+    rm(tmp)
+    rm(tmpout)
 end
