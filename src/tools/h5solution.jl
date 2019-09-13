@@ -160,6 +160,8 @@ end
 # https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/785
 "Retrieve **velocity**, **state** and **strain rate**."
 𝐕𝚯𝚬′(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3])
+"Retrieve **velocity**, **state**, **strain rate** and **slip**."
+𝐕𝚯𝚬′𝚫(u::ArrayPartition, t, integrator) = (u.x[1], u.x[2], integrator(integrator.t, Val{1}).x[3], u.x[5])
 "Retrieve **velocity**, **state**, **strain** and **stress**."
 𝐕𝚯𝚬𝚺(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3], u.x[4])
 "Retrieve **velocity**, **state** and **strain**."
@@ -168,6 +170,8 @@ end
 𝐕𝚯(u::ArrayPartition, args...) = (u.x[1], u.x[2])
 "Retrieve **velocity** and **strain rate**"
 𝐕𝚬′(u::ArrayPartition, t, integrator) = (u.x[1], integrator(integrator.t, Val{1}).x[3])
+"Retrieve **velocity**, **state** and **slip**."
+𝐕𝚯𝚫(u::ArrayPartition, args...) = (u.x[1], u.x[2], u.x[3])
 
 """
     wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm,

@@ -1,12 +1,12 @@
 using Test
 using GmshTools
 
-@testset "Okada Assemble" begin
+@testset "Prob Assemble" begin
     @testset "1D fault" begin
         mesh = gen_mesh(Val(:LineOkada), 10., 2.0, 45.0)
         gf = stress_greens_func(mesh, 1.0, 1.0, DIPPING())
         p = RateStateQuasiDynamicProperty([rand(mesh.nξ) for _ in 1: 4]..., rand(4)...)
-        u0 = ArrayPartition([rand(mesh.nξ) for _ in 1: 2]...)
+        u0 = ArrayPartition([rand(mesh.nξ) for _ in 1: 3]...)
         prob = assemble(gf, p, u0, (0., 1.0); flf=CForm())
         du = similar(u0)
         @inferred prob.f(du, u0, prob.p, 1.0)
@@ -16,7 +16,7 @@ using GmshTools
         mesh = gen_mesh(Val(:RectOkada), 10., 10., 2., 2., 90.)
         gf = stress_greens_func(mesh, 1.0, 1.0, STRIKING(); buffer_ratio=1.0)
         p = RateStateQuasiDynamicProperty([rand(mesh.nx, mesh.nξ) for _ in 1: 4]..., rand(4)...)
-        u0 = ArrayPartition([rand(mesh.nx, mesh.nξ) for _ in 1: 2]...)
+        u0 = ArrayPartition([rand(mesh.nx, mesh.nξ) for _ in 1: 3]...)
         prob = assemble(gf, p, u0, (0., 1.0))
         du = similar(u0)
         @inferred prob.f(du, u0, prob.p, 1.0)
@@ -39,7 +39,7 @@ using GmshTools
         mesh = read_gmsh_mesh(Val(:TDTri3), filename; phytag=99)
         gf = stress_greens_func(mesh, 1.0, 1.0, DIPPING())
         p = RateStateQuasiDynamicProperty([rand(length(mesh.tag)) for _ in 1: 4]..., rand(4)...)
-        u0 = ArrayPartition([rand(length(mesh.tag)) for _ in 1: 2]...)
+        u0 = ArrayPartition([rand(length(mesh.tag)) for _ in 1: 3]...)
         prob = assemble(gf, p, u0, (0.0, 1.0))
         du = similar(u0)
         @inferred prob.f(du, u0, prob.p, 1.0)
@@ -66,7 +66,8 @@ using GmshTools
         θ0 = rand(mf.nx, mf.nξ)
         ϵ0 = rand(length(ma.tag), 3)
         σ0 = rand(length(ma.tag), 6)
-        u0 = ArrayPartition(v0, θ0, ϵ0, σ0)
+        δ0 = rand(mf.nx, mf.nξ)
+        u0 = ArrayPartition(v0, θ0, ϵ0, σ0, δ0)
         prob = assemble(gg, pc, u0, (0., 1.0))
         du = similar(u0)
         @inferred prob.f(du, u0, prob.p, 1.0)

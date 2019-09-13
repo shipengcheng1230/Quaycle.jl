@@ -83,23 +83,30 @@ end
     end
 end
 
+@inline function dδ_dt!(dδ::T, v::T) where T
+    @inbounds @fastmath @threads for i ∈ eachindex(dδ)
+        dδ[i] = v[i]
+    end
+end
+
 ## concrete combination of derivatives
 function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::RateStateQuasiDynamicProperty, alloc::TractionRateAllocation{N}, gf::AbstractArray, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ = u.x # velocity, state
-    dv, dθ = du.x
+    v, θ, δ = u.x # velocity, state, slip
+    dv, dθ, dδ = du.x
     clamp!(θ, zero(T), Inf)
     clamp!(v, zero(T), Inf)
     relative_velocity!(alloc, p.vpl, v)
     dτ_dt!(gf, alloc)
     dμ_dvdθ!(flf, v, θ, p, alloc)
     dvdθ_dt!(se, dv, dθ, v, θ, p, alloc)
+    dδ_dt!(dδ, v)
 end
 
 function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMaxwellProperty, alloc::ViscoelasticCompositeAlloc{N}, gf::ViscoelasticCompositeGreensFunction, flf::FrictionLawForm, se::StateEvolutionLaw,
     ) where {T, N}
-    v, θ, ϵ, σ = u.x # velocity, state, strain, stress
-    dv, dθ, dϵ, dσ = du.x
+    v, θ, ϵ, σ, δ = u.x # velocity, state, strain, stress, slip
+    dv, dθ, dϵ, dσ, dδ = du.x
     clamp!(θ, 0.0, Inf)
     clamp!(v, 0.0, Inf)
     relative_velocity!(alloc.e, p.pe.vpl, v)
@@ -112,4 +119,5 @@ function ∂u∂t(du::ArrayPartition{T}, u::ArrayPartition{T}, p::ViscoelasticMa
     dσ_dt!(dσ, gf.vv, alloc.v) # accumulate `dσ_dt`
     dμ_dvdθ!(flf, v, θ, p.pe, alloc.e)
     dvdθ_dt!(se, dv, dθ, v, θ, p.pe, alloc.e)
+    dδ_dt!(dδ, v)
 end
