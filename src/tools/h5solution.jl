@@ -190,8 +190,9 @@ Write the solution to HDF5 file while solving the ODE. The interface
 
 ## KWARGS
 - `stride::Integer=1`: downsampling rate for saving outputs
+- `append::Bool=false`: if true then append solution after the end of `file`
 """
-function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride=1, append=false, kwargs...)
+function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride::Integer=1, append::Bool=false, kwargs...)
     integrator = init(prob, alg)
     du = similar(prob.u0)
     ptrs = getu(prob.u0, prob.tspan[1], integrator)
