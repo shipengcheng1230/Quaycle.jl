@@ -70,6 +70,16 @@ using Statistics
             @test h5read(tmp, ustrs[m]) == x
         end
         @test h5readattr(tmp, "t")["retcode"] == "Success"
+
+        # strided storage
+        stride = 11
+        wsolve(prob, Tsit5(), tmp, 50, getu, ["u1", "u2", "u3"], "t"; stride=stride)
+        @test length(h5read(tmp, "t")) == length(sol.t) ÷ stride + 1
+        for m in eachindex(u0.x)
+            x = Array(VectorOfArray([sol.u[i].x[m] for i in 1: stride: length(sol.t)]))
+            @test h5read(tmp, ustrs[m]) == x
+        end
+
         rm(tmp)
     end
 end

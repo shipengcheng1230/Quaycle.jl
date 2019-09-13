@@ -91,9 +91,11 @@ mutable struct H5SaveBuffer{
     du::A
     tstop::R
     tstr::S
+    stride::I
+    stride_count::I
 end
 
-function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, nstep::Integer, tstop::Real, ustrs, tstr)
+function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, nstep::Integer, tstop::Real, ustrs, tstr; stride::Integer=1)
     @assert tstr ∉ ustrs "Duplicate name of $(tstr) in $(ustrs)."
     @assert length(ustrs) == length(ptrs) "Unmatched length between solution components and names."
     ubuffer = h5savebufferzone(ptrs, nstep, ustrs)
@@ -110,7 +112,7 @@ function create_h5buffer(file::AbstractString, ptrs::Tuple, du::AbstractArray, n
             d_create(f, ustrs[i], datatype(eltype(du)), (accusize, (ushapes[i]..., -1,)), "chunk", accusize)
         end
     end
-    return H5SaveBuffer(file, ubuffer, tbuffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr)
+    return H5SaveBuffer(file, ubuffer, tbuffer, nstep, count, total, uiter, ustrs, ushapes, idxs, du, tstop, tstr, stride, 0)
 end
 
 h5savebufferzone(u::AbstractArray, nstep::Integer) = Array{eltype(u)}(undef, size(u)..., nstep)
@@ -118,8 +120,11 @@ h5savebufferzone(u::Tuple, nstep, names) = Dict(names[i] => h5savebufferzone(u[i
 
 function h5savebuffercbkernel(u, t, integrator, b::H5SaveBuffer, getu::Function)
     ptrs = getu(u, t, integrator)
-    _trigger_copy(b, ptrs, t)
-    (t == b.tstop || b.count > b.nstep) && _trigger_save(b, ptrs, t)
+    if mod(b.stride_count, b.stride) == 0
+        _trigger_copy(b, ptrs, t)
+        (t == b.tstop || b.count > b.nstep) && _trigger_save(b, ptrs, t)
+    end
+    b.stride_count += 1
 end
 
 function _trigger_copy(b::H5SaveBuffer, ptrs, t)
@@ -177,11 +182,11 @@ Write the solution to HDF5 file while solving the ODE. The interface
     length must equal the length of `getu` output
 - `tstr::AbstractString`: name of time data
 """
-function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; kwargs...)
+function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride=1, kwargs...)
     integrator = init(prob, alg)
     du = similar(prob.u0)
     ptrs = getu(prob.u0, prob.tspan[1], integrator)
-    bf = create_h5buffer(file, ptrs, du, nstep, prob.tspan[2], ustrs, tstr)
+    bf = create_h5buffer(file, ptrs, du, nstep, prob.tspan[2], ustrs, tstr; stride=stride)
     cb = (u, t, integrator) -> h5savebuffercbkernel(u, t, integrator, bf, getu)
     fcb = FunctionCallingCallback(cb)
     sol = solve(prob, alg; save_everystep=false, callback=fcb, kwargs...)
