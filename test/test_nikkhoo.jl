@@ -1,4 +1,5 @@
 using Test
+using DelimitedFiles
 
 @testset "Triangle Dislocation" begin
     P1 = [-1, -1, -5] * 1.0
@@ -97,4 +98,22 @@ end
         @test ϵ[1] ≈ E′[1,1] && ϵ[2] ≈ E′[2,2] && ϵ[3] ≈ E′[3,3] && ϵ[4] ≈ E′[1,2] && ϵ[5] ≈ E′[1,3] && ϵ[6] ≈ E′[2,3]
     end
     @test p′ == [p1, p2, p3, p4] # test if pts coordinates have been changed
+end
+
+@testset "Full space solution" begin
+    @testset "displacement" begin
+        xs = collect(-10.0: 0.5: 10.0)
+        ys = collect(-8.0: 0.5: 8.0)
+        zs = 4.0
+
+        xyz = Iterators.product(zs, ys, xs) |> collect
+        Y = [q[2] for q in xyz] |> vec
+        X = [q[3] for q in xyz] |> vec
+        Z = [q[1] for q in xyz] |> vec
+
+        u, v, w = rd_disp_fs(X, Y, Z, 3.0, 1.0, 0.0, 2.0, 1.0, 10.0, 75.0, 30.0, 20.0, 1.0, 0.15, 0.25, Val(:pc))
+        # validation data generated via orginal Matlab code
+        truth = readdlm(joinpath(@__DIR__, "data/test_nikkhoo_rd_disp_fs.dat"), ' ', Float64)
+        @test truth[:,1] ≈ u && truth[:,2] ≈ v && truth[:,3] ≈ w
+    end
 end
