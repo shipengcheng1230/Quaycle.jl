@@ -49,7 +49,7 @@ export rd_disp_fs, rd_strain_fs, rd_stress_fs
 
 using LinearAlgebra
 
-function rd_disp_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, nu::T, ref::S) where {V, T, S}
+function rd_disp_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, nu::T, ref::S) where {V<:AbstractVector, T, S}
     @assert size(x) == size(y) == size(z) "Unmatched length of observational coordinates."
 
     bx = opening
@@ -93,7 +93,11 @@ function rd_disp_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, pl
     e14 = normalize(p4 - p1)
 
     Rectmode = @views rectmodefInder(y, z, x, p1[2:3], p2[2:3], p3[2:3], p4[2:3])
-    u, v, w = [zeros(T, length(x)) for _ ∈ 1: 3]
+
+    # use list comprehension causes being unable infer type (until Julia v1.2), see one example mentioned in the link below
+    # https://discourse.julialang.org/t/comprehension-type-inference/4324
+    # u, v, w = [zeros(T, length(x)) for _ ∈ 1: 3]
+    u = zeros(T, length(x)); v = zeros(T, length(x)); w = zeros(T, length(x))
 
     casepLog = Rectmode .== 1
     casenLog = Rectmode .== -1
@@ -144,23 +148,121 @@ function rd_disp_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, pl
 end
 
 function rd_disp_hs()
-
+    #TODO
 end
 
-function rd_strain_fs()
+function rd_strain_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, λ::T, μ::T, ref::S) where {V<:AbstractVector, T, S}
+    nu = λ / (λ + μ) / 2
 
+    # lots of repeated codes here
+    bx = opening
+    by = slip * cosd(rake)
+    bz = slip * sind(rake)
+    Rz1 = [cosd(plunge) sind(plunge) zero(T); -sind(plunge) cosd(plunge) zero(T); zero(T) zero(T) one(T)]
+    Ry = [cosd(dip) zero(T) sind(dip); zero(T) one(T) zero(T); -sind(dip) zero(T) cosd(dip)]
+    Rz2 = [cosd(strike) sind(strike) zero(T); -sind(strike) cosd(strike) zero(T); zero(T) zero(T) one(T)]
+    Rt = Rz2 * Ry * Rz1
+
+    Pt1 = [-W/2, L/2, zero(T)]
+    Pt2 = [-W/2, -L/2, zero(T)]
+    Pt3 = [W/2, -L/2, zero(T)]
+    Pt4 = [W/2, L/2, zero(T)]
+
+    Ptr = _ref_pts(ref, L, W)
+    Pr = [x₀, y₀, -depth] - Rt * Ptr
+    P1 = Rt * Pt1 + Pr
+    P2 = Rt * Pt2 + Pr
+    P3 = Rt * Pt3 + Pr
+    P4 = Rt * Pt4 + Pr
+
+    ez = [zero(T), zero(T), one(T)]
+    Vnorm = Rt * ez
+    Vstrike = [sind(strike), cosd(strike), zero(T)]
+    Vdip = Vnorm × Vstrike
+
+    Pm = (P1 + P2 + P3 + P4) / 4
+    p1, p2, p3, p4 = [zeros(T, 3) for _ in 1: 4]
+    At = hcat(Vnorm, Vstrike, Vdip)'
+
+    x, y, z = coord_trans(x .- Pm[1], y .- Pm[2], z .- Pm[3], At)
+    p1[1], p1[2], p1[3] = coord_trans(P1[1] - Pm[1], P1[2] - Pm[2], P1[3] - Pm[3], At)
+    p2[1], p2[2], p2[3] = coord_trans(P2[1] - Pm[1], P2[2] - Pm[2], P2[3] - Pm[3], At)
+    p3[1], p3[2], p3[3] = coord_trans(P3[1] - Pm[1], P3[2] - Pm[2], P3[3] - Pm[3], At)
+    p4[1], p4[2], p4[3] = coord_trans(P4[1] - Pm[1], P4[2] - Pm[2], P4[3] - Pm[3], At)
+
+    e12 = normalize(p2 - p1)
+    e23 = normalize(p3 - p2)
+    e34 = normalize(p4 - p3)
+    e14 = normalize(p4 - p1)
+
+    Rectmode = @views rectmodefInder(y, z, x, p1[2:3], p2[2:3], p3[2:3], p4[2:3])
+
+    casepLog = Rectmode .== 1
+    casenLog = Rectmode .== -1
+    casezLog = Rectmode .== 0
+    lenx = length(x)
+
+    # use list comprehension causes being unable infer type (until Julia v1.2), see one example mentioned in the link below
+    # https://discourse.julialang.org/t/comprehension-type-inference/4324
+    # exx, eyy, ezz, exy, exz, eyz = [zeros(T, length(x)) for _ in 1: 6]
+    exx, eyy, ezz, exy, exz, eyz = zeros(T, lenx), zeros(T, lenx), zeros(T, lenx), zeros(T, lenx), zeros(T, lenx), zeros(T, lenx)
+
+    if any(casepLog)
+        xp, yp, zp = x[casepLog], y[casepLog], z[casepLog]
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = [Vector{T}(undef, length(xp)) for _ ∈ 1: 6]
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xp, yp, zp, bx, by, bz, nu, p1, e14)
+        exx[casepLog] .+= exxt; eyy[casepLog] .+= eyyt; ezz[casepLog] .+= ezzt; exy[casepLog] .+= exyt; exz[casepLog] .+= exzt; eyz[casepLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xp, yp, zp, bx, by, bz, nu, p2, -e12)
+        exx[casepLog] .+= exxt; eyy[casepLog] .+= eyyt; ezz[casepLog] .+= ezzt; exy[casepLog] .+= exyt; exz[casepLog] .+= exzt; eyz[casepLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xp, yp, zp, bx, by, bz, nu, p3, -e23)
+        exx[casepLog] .+= exxt; eyy[casepLog] .+= eyyt; ezz[casepLog] .+= ezzt; exy[casepLog] .+= exyt; exz[casepLog] .+= exzt; eyz[casepLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xp, yp, zp, bx, by, bz, nu, p4, -e34)
+        exx[casepLog] .+= exxt; eyy[casepLog] .+= eyyt; ezz[casepLog] .+= ezzt; exy[casepLog] .+= exyt; exz[casepLog] .+= exzt; eyz[casepLog] .+= eyzt
+    end
+    if any(casenLog)
+        xn, yn, zn = x[casenLog], y[casenLog], z[casenLog]
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = [Vector{T}(undef, length(xn)) for _ ∈ 1: 6]
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xn, yn, zn, bx, by, bz, nu, p1, -e14)
+        exx[casenLog] .+= exxt; eyy[casenLog] .+= eyyt; ezz[casenLog] .+= ezzt; exy[casenLog] .+= exyt; exz[casenLog] .+= exzt; eyz[casenLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xn, yn, zn, bx, by, bz, nu, p2, e12)
+        exx[casenLog] .+= exxt; eyy[casenLog] .+= eyyt; ezz[casenLog] .+= ezzt; exy[casenLog] .+= exyt; exz[casenLog] .+= exzt; eyz[casenLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xn, yn, zn, bx, by, bz, nu, p3, e23)
+        exx[casenLog] .+= exxt; eyy[casenLog] .+= eyyt; ezz[casenLog] .+= ezzt; exy[casenLog] .+= exyt; exz[casenLog] .+= exzt; eyz[casenLog] .+= eyzt
+
+        exxt, eyyt, ezzt, exyt, exzt, eyzt = RDSetupS(xn, yn, zn, bx, by, bz, nu, p4, e34)
+        exx[casenLog] .+= exxt; eyy[casenLog] .+= eyyt; ezz[casenLog] .+= ezzt; exy[casenLog] .+= exyt; exz[casenLog] .+= exzt; eyz[casenLog] .+= eyzt
+    end
+    if any(casezLog)
+        exx[casezLog] .= NaN; eyy[casezLog] .= NaN; ezz[casezLog] .= NaN; exy[casezLog] .= NaN; exz[casezLog] .= NaN; eyz[casezLog] .= NaN
+    end
+    exx, eyy, ezz, exy, exz, eyz = TensTrans(exx, eyy, ezz, exy, exz, eyz, At')
 end
 
 function rd_strain_hs()
-
+    #TODO
 end
 
-function rd_stress_fs()
-
+function rd_stress_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, λ::T, μ::T, ref::S) where {V, T, S}
+    exx, eyy, ezz, exy, exz, eyz = rd_strain_fs(x, y, z, x₀, y₀, depth, L, W, plunge, dip, strike, rake, slip, opening, λ, μ, ref)
+    ekk = exx + eyy + ezz
+    Sxx = @. 2μ * exx + λ * ekk
+    Syy = @. 2μ * eyy + λ * ekk
+    Szz = @. 2μ * ezz + λ * ekk
+    Sxy = @. 2μ * exy
+    Sxz = @. 2μ * exz
+    Syz = @. 2μ * eyz
+    return Sxx, Syy, Szz, Sxy, Sxz, Syz
 end
 
 function rd_stress_hs()
-
+    #TODO
 end
 
 @inline _ref_pts(::Val{:pc}, L::T, W::T) where T = zeros(T, 3)
@@ -248,6 +350,28 @@ end
         end
         Fi[bool] = @. -2 * atan(FiN1t * FiD2t + FiN2t * FiD1t, FiD1t * FiD2t - FiN1t * FiN2t) / 4 / π
     end
-
     return Fi
+end
+
+@inline function RDSetupS(x::T, y::T, z::T, bx::U, by::U, bz::U, nu::U, RDVertex::V, SideVec::V) where {T, U, V}
+    y1 = @. SideVec[3] * (y - RDVertex[2]) - SideVec[2] * (z - RDVertex[3])
+    z1 = @. SideVec[2] * (y - RDVertex[2]) + SideVec[3] * (z - RDVertex[3])
+    by1 = @. SideVec[3] * by - SideVec[2] * bz
+    bz1 = @. SideVec[2] * by + SideVec[3] * bz
+
+    exx, eyy, ezz, exy, exz, eyz = AngDisStrain(x, y1, z1, -pi/2, bx, by1, bz1, nu)
+
+    B = [1 0 0; 0 SideVec[3] SideVec[2]; 0 -SideVec[2] SideVec[3]]
+    exx, eyy, ezz, exy, exz, eyz = TensTrans(exx, eyy, ezz, exy, exz, eyz, B)
+    return exx, eyy, ezz, exy, exz, eyz
+end
+
+function rd_disp_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, nu::T, ref::S) where {V<:Number, T, S}
+    u, v, w = rd_disp_fs([x], [y], [z], x₀, y₀, depth, L, W, plunge, dip, strike, rake, slip, opening, nu, ref)
+    u[1], v[1], w[1]
+end
+
+function rd_strain_fs(x::V, y::V, z::V, x₀::T, y₀::T, depth::T, L::T, W::T, plunge::T, dip::T, strike::T, rake::T, slip::T, opening::T, λ::T, μ::T, ref::S) where {V<:Number, T, S}
+    out = rd_strain_fs([x], [y], [z], x₀, y₀, depth, L, W, plunge, dip, strike, rake, slip, opening, λ, μ, ref)
+    [q[1] for q in out]
 end

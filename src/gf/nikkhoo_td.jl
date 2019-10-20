@@ -825,16 +825,6 @@ end
     return Exx, Eyy, Ezz, Exy, Exz, Eyz
 end
 
-@inline function TensTrans(Txx1, Tyy1, Tzz1, Txy1, Txz1, Tyz1, A)
-    Txx2 = A[1] ^ 2 * Txx1 + 2 * A[1] * A[4] * Txy1 + 2 * A[1] * A[7] * Txz1 + 2 * A[4] * A[7] * Tyz1 + A[4] ^ 2 * Tyy1 + A[7] ^ 2 * Tzz1
-    Tyy2 = A[2] ^ 2 * Txx1 + 2 * A[2] * A[5] * Txy1 + 2 * A[2] * A[8] * Txz1 + 2 * A[5] * A[8] * Tyz1 + A[5] ^ 2 * Tyy1 + A[8] ^ 2 * Tzz1
-    Tzz2 = A[3] ^ 2 * Txx1 + 2 * A[3] * A[6] * Txy1 + 2 * A[3] * A[9] * Txz1 + 2 * A[6] * A[9] * Tyz1 + A[6] ^ 2 * Tyy1 + A[9] ^ 2 * Tzz1
-    Txy2 = A[1] * A[2] * Txx1 + (A[1] * A[5] + A[2] * A[4]) * Txy1 + (A[1] * A[8] + A[2] * A[7])* Txz1 + (A[8] * A[4] + A[7] * A[5]) * Tyz1 + A[5] * A[4] * Tyy1 + A[7] * A[8] * Tzz1
-    Txz2 = A[1] * A[3] * Txx1 + (A[1] * A[6] + A[3] * A[4]) * Txy1 + (A[1] * A[9] + A[3] * A[7])* Txz1 + (A[9] * A[4] + A[7] * A[6]) * Tyz1 + A[6] * A[4] * Tyy1 + A[7] * A[9] * Tzz1
-    Tyz2 = A[2] * A[3] * Txx1 + (A[3] * A[5] + A[2] * A[6]) * Txy1 + (A[3] * A[8] + A[2] * A[9])* Txz1 + (A[8] * A[6] + A[9] * A[5]) * Tyz1 + A[5] * A[6] * Tyy1 + A[8] * A[9] * Tzz1
-    return Txx2, Tyy2, Tzz2, Txy2, Txz2, Tyz2
-end
-
 @inline function TDSetupS(x::T, y::T, z::T, alpha::T, bx::T, by::T, bz::T, nu::T, TriVertex::V, SideVec::V) where {T, V}
     y1 = SideVec[3] * (y - TriVertex[2]) - SideVec[2] * (z - TriVertex[3])
     z1 = SideVec[2] * (y - TriVertex[2]) + SideVec[3] * (z - TriVertex[3])
@@ -850,74 +840,6 @@ end
     B[3,3] = SideVec[3]
     exx, eyy, ezz, exy, exz, eyz = TensTrans(exx, eyy, ezz, exy, exz, eyz, B)
     return exx, eyy, ezz, exy, exz, eyz
-end
-
-@inline function AngDisStrain(x::T, y::T, z::T, alpha::T, bx::T, by::T, bz::T, nu::T) where T
-    sinA, cosA = sincos(alpha)
-    eta = y * cosA - z * sinA
-    zeta = y * sinA + z * cosA
-    x2 = x ^ 2
-    y2 = y ^ 2
-    z2 = z ^ 2
-    r2 = x2 + y2 + z2
-    r = sqrt(r2) # use `hypot` for higher precision
-    r3 = r2 * r
-    rz = r * (r - z)
-    r2z2 = rz ^ 2
-    r3z = r3 * (r - z)
-    W = zeta - r
-    W2 = W ^ 2
-    Wr = W * r
-    W2r = W2 * r
-    Wr3 = W * r3
-    W2r2 = W2 * r2
-    C = (r * cosA - z) / Wr
-    S = (r * sinA - y) / Wr
-
-    rFi_rx = (eta / r / (r - zeta) - y / r / (r - z)) / 4 / π
-    rFi_ry = (x / r / (r - z) - cosA * x / r / (r - zeta)) / 4 / π
-    rFi_rz = (sinA * x / r / (r - zeta)) / 4 / π
-
-    Exx = (bx * (rFi_rx) + bx / 8 / π / (1 - nu) * (eta / Wr + eta * x2 / W2r2 - eta * x2 / Wr3 + y / rz -
-        x2 * y / r2z2 - x2 * y / r3z) - by * x / 8 / π / (1 - nu) * (((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3) * cosA +
-        (2 * nu + 1) / rz - x2 / r2z2 - x2 / r3z) + bz * x * sinA / 8 / π / (1 - nu) * ((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3))
-
-    Eyy = (by * (rFi_ry) +
-        bx / 8 / π / (1 - nu) * ((1 / Wr + S ^ 2 - y2 / Wr3) * eta + (2 * nu + 1) * y / rz - y ^ 3 / r2z2 -
-        y ^ 3 / r3z - 2 * nu * cosA * S) -
-        by * x / 8 / π / (1 - nu) * (1 / rz - y2 / r2z2 - y2 / r3z +
-        (1 / Wr + S ^ 2 - y2 / Wr3) * cosA) +
-        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + S ^ 2 - y2 / Wr3))
-
-    Ezz = (bz * (rFi_rz) +
-        bx / 8 / π / (1 - nu) * (eta / W / r + eta * C ^ 2 - eta * z2 / Wr3 + y * z / r3 +
-        2 * nu * sinA * C) -
-        by * x / 8 / π / (1 - nu) * ((1 / Wr + C ^ 2 - z2 / Wr3) * cosA + z / r3) +
-        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + C ^ 2 - z2 / Wr3))
-
-    Exy = (bx * (rFi_ry) / 2 + by * (rFi_rx) / 2 -
-        bx / 8 / π / (1 - nu) * (x * y2 / r2z2 - nu * x / rz + x * y2 / r3z - nu * x * cosA / Wr +
-        eta * x * S / Wr + eta * x * y / Wr3) +
-        by / 8 / π / (1 - nu) * (x2 * y / r2z2 - nu * y / rz + x2 * y / r3z + nu * cosA * S +
-        x2 * y * cosA / Wr3 + x2 * cosA * S / Wr) -
-        bz * sinA / 8 / π / (1 - nu) * (nu * S + x2 * S / Wr + x2 * y / Wr3))
-
-    Exz = (bx * (rFi_rz) / 2 + bz * (rFi_rx) / 2 -
-        bx / 8 / π / (1 - nu) * (-x * y / r3 + nu * x * sinA / Wr + eta * x * C / Wr +
-        eta * x * z / Wr3) +
-        by / 8 / π / (1 - nu) * (-x2 / r3 + nu / r + nu * cosA * C + x2 * z * cosA / Wr3 +
-        x2 * cosA * C / Wr) -
-        bz * sinA / 8 / π / (1 - nu) * (nu * C + x2 * C / Wr + x2 * z / Wr3))
-
-    Eyz = (by * (rFi_rz) / 2 + bz * (rFi_ry) / 2 +
-        bx / 8 / π / (1 - nu) * (y2 / r3 - nu / r - nu * cosA * C + nu * sinA * S + eta * sinA * cosA / W2 -
-        eta * (y * cosA + z * sinA) / W2r + eta * y * z / W2r2 - eta * y * z / Wr3) -
-        by * x / 8 / π / (1 - nu) * (y / r3 + sinA * cosA ^ 2 / W2 - cosA * (y * cosA + z * sinA) /
-        W2r + y * z * cosA / W2r2 - y * z * cosA / Wr3) -
-        bz * x * sinA / 8 / π / (1 - nu) * (y * z / Wr3 - sinA * cosA / W2 + (y * cosA + z * sinA) /
-        W2r - y * z / W2r2))
-
-    return Exx, Eyy, Ezz, Exy, Exz, Eyz
 end
 
 function td_strain_hs(X::T, Y::T, Z::T, P1::V, P2::V, P3::V, Ss::T, Ds::T, Ts::T, λ::T, μ::T) where {T, V}
