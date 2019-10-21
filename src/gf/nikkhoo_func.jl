@@ -16,38 +16,39 @@ end
 end
 
 
-@inline function AngDisDisp(x::U, y::U, z::U, alpha::T, bx::T, by::T, bz::T, nu::T) where {T<:Number, U}
+@inline function AngDisDisp(x::U, y::U, z::U, alpha::T, bx::T, by::T, bz::T, ν::T) where {T<:Number, U}
     sinA, cosA = sincos(alpha)
     eta = @. y * cosA - z * sinA
     zeta = @. y * sinA + z * cosA
     r = hypot.(x, y, z)
 
-    if isa(U, Number)
+    if U <: Number
         zeta = ifelse(zeta > r, r, zeta)
-        z = ifelse(z > r, r, z)
-    elseif isa(U, AbstractArray)
+        _z = ifelse(z > r, r, z)
+    elseif U <: AbstractArray
         bool = zeta .> r
         zeta[bool] .= r[bool]
         @. bool = z > r
-        z[bool] .= r[bool]
+        _z = deepcopy(z)
+        _z[bool] .= r[bool]
     end
 
-    ux = @. bx / 8 / pi / (1 - nu) * (x * y / r / (r - z) - x * eta / r / (r - zeta))
-    vx = @. bx / 8 / pi / (1 - nu) * (eta * sinA / (r - zeta) - y * eta / r / (r - zeta) + y ^ 2 / r / (r - z) + (1 - 2 * nu) * (cosA * log(r - zeta) - log(r - z)))
-    wx = @. bx / 8 / pi / (1 - nu) * (eta * cosA / (r - zeta) - y / r - eta * z / r / (r - zeta) - (1 - 2 * nu) * sinA * log(r - zeta))
+    ux = @. bx / 8 / π / (1 - ν) * (x * y / r / (r - _z) - x * eta / r / (r - zeta))
+    vx = @. bx / 8 / π / (1 - ν) * (eta * sinA / (r - zeta) - y * eta / r / (r - zeta) + y ^ 2 / r / (r - _z) + (1 - 2 * ν) * (cosA * log(r - zeta) - log(r - _z)))
+    wx = @. bx / 8 / π / (1 - ν) * (eta * cosA / (r - zeta) - y / r - eta * _z / r / (r - zeta) - (1 - 2 * ν) * sinA * log(r - zeta))
 
-    uy = @. by / 8 / pi / (1 - nu) * (x ^ 2 * cosA / r / (r - zeta) - x ^ 2 / r / (r - z) - (1 - 2 * nu) * (cosA * log(r - zeta) - log(r - z)))
-    vy = @. by * x / 8 / pi / (1 - nu) * (y * cosA / r / (r - zeta) - sinA * cosA / (r - zeta) - y / r / (r - z))
-    wy = @. by * x / 8 / pi / (1 - nu) * (z * cosA / r / (r - zeta) - cosA ^ 2 / (r - zeta) + 1 / r)
+    uy = @. by / 8 / π / (1 - ν) * (x ^ 2 * cosA / r / (r - zeta) - x ^ 2 / r / (r - _z) - (1 - 2 * ν) * (cosA * log(r - zeta) - log(r - _z)))
+    vy = @. by * x / 8 / π / (1 - ν) * (y * cosA / r / (r - zeta) - sinA * cosA / (r - zeta) - y / r / (r - _z))
+    wy = @. by * x / 8 / π / (1 - ν) * (_z * cosA / r / (r - zeta) - cosA ^ 2 / (r - zeta) + 1 / r)
 
-    uz = @. bz * sinA / 8 / pi / (1 - nu) * ((1 - 2 * nu) * log(r - zeta) - x ^ 2 / r / (r - zeta))
-    vz = @. bz * x * sinA / 8 / pi / (1 - nu) * (sinA / (r - zeta) - y / r / (r - zeta))
-    wz = @. bz * x * sinA / 8 / pi / (1 - nu) * (cosA / (r - zeta) - z / r / (r - zeta))
+    uz = @. bz * sinA / 8 / π / (1 - ν) * ((1 - 2 * ν) * log(r - zeta) - x ^ 2 / r / (r - zeta))
+    vz = @. bz * x * sinA / 8 / π / (1 - ν) * (sinA / (r - zeta) - y / r / (r - zeta))
+    wz = @. bz * x * sinA / 8 / π / (1 - ν) * (cosA / (r - zeta) - z / r / (r - zeta))
 
     return ux + uy + uz, vx + vy + vz, wx + wy + wz
 end
 
-@inline function AngDisStrain(x::U, y::U, z::U, alpha::T, bx::T, by::T, bz::T, nu::T) where {T, U}
+@inline function AngDisStrain(x::U, y::U, z::U, alpha::T, bx::T, by::T, bz::T, ν::T) where {T, U}
     sinA, cosA = sincos(alpha)
     eta = @. y * cosA - z * sinA
     zeta = @. y * sinA + z * cosA
@@ -73,43 +74,43 @@ end
     rFi_ry = @. (x / r / (r - z) - cosA * x / r / (r - zeta)) / 4 / π
     rFi_rz = @. (sinA * x / r / (r - zeta)) / 4 / π
 
-    Exx = @. (bx * (rFi_rx) + bx / 8 / π / (1 - nu) * (eta / Wr + eta * x2 / W2r2 - eta * x2 / Wr3 + y / rz -
-        x2 * y / r2z2 - x2 * y / r3z) - by * x / 8 / π / (1 - nu) * (((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3) * cosA +
-        (2 * nu + 1) / rz - x2 / r2z2 - x2 / r3z) + bz * x * sinA / 8 / π / (1 - nu) * ((2 * nu + 1) / Wr + x2 / W2r2 - x2 / Wr3))
+    Exx = @. (bx * (rFi_rx) + bx / 8 / π / (1 - ν) * (eta / Wr + eta * x2 / W2r2 - eta * x2 / Wr3 + y / rz -
+        x2 * y / r2z2 - x2 * y / r3z) - by * x / 8 / π / (1 - ν) * (((2 * ν + 1) / Wr + x2 / W2r2 - x2 / Wr3) * cosA +
+        (2 * ν + 1) / rz - x2 / r2z2 - x2 / r3z) + bz * x * sinA / 8 / π / (1 - ν) * ((2 * ν + 1) / Wr + x2 / W2r2 - x2 / Wr3))
 
     Eyy = @. (by * (rFi_ry) +
-        bx / 8 / π / (1 - nu) * ((1 / Wr + S ^ 2 - y2 / Wr3) * eta + (2 * nu + 1) * y / rz - y ^ 3 / r2z2 -
-        y ^ 3 / r3z - 2 * nu * cosA * S) -
-        by * x / 8 / π / (1 - nu) * (1 / rz - y2 / r2z2 - y2 / r3z +
+        bx / 8 / π / (1 - ν) * ((1 / Wr + S ^ 2 - y2 / Wr3) * eta + (2 * ν + 1) * y / rz - y ^ 3 / r2z2 -
+        y ^ 3 / r3z - 2 * ν * cosA * S) -
+        by * x / 8 / π / (1 - ν) * (1 / rz - y2 / r2z2 - y2 / r3z +
         (1 / Wr + S ^ 2 - y2 / Wr3) * cosA) +
-        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + S ^ 2 - y2 / Wr3))
+        bz * x * sinA / 8 / π / (1 - ν) * (1 / Wr + S ^ 2 - y2 / Wr3))
 
     Ezz = @. (bz * (rFi_rz) +
-        bx / 8 / π / (1 - nu) * (eta / W / r + eta * C ^ 2 - eta * z2 / Wr3 + y * z / r3 +
-        2 * nu * sinA * C) -
-        by * x / 8 / π / (1 - nu) * ((1 / Wr + C ^ 2 - z2 / Wr3) * cosA + z / r3) +
-        bz * x * sinA / 8 / π / (1 - nu) * (1 / Wr + C ^ 2 - z2 / Wr3))
+        bx / 8 / π / (1 - ν) * (eta / W / r + eta * C ^ 2 - eta * z2 / Wr3 + y * z / r3 +
+        2 * ν * sinA * C) -
+        by * x / 8 / π / (1 - ν) * ((1 / Wr + C ^ 2 - z2 / Wr3) * cosA + z / r3) +
+        bz * x * sinA / 8 / π / (1 - ν) * (1 / Wr + C ^ 2 - z2 / Wr3))
 
     Exy = @. (bx * (rFi_ry) / 2 + by * (rFi_rx) / 2 -
-        bx / 8 / π / (1 - nu) * (x * y2 / r2z2 - nu * x / rz + x * y2 / r3z - nu * x * cosA / Wr +
+        bx / 8 / π / (1 - ν) * (x * y2 / r2z2 - ν * x / rz + x * y2 / r3z - ν * x * cosA / Wr +
         eta * x * S / Wr + eta * x * y / Wr3) +
-        by / 8 / π / (1 - nu) * (x2 * y / r2z2 - nu * y / rz + x2 * y / r3z + nu * cosA * S +
+        by / 8 / π / (1 - ν) * (x2 * y / r2z2 - ν * y / rz + x2 * y / r3z + ν * cosA * S +
         x2 * y * cosA / Wr3 + x2 * cosA * S / Wr) -
-        bz * sinA / 8 / π / (1 - nu) * (nu * S + x2 * S / Wr + x2 * y / Wr3))
+        bz * sinA / 8 / π / (1 - ν) * (ν * S + x2 * S / Wr + x2 * y / Wr3))
 
     Exz = @. (bx * (rFi_rz) / 2 + bz * (rFi_rx) / 2 -
-        bx / 8 / π / (1 - nu) * (-x * y / r3 + nu * x * sinA / Wr + eta * x * C / Wr +
+        bx / 8 / π / (1 - ν) * (-x * y / r3 + ν * x * sinA / Wr + eta * x * C / Wr +
         eta * x * z / Wr3) +
-        by / 8 / π / (1 - nu) * (-x2 / r3 + nu / r + nu * cosA * C + x2 * z * cosA / Wr3 +
+        by / 8 / π / (1 - ν) * (-x2 / r3 + ν / r + ν * cosA * C + x2 * z * cosA / Wr3 +
         x2 * cosA * C / Wr) -
-        bz * sinA / 8 / π / (1 - nu) * (nu * C + x2 * C / Wr + x2 * z / Wr3))
+        bz * sinA / 8 / π / (1 - ν) * (ν * C + x2 * C / Wr + x2 * z / Wr3))
 
     Eyz = @. (by * (rFi_rz) / 2 + bz * (rFi_ry) / 2 +
-        bx / 8 / π / (1 - nu) * (y2 / r3 - nu / r - nu * cosA * C + nu * sinA * S + eta * sinA * cosA / W2 -
+        bx / 8 / π / (1 - ν) * (y2 / r3 - ν / r - ν * cosA * C + ν * sinA * S + eta * sinA * cosA / W2 -
         eta * (y * cosA + z * sinA) / W2r + eta * y * z / W2r2 - eta * y * z / Wr3) -
-        by * x / 8 / π / (1 - nu) * (y / r3 + sinA * cosA ^ 2 / W2 - cosA * (y * cosA + z * sinA) /
+        by * x / 8 / π / (1 - ν) * (y / r3 + sinA * cosA ^ 2 / W2 - cosA * (y * cosA + z * sinA) /
         W2r + y * z * cosA / W2r2 - y * z * cosA / Wr3) -
-        bz * x * sinA / 8 / π / (1 - nu) * (y * z / Wr3 - sinA * cosA / W2 + (y * cosA + z * sinA) /
+        bz * x * sinA / 8 / π / (1 - ν) * (y * z / Wr3 - sinA * cosA / W2 + (y * cosA + z * sinA) /
         W2r - y * z / W2r2))
 
     return Exx, Eyy, Ezz, Exy, Exz, Eyz
