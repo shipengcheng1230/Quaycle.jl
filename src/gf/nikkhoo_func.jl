@@ -43,7 +43,7 @@ end
 
     uz = @. bz * sinA / 8 / π / (1 - ν) * ((1 - 2 * ν) * log(r - zeta) - x ^ 2 / r / (r - zeta))
     vz = @. bz * x * sinA / 8 / π / (1 - ν) * (sinA / (r - zeta) - y / r / (r - zeta))
-    wz = @. bz * x * sinA / 8 / π / (1 - ν) * (cosA / (r - zeta) - z / r / (r - zeta))
+    wz = @. bz * x * sinA / 8 / π / (1 - ν) * (cosA / (r - zeta) - _z / r / (r - zeta))
 
     return ux + uy + uz, vx + vy + vz, wx + wy + wz
 end
