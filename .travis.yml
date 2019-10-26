@@ -16,6 +16,8 @@ branches:
   only:
     - master
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+script:
+  - "travis_wait 30 sleep 1800 &"
 addons:
   apt:
     packages:
