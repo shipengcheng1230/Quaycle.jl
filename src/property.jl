@@ -213,7 +213,8 @@ Create maxwell viscoelastic system given both rate-and-state and plastic propert
 """
 function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, pvs...) where T
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
-    disl, diff, peie, n = [zeros(T, size(pvs[1].A)) for _ in 1: 4]
+    disl, diff, peie = [zeros(T, size(pvs[1].A)) for _ in 1: 3]
+    n = ones(T, size(pvs[1].A))
     for pv in pvs
         if isa(pv, DislocationCreepProperty)
             disl .= composite_factor(pv)
