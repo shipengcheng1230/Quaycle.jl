@@ -75,7 +75,8 @@ plot(p1, p2, layout=(2, 1))
 
 vinit = vpl .* ones(mesh.nx, mesh.nξ)
 θ0 = L ./ vinit ./ 1.1
-u0 = ArrayPartition(vinit, θ0)
+δ0 = zeros(size(vinit))
+u0 = ArrayPartition(vinit, θ0, δ0)
 prob = assemble(gf, prop, u0, (0., 18.)); nothing
 
 # Afterwards, solve ODEs problem:
