@@ -1,5 +1,5 @@
 ## These functions are not fully tested, use with caution.
-export vtk_output, vtm_output
+export vtk_output
 
 const gmshcelltype2vtkcelltype = Dict(
     1 => VTKCellTypes.VTK_LINE,
@@ -86,7 +86,7 @@ function vtk_output(f, t::AbstractVector, u::AbstractVector{<:AbstractArray}, us
 end
 
 """
-    vtm_output(f, u, ustr, cache::ParaviewOutputCache)
+    vtk_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
 
 Write results to multiple-block VTM file.
 
@@ -98,7 +98,7 @@ Write results to multiple-block VTM file.
     to data in that block
 - `cache`: list cache corresponding to each block
 """
-function vtm_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
+function vtk_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
     vtk_multiblock(f) do vtm
         for (_u, _ustr, _cache) in zip(u, ustr, cache)
             vtkfile = vtk_grid(vtm, _cache.pts, _cache.cells)
@@ -110,7 +110,7 @@ function vtm_output(f, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
 end
 
 """
-    vtm_output(f, t, u, ustr, cache::ParaviewOutputCache)
+    vtk_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
 
 Write results to multiple-block paraview collection file.
 
@@ -123,7 +123,7 @@ Write results to multiple-block paraview collection file.
     to data in that block
 - `cache`: list cache corresponding to each block
 """
-function vtm_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
+function vtk_output(f, t, u, ustr, cache::AbstractVector{<:ParaviewOutputCache})
     fmt = "%0$(ndigits(length(t)))d"
     paraview_collection(f) do pvd
         for i = 1: length(t)
