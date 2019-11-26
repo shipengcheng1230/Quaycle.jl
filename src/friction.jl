@@ -49,7 +49,7 @@ struct CForm <: FrictionLawForm end # conventinal form
 struct RForm <: FrictionLawForm end # regularized form
 
 @doc raw"""
-    friction(::FrictionLawForm, v::T, θ::T, L::T, a::T, b::T, f0::T, v0::T) where {T<:Number}
+    friction(::CForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
 
 Calculate friction given by the form of fomula as well as other necessary parameters.
 - Conventional Form:
