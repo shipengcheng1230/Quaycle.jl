@@ -1,0 +1,727 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Julia implementations of earthquake cycle simulation">
+      
+      
+        <link rel="canonical" href="https://github.com/shipengcheng1230/Quaycle.jl/interface_property/">
+      
+      
+        <meta name="author" content="Pengcheng Shi">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-\.]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.5.1">
+    
+    
+      
+        <title>Simulation Property - Quaycle.jl</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.1b62728e.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#03a9f4">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.268332fc.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+      <link rel="stylesheet" href="../assets/Documenter.css">
+    
+    
+      
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="light-blue" data-md-color-accent="light-blue">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#simulation-properties" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon">landscape</i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              Quaycle.jl
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Simulation Property
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    Quaycle.jl
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main" role="main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="https://github.com/shipengcheng1230/Quaycle.jl" title="Quaycle.jl" class="md-nav__button md-logo">
+      
+        <i class="md-icon">landscape</i>
+      
+    </a>
+    Quaycle.jl
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/shipengcheng1230/Quaycle.jl/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    Quaycle.jl
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      Quasi Dynamic Simulation using BEM
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        Quasi Dynamic Simulation using BEM
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../examples/generated/bp1/" title="Example 1D" class="md-nav__link">
+      Example 1D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../examples/generated/otfsync/" title="Example 2D" class="md-nav__link">
+      Example 2D
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
+    
+    <label class="md-nav__link" for="nav-3">
+      Interface
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        Interface
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_assemble/" title="Assemble" class="md-nav__link">
+      Assemble
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_friction/" title="Friction" class="md-nav__link">
+      Friction
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_greensfun/" title="Greens Function" class="md-nav__link">
+      Greens Function
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_HDF5/" title="HDF5 Utility" class="md-nav__link">
+      HDF5 Utility
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_mesh/" title="Mesh" class="md-nav__link">
+      Mesh
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Simulation Property
+      </label>
+    
+    <a href="./" title="Simulation Property" class="md-nav__link md-nav__link--active">
+      Simulation Property
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_rheology/" title="Rheology" class="md-nav__link">
+      Rheology
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../interface_visualize/" title="Visualize" class="md-nav__link">
+      Visualize
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../acknowledge/" title="Acknowledge" class="md-nav__link">
+      Acknowledge
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-interface" class="md-nav__link">
+    Public Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/shipengcheng1230/Quaycle.jl/edit/master/docs/interface_property.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <p><a id='Simulation-Properties-1'></a></p>
+<h1 id="simulation-properties">Simulation Properties<a class="headerlink" href="#simulation-properties" title="Permanent link">&para;</a></h1>
+<p>We attribute one struct of all necessary properties for each type of simulation objections.</p>
+<p><a id='Public-Interface-1'></a></p>
+<h2 id="public-interface">Public Interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
+<p><a id='Quaycle.SingleDofRSFProperty' href='#Quaycle.SingleDofRSFProperty'>#</a>
+<strong><code>Quaycle.SingleDofRSFProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System property for single degree of freedom under rate-state friction.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>a</code>: contrib from velocity</li>
+<li><code>b</code>: contrib from state</li>
+<li><code>L</code>: critical distance</li>
+<li><code>k</code>: spring stiffness</li>
+<li><code>σ</code>: effective normal stress</li>
+<li><code>η</code>: radiation damping</li>
+<li><code>vpl</code>: plate rate</li>
+<li><code>f0</code> = 0.6: ref. frictional coeff</li>
+<li><code>v0</code> = 1e-6: ref. velocity</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/46ce4d79337bdd257ee2e3d2f4bb1c55ff0a5030/base/#L0-L13' class='documenter-source'>source</a><br></p>
+<p><a id='Quaycle.RateStateQuasiDynamicProperty' href='#Quaycle.RateStateQuasiDynamicProperty'>#</a>
+<strong><code>Quaycle.RateStateQuasiDynamicProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System property for multiple fault patches under rate-state friction.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>a</code>: contrib from velocity</li>
+<li><code>b</code>: contrib from state</li>
+<li><code>L</code>: critical distance</li>
+<li><code>σ</code>: effective normal stress</li>
+<li><code>η</code>: radiation damping</li>
+<li><code>vpl</code>: plate rate</li>
+<li><code>f0</code> = 0.6: ref. frictional coeff</li>
+<li><code>v0</code> = 1e-6: ref. velocity</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/46ce4d79337bdd257ee2e3d2f4bb1c55ff0a5030/base/#L0-L12' class='documenter-source'>source</a><br></p>
+<p><a id='Quaycle.DislocationCreepProperty' href='#Quaycle.DislocationCreepProperty'>#</a>
+<strong><code>Quaycle.DislocationCreepProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System properties for plastic deformation of <em>dislocation creep</em>.     Please refer <a href="https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06">(Hirth &amp; Kohlstedt, 2003)</a>     for concrete units of each factor.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>A</code>: prefactor</li>
+<li><code>n</code>: power law stress exponent</li>
+<li><code>COH</code>: water content<sup id="fnref2:1"><a class="footnote-ref" href="#fn:1">1</a></sup></li>
+<li><code>r</code>: water fugacity exponent</li>
+<li><code>α</code>: melting constant</li>
+<li><code>ϕ</code>: melting fraction</li>
+<li><code>Q</code>: activation energy</li>
+<li><code>P</code>: pressure</li>
+<li><code>Ω</code>: activation volume</li>
+<li><code>T</code>: temperature</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/46ce4d79337bdd257ee2e3d2f4bb1c55ff0a5030/base/#L0-L20' class='documenter-source'>source</a><br></p>
+<p><a id='Quaycle.DiffusionCreepProperty' href='#Quaycle.DiffusionCreepProperty'>#</a>
+<strong><code>Quaycle.DiffusionCreepProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System properties for plastic deformation of <em>diffusion creep</em>.     Please refer <a href="https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/138GM06">(Hirth &amp; Kohlstedt, 2003)</a>     for concrete units of each factor.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>A</code>: prefactor</li>
+<li><code>d</code>: grain size</li>
+<li><code>m</code>: grain size exponent</li>
+<li><code>COH</code>: water content<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></li>
+<li><code>r</code>: water fugacity exponent</li>
+<li><code>α</code>: melting constant</li>
+<li><code>ϕ</code>: melting fraction</li>
+<li><code>Q</code>: activation energy</li>
+<li><code>P</code>: pressure</li>
+<li><code>Ω</code>: activation volume</li>
+<li><code>T</code>: temperature</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/46ce4d79337bdd257ee2e3d2f4bb1c55ff0a5030/base/#L0-L17' class='documenter-source'>source</a><br></p>
+<p><a id='Quaycle.PeierlsProperty' href='#Quaycle.PeierlsProperty'>#</a>
+<strong><code>Quaycle.PeierlsProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>System properties for plastic deformation of <em>Peierls Mechanisms</em>. Not implemented yet.</p>
+<p><a id='Quaycle.CompositePlasticDeformationProperty' href='#Quaycle.CompositePlasticDeformationProperty'>#</a>
+<strong><code>Quaycle.CompositePlasticDeformationProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>Compose all three type of plastic deformation and other strain-related system properties, see     <a href="https://www.sciencedirect.com/science/article/pii/B9780444538024000427">(Kohlstedt &amp; Hansen, 2015)</a>.     Each field is the overall equivalent factor not dependent on stress.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>disl</code>: dislocation creep</li>
+<li><code>n</code>: stress exponent in dislocation creep</li>
+<li><code>diff</code>: diffusion creep</li>
+<li><code>peie</code>: Peierls mechanisms</li>
+<li><code>dϵref</code>: reference strain rate whose length must equal strain components considered</li>
+</ul>
+<p><a target='_blank' href='https://github.com/JuliaLang/julia/blob/46ce4d79337bdd257ee2e3d2f4bb1c55ff0a5030/base/#L0-L11' class='documenter-source'>source</a><br></p>
+<p><a id='Quaycle.ViscoelasticMaxwellProperty' href='#Quaycle.ViscoelasticMaxwellProperty'>#</a>
+<strong><code>Quaycle.ViscoelasticMaxwellProperty</code></strong> &mdash; <em>Type</em>.</p>
+<p>Composite property for viscoelastic rheology of maxwell representation.</p>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>pe::RateStateQuasiDynamicProperty</code>: elastic rate-and-state system property</li>
+<li><code>pv::CompositePlasticDeformationProperty</code>: composite plastic deformation system property</li>
+</ul>
+<p><a id='Quaycle.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T' href='#Quaycle.compose-Union{Tuple{T}, Tuple{RateStateQuasiDynamicProperty{T,U} where U<:(Union{AbstractArray{T,1}, AbstractArray{T,2}} where T),AbstractArray{T,1} where T,Vararg{Any,N} where N}} where T'>#</a>
+<strong><code>Quaycle.compose</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">compose</span><span class="p">(</span><span class="n">pe</span><span class="o">::</span><span class="n">RateStateQuasiDynamicProperty</span><span class="p">{</span><span class="n">T</span><span class="p">},</span> <span class="n">dϵref</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">dϵname</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">,</span> <span class="n">pvs</span><span class="o">...</span><span class="p">)</span> <span class="n">where</span> <span class="n">T</span>
+</pre></div>
+</td></tr></table>
+
+<p>Create maxwell viscoelastic system given both rate-and-state and plastic properties.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>pe::RateStateQuasiDynamicProperty{T}</code>: elastic rate-and-state system property</li>
+<li><code>dϵref</code>: reference strain rate whose <em>length</em> must equal to and <em>order</em> same as strain components considered</li>
+<li><code>pvs...</code>: different type of plastic deformation system properties but no more than three</li>
+</ul>
+<p><a id='Quaycle.composite_factor-Tuple{DislocationCreepProperty}' href='#Quaycle.composite_factor-Tuple{DislocationCreepProperty}'>#</a>
+<strong><code>Quaycle.composite_factor</code></strong> &mdash; <em>Method</em>.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="n">composite_factor</span><span class="p">(</span><span class="n">pv</span><span class="o">::</span><span class="n">PlasticDeformationProperty</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Compute an equivalent factor for levarage recomputing during ODE solving.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>pv::PlasticDeformationProperty</code>: plastic deformation system property</li>
+</ul>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Some references may refer it as water fugacity <span><span class="MathJax_Preview">f_{\mathrm{H_{2} O}}</span><script type="math/tex">f_{\mathrm{H_{2} O}}</script></span>, which is misleading. Since fugacity has the same dimension of chemical potential (Pa) while water content is dimensionless.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../interface_mesh/" title="Mesh" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Mesh
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../interface_rheology/" title="Rheology" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Rheology
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2018 - 2019 <a href="https://github.com/shipengcheng1230/Quaycle.jl">Pengcheng Shi</a>
+          </div>
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+  <div class="md-footer-social">
+    <link rel="stylesheet" href="../assets/fonts/font-awesome.css">
+    
+      <a href="https://github.com/shipengcheng1230" class="md-footer-social__link fa fa-github"></a>
+    
+      <a href="https://www.linkedin.com/in/pengcheng-shi-396960148" class="md-footer-social__link fa fa-linkedin"></a>
+    
+      <a href="https://steamcommunity.com/profiles/76561198054638928/" class="md-footer-social__link fa fa-steam"></a>
+    
+      <a href="https://live.xbox.com/en-US/Profile?Gamertag=ElyseesKukushka" class="md-footer-social__link fa fa-xbox"></a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.8e03edeb.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
+      
+        <script src="../assets/mathjaxhelper.js"></script>
+      
+    
+  </body>
+</html>
