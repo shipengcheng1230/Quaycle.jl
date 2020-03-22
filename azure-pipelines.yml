@@ -59,9 +59,9 @@ jobs:
     vmImage: 'windows-2019'
   strategy:
     matrix:
-      Julia 1.2 (W64):
+      Julia 1.4 (W64):
         ARCH: x64
-        JULIA_VERSION: '1.2.0-rc2-win64'
+        JULIA_VERSION: '1.4.0-win64'
   steps:
   - powershell: |
       wget https://julialang-s3.julialang.org/bin/winnt/$(ARCH)/1.2/julia-$(JULIA_VERSION).exe -OutFile julia-$(JULIA_VERSION).exe
