@@ -64,7 +64,7 @@ jobs:
         JULIA_VERSION: '1.4.0-win64'
   steps:
   - powershell: |
-      wget https://julialang-s3.julialang.org/bin/winnt/$(ARCH)/1.2/julia-$(JULIA_VERSION).exe -OutFile julia-$(JULIA_VERSION).exe
+      wget https://julialang-s3.julialang.org/bin/winnt/$(ARCH)/1.4/julia-$(JULIA_VERSION).exe -OutFile julia-$(JULIA_VERSION).exe
       Start-Process -FilePath .\julia-$(JULIA_VERSION).exe -ArgumentList "/S /D=C:\julia" -NoNewWindow -Wait
     displayName: 'Install Julia'
   - powershell: |
