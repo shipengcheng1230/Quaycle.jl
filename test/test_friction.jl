@@ -52,7 +52,7 @@ end
             0.61151293, 0.61151293, 0.61151293, 0.61151293, 0.61151293,
             0.61151293,
         ]
-        @test isapprox(μ, μ_truth, rtol=1e-8)
+        @test isapprox(μ, μ_truth, atol=1e-6)
     end
 
     @testset "PRZ" begin
