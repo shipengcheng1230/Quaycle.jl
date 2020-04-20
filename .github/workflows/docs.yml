@@ -15,6 +15,8 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.4'
+      - name: Install necessary library for Gmsh
+        run: sudo apt-get install libgfortran3 libglu1 libxcursor1 libxrender1 libxft2 libxinerama1
       - name: Install dependencies
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy
