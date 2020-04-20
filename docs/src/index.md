@@ -5,21 +5,21 @@ This is a suite for numerically simulating earthquake sequences in [Julia](https
 
 Features of this package currently:
 
-- [x] Rate-State Friction
-- [x] Plastic Deformation
-- [x] Boundary Element Method (Quasi-dynamic)
-- [x] Viscoelastic Relaxation
-- [x] Integration with [Gmsh](http://gmsh.info/) and [Paraview](https://www.paraview.org/)
+- ✅ Rate-State Friction
+- ✅ Plastic Deformation
+- ✅ Boundary Element Method (Quasi-dynamic)
+- ✅ Viscoelastic Relaxation
+- ✅ Integration with [Gmsh](http://gmsh.info/) and [Paraview](https://www.paraview.org/)
 
 Features to be implemented:
-- [ ] Fully elastodynamics
-- [ ] Finite element method via [Fenics](https://fenicsproject.org/)
+- ❌ Fully elastodynamics
+- ❌ Finite element method via [Fenics](https://fenicsproject.org/)
 
 ## Installation
 Get the latest version with Julia's package manager:
 
 ```julia
-(v1.1) pkg> add https://github.com/shipengcheng1230/Quaycle.jl
+(v1.3) pkg> add https://github.com/shipengcheng1230/Quaycle.jl
 ```
 
 To load the package:
