@@ -246,4 +246,7 @@ function h5trimsolution(fin::S, fout::S, tstr, ustrs::AbstractVector, predu::Fun
 end
 
 # redundant computation of `axes` and `ndims` here
-@inline _get_ptr(d, i::Integer) = dropdims(d[axes(d)[1:end-1]..., i]; dims=ndims(d))
+@inline function _get_ptr(d, i::Integer)
+    # since HDF5.jl v1.13.0, the singleton dim is automatically dropped
+    d[axes(d)[1:end-1]..., i]
+end
