@@ -21,7 +21,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Quasi Dynamic Simulation using BEM" => [
-            # "Example 1D" => "examples/generated/bp1.md",
+            "Example 1D" => "examples/generated/bp1.md",
             "Example 2D" => "examples/generated/otfsync.md",
         ],
         "Interface" => [
