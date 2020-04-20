@@ -55,22 +55,6 @@ b[xor.(left_patch, right_patch), vert_patch] .= 0.0185
 σ = Matrix(repeat(σ, 1, mesh.nx)')
 prop = RateStateQuasiDynamicProperty(a=a, b=b, L=L, σ=σ, vpl=vpl, f0=f0, v0=v0, η=η); nothing
 
-# Make sure our profile match our expectation:
-
-p1 = plot((a .- b)', seriestype=:heatmap,
-    xticks=(collect(1: 40: mesh.nx+1), [-40, -20, 0, 20, 40]),
-    yticks=(collect(1: 5: mesh.nξ+1), [0, 5, 10, 15, 20]),
-    yflip=true, color=:isolum, aspect_ratio=2, title="a-b",
-    );
-
-p2 = plot(σ', seriestype=:heatmap,
-    xticks=(collect(1: 40: mesh.nx+1), [-40, -20, 0, 20, 40]),
-    yticks=(collect(1: 5: mesh.nξ+1), [0, 5, 10, 15, 20]),
-    yflip=true, color=:isolum, aspect_ratio=2, title="\\sigma"
-    );
-
-plot(p1, p2, layout=(2, 1))
-
 # Then, provide the initial condition and assemble the ODEs:
 
 vinit = vpl .* ones(mesh.nx, mesh.nξ)
@@ -87,16 +71,6 @@ sol = solve(prob, VCABM5(), reltol=1e-5, abstol=1e-3); nothing
 
 maxv = max_velocity(sol)
 plot(sol.t, log10.(maxv / ms2mmyr), xlabel="Time (year)", ylabel="Max Velocity (log10 (m/s))", label="")
-
-# And view some snapshots of ruptures (quasi-dynamic) patterns:
-
-ind = argmax(maxv)
-myplot = (ind) -> plot(log10.(sol.u[ind].x[1]./ms2mmyr)', seriestype=:heatmap,
-    xticks=(collect(1: 40: mesh.nx+1), [-40, -20, 0, 20, 40]),
-    yticks=(collect(1: 5: mesh.nξ+1), [0, 5, 10, 15, 20]),
-    yflip=true, color=:isolum, aspect_ratio=2, title="t = $(sol.t[ind])")
-snaps = myplot(ind+300)
-plot(snaps)
 
 # !!! example
 #     An equivalent simulation using triangular dislocation Green's function is shown below.
