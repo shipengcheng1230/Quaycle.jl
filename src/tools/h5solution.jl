@@ -196,8 +196,15 @@ Write the solution to HDF5 file while solving the ODE. The interface
 ## KWARGS
 - `stride::Integer=1`: downsampling rate for saving outputs
 - `append::Bool=false`: if true then append solution after the end of `file`
+- `force::Bool=false`: force to overwrite the existing solution file
 """
-function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride::Integer=1, append::Bool=false, kwargs...)
+function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride::Integer=1, append::Bool=false, force::Bool=false, kwargs...)
+    if isfile(file) && !force
+        @info "Overwrite existing file $(file) must set `force = true`."
+        @info "Aborting computation."
+        return
+    end
+
     integrator = init(prob, alg)
     du = similar(prob.u0)
     ptrs = getu(prob.u0, prob.tspan[1], integrator)
