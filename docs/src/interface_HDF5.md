@@ -21,7 +21,7 @@ remove certain type definitions. Users may choose them as auxiliary tools.
 ## Public Interface
 ```@autodocs
 Modules = [Quaycle]
-Pages = ["h5getstore.jl", "h5savecallback.jl"]
+Pages = ["h5getstore.jl", "h5solution.jl"]
 Private = false
 Order = [:type, :function, :constant, :macro]
 ```
