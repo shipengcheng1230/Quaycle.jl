@@ -199,7 +199,7 @@ Write the solution to HDF5 file while solving the ODE. The interface
 - `force::Bool=false`: force to overwrite the existing solution file
 """
 function wsolve(prob::ODEProblem, alg::OrdinaryDiffEqAlgorithm, file, nstep, getu, ustrs, tstr; stride::Integer=1, append::Bool=false, force::Bool=false, kwargs...)
-    if isfile(file) && !force
+    if isfile(file) && !force && !append
         @info "Overwrite existing file $(file) must set `force = true`."
         @info "Aborting computation."
         return
