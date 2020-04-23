@@ -1,4 +1,5 @@
 using Quaycle
+using Pkg
 
 # temporary solution to bypass General registry
 # required by GmshTools v0.4.0
