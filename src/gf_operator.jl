@@ -97,11 +97,12 @@ end
     end
 end
 
-@inline function relative_strain_rate!(alloc::StressRateAllocation, dϵ₀::AbstractVector, dϵ::AbstractVecOrMat)
+@inline function relative_strain_rate!(alloc::StressRateAllocation, dϵ₀::AbstractArray, dϵ::AbstractVecOrMat)
     @inbounds @fastmath for j ∈ 1: alloc.numϵ
-        @threads for i ∈ 1: alloc.nume
-            alloc.reldϵ[i,j] = dϵ[i,j] - dϵ₀[j]
-        end
+        # @threads for i ∈ 1: alloc.nume
+        #     alloc.reldϵ[i,j] = dϵ[i,j] - dϵ₀[j]
+        # end
+        @strided alloc.reldϵ .= dϵ .- dϵ₀' # better performance by this approach!
     end
 end
 
