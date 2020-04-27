@@ -16,6 +16,8 @@ using WriteVTK
 using Formatting
 using ProgressMeter
 
+using TensorOperations
+
 using Distributed
 using Base.Threads
 using LinearAlgebra

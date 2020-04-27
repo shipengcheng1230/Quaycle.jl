@@ -32,14 +32,15 @@ struct RuinaStateLaw <: StateEvolutionLaw end
 """
 struct PrzStateLaw <: StateEvolutionLaw end
 
-dθ_dt(::DieterichStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - v * θ / L
+@inline dθ_dt(::DieterichStateLaw, v::T, θ::T, L::T) where T = @fastmath 1 - v * θ / L
 
-function dθ_dt(::RuinaStateLaw, v::T, θ::T, L::T) where {T<:Number}
-    x = v * θ / L
-    -x * log(clamp(x, zero(T), Inf))
+@inline function dθ_dt(::RuinaStateLaw, v::T, θ::T, L::T) where T
+    @fastmath xlogx(v * θ / L)
 end
 
-dθ_dt(::PrzStateLaw, v::T, θ::T, L::T) where {T<:Number} = 1 - (v * θ / 2L) ^ 2
+@inline xlogx(x::T) where T = x < 0 ? 0 : @fastmath x * log(x)
+
+@inline dθ_dt(::PrzStateLaw, v::T, θ::T, L::T) where T = @fastmath 1 - (v * θ / 2L) ^ 2
 
 abstract type FrictionLawForm end
 
@@ -62,9 +63,9 @@ f(V, θ) = a \sinh ^{-1}{\left(\frac{V}{2V_0} \exp{\left(\frac{f_0 + b \ln{\left
 ```
 """
 function friction(::CForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
-    f0 + a * log(v / v0) + b * log(v0 * θ / L)
+    @fastmath f0 + a * log(v / v0) + b * log(v0 * θ / L)
 end
 
 function friction(::RForm, v::T, θ::T, a::T, b::T, L::T, f0::T, v0::T) where T
-    a * asinh(v / 2v0 * exp((f0 + b * log(v0 * θ / L)) / a))
+    @fastmath a * asinh(v / 2v0 * exp((f0 + b * log(v0 * θ / L)) / a))
 end

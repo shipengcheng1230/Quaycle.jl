@@ -15,3 +15,4 @@ const parameters = Dict(
 
 BLAS.set_num_threads(parameters["BLAS"]["NUM_THREADS"])
 FFTW.set_num_threads(parameters["FFT"]["NUM_THREADS"])
+# set_zero_subnormals(true)

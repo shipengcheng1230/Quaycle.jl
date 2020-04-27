@@ -36,14 +36,17 @@ Assemble the `ODEProblem` for elastic fault.
 
 
 - `tspan::NTuple`: time span for simulation
+
+## KWARGS
 - `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
+- `return_alloc:Bool=false`: return `(prob, alloc)` if `true` otherwise `(prob,)`
 """
 function assemble(
     gf::AbstractArray, p::RateStateQuasiDynamicProperty, u0::ArrayPartition, tspan::NTuple{2};
-    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false,
     )
-    _assemble(gf, p, u0, tspan, flf, se)
+    _assemble(gf, p, u0, tspan, flf, se, return_alloc)
 end
 
 """
@@ -64,18 +67,26 @@ Assemble the `ODEProblem` for elastic fault plus viscoelastic relaxation.
 
 
 - `tspan::NTuple`: time span for simulation
+
+## KWARGS
 - `flf::FrictionLawForm`: form of friction law, either [`CForm`](@ref) or [`RForm`](@ref)
 - `se::StateEvolutionLaw`: state evolutional law, see [`StateEvolutionLaw`](@ref)
+- `return_alloc:Bool=false`: return `(prob, alloc)` if `true` otherwise `(prob,)`
 """
 function assemble(
     gf::ViscoelasticCompositeGreensFunction, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
-    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(),
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false,
     )
-    _assemble(gf, p, u0, tspan, flf, se)
+    _assemble(gf, p, u0, tspan, flf, se, return_alloc)
 end
 
-@inline function _assemble(gf, p::AbstractProperty, u0, tspan, flf, se)
+@inline function _assemble(gf, p::AbstractProperty, u0, tspan, flf, se, return_alloc)
     alloc = gen_alloc(gf)::AbstractAllocation
     f! = (du, u, p, t) -> ∂u∂t(du, u, p, alloc, gf, flf, se)
-    return ODEProblem(f!, u0, tspan, p)
+    prob = ODEProblem(f!, u0, tspan, p)
+    if return_alloc
+        return prob, alloc
+    else
+        return prob
+    end
 end

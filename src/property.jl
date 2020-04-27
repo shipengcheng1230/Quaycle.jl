@@ -94,6 +94,7 @@ Compose all three type of plastic deformation and other strain-related system pr
 @with_kw struct CompositePlasticDeformationProperty{U, I, V} <: PlasticDeformationProperty
     disl::U # dislocation creep
     n::I # stress exponent in dislocation creep
+    n₋1::I # `n - 1`
     diff::U # diffusion creep
     peie::U # not support yet, set to ZERO
     dϵref::V # reference strain rate
@@ -215,16 +216,19 @@ function compose(pe::RateStateQuasiDynamicProperty{T}, dϵref::AbstractVector, p
     @assert length(pvs) ≤ 3 "Received more than 3 types of plastic deformation mechanisms."
     disl, diff, peie = [zeros(T, size(pvs[1].A)) for _ in 1: 3]
     n = ones(T, size(pvs[1].A))
+    n₋1 = zeros(size(n))
     for pv in pvs
         if isa(pv, DislocationCreepProperty)
             disl .= composite_factor(pv)
             n .= pv.n
+            n₋1 .= n .- 1
+            clamp!(n₋1, 0, Inf)
         end
         if isa(pv, DiffusionCreepProperty)
             diff .= composite_factor(pv)
         end
     end
-    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, diff, peie, dϵref))
+    ViscoelasticMaxwellProperty(pe, CompositePlasticDeformationProperty(disl, n, n₋1, diff, peie, dϵref))
 end
 
 const prop_field_names = Dict(
@@ -233,7 +237,7 @@ const prop_field_names = Dict(
     :DislocationCreepProperty => ("A", "n", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :DiffusionCreepProperty => ("A", "d", "m", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
-    :CompositePlasticDeformationProperty => ("disl", "n", "diff", "peie", "dϵref"),
+    :CompositePlasticDeformationProperty => ("disl", "n", "n₋1", "diff", "peie", "dϵref"),
     )
 
 for (nn, fn) in prop_field_names
