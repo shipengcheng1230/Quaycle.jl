@@ -151,22 +151,22 @@ end
 "Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity."
 @inline function dτ_dt!(gf::AbstractMatrix{T}, alloc::ViscoelasticCompositeAlloc) where T
     # BLAS.gemv!('N', one(T), gf, vec(alloc.v.reldϵ), one(T), vec(alloc.e.dτ_dt))
-    mul!(vec(alloc.e.dτ_dt), gf, vec(alloc.v.reldϵ), one(T), one(T))
+    mul!(vec(alloc.e.dτ_dt), gf, vec(alloc.v.reldϵ), true, true)
 end
 
 "Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
 @inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::TractionRateAllocFFTConv) where T
     # BLAS.gemv!('N', one(T), gf, vec(alloc.relvnp), zero(T), vec(dσ))
-    mul!(vec(dσ), gf, vec(alloc.relvnp), one(T), zero(T))
+    mul!(vec(dσ), gf, vec(alloc.relvnp), true, false)
 end
 
 @inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::TractionRateAllocMatrix) where T
     # BLAS.gemv!('N', one(T), gf, alloc.relv, zero(T), vec(dσ))
-    mul!(vec(dσ), gf, alloc.relv, one(T), zero(T))
+    mul!(vec(dσ), gf, alloc.relv, true, false)
 end
 
 "Stress rate within inelastic entity."
 @inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::StressRateAllocMatrix) where T
     # BLAS.gemv!('N', one(T), gf, vec(alloc.reldϵ), one(T), vec(dσ))
-    mul!(vec(dσ), gf, vec(alloc.reldϵ), one(T), one(T))
+    mul!(vec(dσ), gf, vec(alloc.reldϵ), true, true)
 end

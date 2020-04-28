@@ -435,7 +435,7 @@ end
             @test dϵ[:,2] ≈ dϵ′[:,3]
             @test dϵ[:,3] ≈ dϵ′[:,4]
         end
-        @testset "Atomtic strain update" begin
+        @testset "atomtic strain rate update" begin
             fill!(dϵ, 0.0)
             fill!(alv.σ′, 0.0)
             fill!(alv.ς′, 0.0)
@@ -445,8 +445,6 @@ end
             @test dϵ[:,1] ≈ dϵ′[:,1]
             @test dϵ[:,2] ≈ dϵ′[:,3]
             @test dϵ[:,3] ≈ dϵ′[:,4]
-            # @test alv.ς′ ≈ ς′
-            # @test alv.σ′ ≈ σ′
             @test alv.reldϵ ≈ dϵ .- p.dϵref'
         end
     end

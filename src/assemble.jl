@@ -44,9 +44,9 @@ Assemble the `ODEProblem` for elastic fault.
 """
 function assemble(
     gf::AbstractArray, p::RateStateQuasiDynamicProperty, u0::ArrayPartition, tspan::NTuple{2};
-    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false,
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false, isatomic::Bool=false,
     )
-    _assemble(gf, p, u0, tspan, flf, se, return_alloc)
+    _assemble(gf, p, u0, tspan, flf, se, return_alloc, isatomic)
 end
 
 """
@@ -75,14 +75,18 @@ Assemble the `ODEProblem` for elastic fault plus viscoelastic relaxation.
 """
 function assemble(
     gf::ViscoelasticCompositeGreensFunction, p::ViscoelasticMaxwellProperty, u0::ArrayPartition, tspan::NTuple{2};
-    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false,
+    flf::FrictionLawForm=RForm(), se::StateEvolutionLaw=DieterichStateLaw(), return_alloc::Bool=false, isatomic::Bool=false,
     )
-    _assemble(gf, p, u0, tspan, flf, se, return_alloc)
+    _assemble(gf, p, u0, tspan, flf, se, return_alloc, isatomic)
 end
 
-@inline function _assemble(gf, p::AbstractProperty, u0, tspan, flf, se, return_alloc)
+@inline function _assemble(gf, p::AbstractProperty, u0, tspan, flf, se, return_alloc, isatomic)
     alloc = gen_alloc(gf)::AbstractAllocation
-    f! = (du, u, p, t) -> ∂u∂t(du, u, p, alloc, gf, flf, se)
+    if isatomic
+        f! = (du, u, p, t) -> ∂u∂t_atomic(du, u, p, alloc, gf, flf, se)
+    else
+        f! = (du, u, p, t) -> ∂u∂t(du, u, p, alloc, gf, flf, se)
+    end
     prob = ODEProblem(f!, u0, tspan, p)
     if return_alloc
         return prob, alloc
