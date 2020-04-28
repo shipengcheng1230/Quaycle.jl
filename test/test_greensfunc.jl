@@ -1,16 +1,28 @@
 using Test
 using GmshTools
+using Gmsh_SDK_jll
 using FastGaussQuadrature
 using LinearAlgebra
 using TensorOperations
 using Quaycle:
-    unit_dislocation, unit_strain, shear_traction_td,
-    shear_traction_sbarbot_on_okada, shear_traction_dc3d,
-    stress_components_dc3d, flip_stress_components_sbarbot!,
-    flip_stress_components_td!, shear_traction_sbarbot_on_td,
+    unit_dislocation,
+    unit_strain,
+    shear_traction_td,
+    shear_traction_sbarbot_on_okada,
+    shear_traction_dc3d,
+    stress_components_dc3d,
+    flip_stress_components_sbarbot!,
+    flip_stress_components_td!,
+    shear_traction_sbarbot_on_td,
     ViscoelasticCompositeGreensFunction,
-    relative_velocity!, relative_strain_rate!,
-    dτ_dt!, dσ_dt!, deviatoric_stress!, gen_alloc, dϵ_dt!
+    dϵdt_reldϵ_atomic!,
+    relative_velocity!,
+    relative_strain_rate!,
+    dτ_dt!,
+    dσ_dt!,
+    deviatoric_stress!,
+    gen_alloc,
+    dϵ_dt!
 
 @testset "Unit dislocation for plane fault types" begin
     @test unit_dislocation(DIPPING()) == [0.0, 1.0, 0.0]
@@ -403,24 +415,40 @@ end
     σ′[:,1] -= σkk
     σ′[:,2] -= σkk
     σ′[:,5] -= σkk
+    ς′ = map(x -> norm([
+        σ′[x,1], σ′[x,2], σ′[x,3], σ′[x,4], σ′[x,5], σ′[x,6], σ′[x,3], σ′[x,4], σ′[x,6]
+        ]) / √2, 1: alv.nume)
 
     @testset "deviatoric stress" begin
         deviatoric_stress!(σ, alv)
         @test alv.σ′ ≈ σ′
-        ς′ = map(x -> norm([
-            σ′[x,1], σ′[x,2], σ′[x,3], σ′[x,4], σ′[x,5], σ′[x,6], σ′[x,3], σ′[x,4], σ′[x,6]
-            ]) / √2, 1: alv.nume)
         @test alv.ς′ ≈ ς′
     end
 
     @testset "strain rate" begin
-        p = CompositePlasticDeformationProperty([rand(10) for _ in 1: 4]..., rand(length(ϵcomp)))
-        dϵ′ = @. p.disl * alv.ς′ ^ (p.n - 1) * alv.σ′ + p.diff * alv.σ′
+        p = CompositePlasticDeformationProperty([rand(10) for _ in 1: 5]..., rand(length(ϵcomp)))
+        dϵ′ = @. p.disl * alv.ς′ ^ p.n₋1 * alv.σ′ + p.diff * alv.σ′
         dϵ = rand(10, length(ϵcomp))
-        dϵ_dt!(dϵ, p, alv)
-        @test dϵ[:,1] ≈ dϵ′[:,1]
-        @test dϵ[:,2] ≈ dϵ′[:,3]
-        @test dϵ[:,3] ≈ dϵ′[:,4]
+        @testset "vector approach" begin
+            dϵ_dt!(dϵ, p, alv)
+            @test dϵ[:,1] ≈ dϵ′[:,1]
+            @test dϵ[:,2] ≈ dϵ′[:,3]
+            @test dϵ[:,3] ≈ dϵ′[:,4]
+        end
+        @testset "Atomtic strain update" begin
+            fill!(dϵ, 0.0)
+            fill!(alv.σ′, 0.0)
+            fill!(alv.ς′, 0.0)
+            for i in 1: size(σ, 1)
+                dϵdt_reldϵ_atomic!(i, σ, dϵ, p, alv)
+            end
+            @test dϵ[:,1] ≈ dϵ′[:,1]
+            @test dϵ[:,2] ≈ dϵ′[:,3]
+            @test dϵ[:,3] ≈ dϵ′[:,4]
+            # @test alv.ς′ ≈ ς′
+            # @test alv.σ′ ≈ σ′
+            @test alv.reldϵ ≈ dϵ .- p.dϵref'
+        end
     end
 end
 

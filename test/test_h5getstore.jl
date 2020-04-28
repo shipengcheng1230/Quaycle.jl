@@ -15,7 +15,7 @@ using HDF5
         RateStateQuasiDynamicProperty([rand(9) for _ in 1: 4]..., rand(4)...),
         DislocationCreepProperty([rand(5) for _ in 1: 10]...),
         DiffusionCreepProperty([rand(5) for _ in 1: 11]...),
-        CompositePlasticDeformationProperty([rand(5) for _ in 1: 4]..., rand(3))
+        CompositePlasticDeformationProperty([rand(5) for _ in 1: 5]..., rand(3))
         ]
     map(test_equal, ps)
 end

@@ -238,7 +238,7 @@ const prop_field_names = Dict(
     :DiffusionCreepProperty => ("A", "d", "m", "COH", "r", "α", "ϕ", "Q", "P", "Ω", "T"),
     :ViscoelasticMaxwellProperty => ("pe", "pv"),
     :CompositePlasticDeformationProperty => ("disl", "n", "n₋1", "diff", "peie", "dϵref"),
-    )
+)
 
 for (nn, fn) in prop_field_names
     @eval begin

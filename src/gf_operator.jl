@@ -25,8 +25,6 @@ struct TractionRateAllocFFTConv{T<:AbstractArray{<:Real}, U<:AbstractArray{<:Com
     relv_dft::U # relative velocity in discrete fourier domain
     dτ_dt_buffer::T # stress rate including zero-padding zone for fft
     pf::P # real-value-FFT forward operator
-    ψ₁::T # temp allocation for regularized form
-    ψ₂::T # temp allocation for regularized form
 end
 
 struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, TUM<:Tuple} <: StressRateAllocation # unstructured mesh
@@ -70,9 +68,7 @@ function gen_alloc(nx::I, nξ::I, ::Val{T}) where {I<:Integer, T}
         zeros(T, 2nx-1, nξ), zeros(T, nx, nξ), # for relative velocity, including zero
         [Matrix{Complex{T}}(undef, nx, nξ) for _ in 1: 2]...,
         Matrix{T}(undef, 2nx-1, nξ),
-        p1,
-        [Matrix{T}(undef, nx, nξ) for _ in 1: 2]...,
-        )
+        p1,)
 end
 
 "Generate 3-D computation allocation for computing stress rate."
@@ -89,30 +85,26 @@ gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T
-    # @inbounds @fastmath @threads for i ∈ eachindex(v)
-    #     alloc.relv[i] = v[i] - vpl
-    # end
-    @strided @fastmath alloc.relv .= v .- vpl
+    @inbounds @fastmath @threads for i ∈ eachindex(v)
+        alloc.relv[i] = v[i] - vpl
+    end
 end
 
 @inline function relative_velocity!(alloc::TractionRateAllocFFTConv, vpl::T, v::AbstractMatrix) where T
-    # @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
-    #     for i ∈ 1: alloc.dims[1]
-    #         alloc.relv[i,j] = v[i,j] - vpl # there are zero paddings in `alloc.relv`
-    #         alloc.relvnp[i,j] = alloc.relv[i,j] # copy-paste, useful for `LinearAlgebra.BLAS`
-    #     end
-    # end
-    @strided @fastmath alloc.relvnp .= v .- vpl
-    @strided alloc.relv[1: alloc.dims[1], :] .= alloc.relvnp
+    @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
+        for i ∈ 1: alloc.dims[1]
+            alloc.relv[i,j] = v[i,j] - vpl # there are zero paddings in `alloc.relv`
+            alloc.relvnp[i,j] = alloc.relv[i,j] # copy-paste, useful for `LinearAlgebra.BLAS`
+        end
+    end
 end
 
 @inline function relative_strain_rate!(alloc::StressRateAllocation, dϵ₀::AbstractArray, dϵ::AbstractVecOrMat)
-    # @inbounds @fastmath for j ∈ 1: alloc.numϵ
-        # @threads for i ∈ 1: alloc.nume
-        #     alloc.reldϵ[i,j] = dϵ[i,j] - dϵ₀[j]
-        # end
-    # end
-    @strided @fastmath alloc.reldϵ .= dϵ .- dϵ₀' # better performance by this approach!
+    @inbounds @fastmath for j ∈ 1: alloc.numϵ
+        @threads for i ∈ 1: alloc.nume
+            alloc.reldϵ[i,j] = dϵ[i,j] - dϵ₀[j]
+        end
+    end
 end
 
 "Traction rate within 1-D elastic plane or unstructured mesh."
@@ -149,12 +141,11 @@ end
     # Alternative 3: `mapslice` at current stage is type unstable: (https://github.com/JuliaLang/julia/issues/26868)
 
     ldiv!(alloc.dτ_dt_buffer, alloc.pf, alloc.dτ_dt_dft)
-    # @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
-    #     @simd for i ∈ 1: alloc.dims[1]
-    #         @inbounds alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
-    #     end
-    # end
-    @strided alloc.dτ_dt .= @views alloc.dτ_dt_buffer[1: alloc.dims[1], :]
+    @inbounds @fastmath @threads for j ∈ 1: alloc.dims[2]
+        @simd for i ∈ 1: alloc.dims[1]
+            @inbounds alloc.dτ_dt[i,j] = alloc.dτ_dt_buffer[i,j]
+        end
+    end
 end
 
 "Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity."
