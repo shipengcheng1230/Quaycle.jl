@@ -387,6 +387,7 @@ function read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, 
 
     x2, x3 = centers[1: 3: end], -centers[3: 3: end] # assume y at 0
     q2, q3, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 4]
+    x1 = zeros(eltype(x2), size(x2))
 
     @inbounds @fastmath @simd for i in 1: numelements
         ntag1 = es[3][1][numnodes*i-numnodes+1]
@@ -402,7 +403,7 @@ function read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, 
         q2[i] = x2[i] - W[i] / 2 * cosd(rotate)
         q3[i] = x3[i] - W[i] / 2 * sind(rotate)
     end
-    SBarbotQuad4InPlaneMeshEntity(x2, x3, q2, q3, T, W, rotate, es[2][1])
+    SBarbotQuad4InPlaneMeshEntity(x1, x2, x3, q2, q3, T, W, rotate, es[2][1])
 end
 
 """

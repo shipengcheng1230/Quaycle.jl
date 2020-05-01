@@ -152,6 +152,7 @@ end
 end
 
 @with_kw struct SBarbotQuad4InPlaneMeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{2}
+    x1::P
     x2::P
     x3::P
     q2::P
@@ -168,7 +169,8 @@ end
     @assert size(tag) ==
         size(x2) == size(x3) ==
         size(q2) == size(q3) ==
-        size(T) == size(W)
+        size(T) == size(W) == size(x1)
+    @assert all(x1 .≈ 0) # no y extent
 end
 
 "Mesh entities of Tri3 for using dislocaiton-stress green's function"
