@@ -377,6 +377,35 @@ macro _check_and_get_mesh_entity(f, phytag, ecode)
 end
 
 """
+    read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, inxz::Bool=true)
+
+Read the mesh and construct mesh entity infomation for SBarbot Quad4 in-plane (x-z, no y) Green's function use.
+"""
+function read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, inxz::Bool=true, rotate::Real=0.0, reverse::Bool=false)
+    !inxz && error("InPlaneX denote quad4 at X-Z plane without Y extent.")
+    @_check_and_get_mesh_entity(f, phytag, 3)
+
+    x2, x3 = centers[1: 3: end], -centers[3: 3: end] # assume y at 0
+    q2, q3, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 4]
+
+    @inbounds @fastmath @simd for i in 1: numelements
+        ntag1 = es[3][1][numnodes*i-numnodes+1]
+        ntag2 = es[3][1][numnodes*i-numnodes+2]
+        ntag3 = es[3][1][numnodes*i-numnodes+3]
+        reverse && begin ntag1, ntag3 = ntag3, ntag1 end
+        p1x, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1]
+        p2x, p2z = nodes[2][3*ntag2-2], nodes[2][3*ntag2]
+        p3x, p3z = nodes[2][3*ntag3-2], nodes[2][3*ntag3]
+
+        W[i] = hypot(p1x - p2x, p1z - p2z)
+        T[i] = hypot(p2x - p3x, p2z - p3z)
+        q2[i] = x2[i] - W[i] / 2 * cosd(rotate)
+        q3[i] = x3[i] - W[i] / 2 * sind(rotate)
+    end
+    SBarbotQuad4InPlaneMeshEntity(x2, x3, q2, q3, T, W, rotate, es[2][1])
+end
+
+"""
     read_gmsh_mesh(::Val{:SBarbotHex8}, f::AbstractString;
         phytag::Integer=-1, rotate::Number=0.0, reverse=false, check=false)
 

@@ -151,7 +151,7 @@ end
         size(L) == size(T) == size(W)
 end
 
-@with_kw struct SBarbotQuad4MeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{2}
+@with_kw struct SBarbotQuad4InPlaneMeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{2}
     x2::P
     x3::P
     q2::P

@@ -368,3 +368,20 @@ end
     end
     rm(filename)
 end
+
+@testset "InPlaneX read gmsh" begin
+    llx, lly, llz, dx, dy, dz, nx, nv = -40., 0.0, -50., 80., 0.0, 20., 5, 6
+    rfxstr, rfvstr = "Bump", "Progression"
+    rfx, rfv = 1.0, 1.0
+    filename = tempname() * ".msh"
+    mf = gen_mesh(Val(:RectOkada), 100.0, 20.0, 5.0, 5.0, 90.0)
+
+    gen_gmsh_mesh(mf, Val(:InPlaneX), llx, lly, llz, dx, dy, dz, nx, nv;
+        rfxstr=rfxstr, rfx=rfx, rfvstr=rfvstr, rfv=rfv, filename=filename,
+        faulttag=(15, "fault"), asthenospheretag=(23, "asthenosphere"))
+
+    ma = read_gmsh_mesh(Val(:InPlaneX), filename; phytag=23)
+    @test unique(x -> round(x; digits=3), ma.W)[1] ≈ dx / nx
+    @test unique(x -> round(x; digits=3), ma.T)[1] ≈ hypot(dy, dz) / nv
+    rm(filename)
+end
