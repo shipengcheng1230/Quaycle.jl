@@ -3,6 +3,7 @@ using DelimitedFiles
 using Base.Iterators
 using FastGaussQuadrature
 using GmshTools
+using Gmsh_SDK_jll
 
 # Those corresponding verifiable data are obtained from orginal matlab functions at
 # https://bitbucket.org/sbarbot/bssa-2016237/src/master/
@@ -142,4 +143,29 @@ end
     @test norm(u1 - u2) < 1e-3
     @test norm(σ1 - σ2) < 1e-3
     foreach(rm, [f1, f2])
+end
+
+@testset "SBarbot Quad4" begin
+    epsv22 = 7e-6
+    epsv23 = 8e-6
+    epsv33 = 9e-6
+    T = 10e3
+    W = 20e3
+    q2 = 15e3
+    q3 = 1e-3
+    phi = 0.0
+    G = 1.0
+    nu = 0.25
+
+    x3 = range(-10000.0, stop=-1000.0, step=1000)
+    x2 = range(-10000.0, stop=10000.0, step=2000)
+    xxs = product(x2, x3)
+
+    @testset "Stress" begin
+        u_truth = readdlm(joinpath(@__DIR__, "data", "test_sbarbot_stress_quad4.dat"), ' ', Float64)
+        fu = (x) -> sbarbot_stress_quad4(x..., q2, q3, T, W, phi, epsv22, epsv23, epsv33, G, nu)
+        u_cal = map(fu, xxs) |> vec
+        ftest = (i) -> u_cal[i] ≈ u_truth[i,:]
+        @test map(ftest, 1: length(u_cal)) |> all
+    end
 end

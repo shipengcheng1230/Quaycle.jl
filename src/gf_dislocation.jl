@@ -204,7 +204,7 @@ function td_periodic_vec(mt::TDTri3MeshEntity, buffer_ratio::Real=0)
 end
 
 """
-    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3},
+    stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity,
         λ::T, μ::T, ft::FlatPlaneFault,
         σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
 
@@ -227,7 +227,7 @@ The same as previously mentioned:
 The output is a tuple of `length(σcomp)` matrix, each corresponds ``σ_{ij}`` in the same order
     as given by `σcomp`.
 """
-function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I<:Integer, N}
+function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{I}, λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; kwargs...) where {T<:Real, I, N}
     if isa(mf, RectOkadaMesh)
         num_patch = mf.nx * mf.nξ
     elseif isa(mf, TDTri3MeshEntity)
@@ -241,8 +241,12 @@ function stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotMeshEntity{3}, λ::T
     return map(sdata, st)
 end
 
+# I will not make this case flexible for choice of σ components
+stress_greens_func(mf::AbstractMesh{2}, ma::SBarbotQuad4InPlaneMeshEntity, λ::T, μ::T, ft::FlatPlaneFault; kwargs...) where T =
+    stress_greens_func(mf, ma, λ, μ, ft, (:xx, :xz, :zz); kwargs...)
+
 function stress_greens_func_chunk!(
-    st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity{3},
+    st::NTuple{N, <:SharedArray}, subs::AbstractArray, mf::RectOkadaMesh, ma::SBarbotMeshEntity,
     λ::T, μ::T, ft::FlatPlaneFault, σcomp::NTuple{N, Symbol}; nrept::Integer=2, buffer_ratio::Real=0.0) where {T<:Real, N, I<:Integer}
 
     ud = unit_dislocation(ft)

@@ -133,6 +133,91 @@ gen_gmsh_mesh(mf::LineOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:LineOkada), mf.
 gen_gmsh_mesh(mf::RectOkadaMesh; kwargs...) = gen_gmsh_mesh(Val(:RectOkada), mf.nx * mf.Δx, mf.nξ * mf.Δξ, mf.Δx, mf.Δξ, mf.dip; kwargs...)
 
 """
+    gen_gmsh_mesh(::Val{:InPlaneX},
+        llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, nv::I;
+        rfxstr::S="Bump", rfx::T=1.0,
+        rfvstr::S="Progression", rfv::T=1.0,
+        filename::AbstractString="temp.msh", reg::Integer=1) where {T, I, S}
+
+Generate an rectangle with one side parallel to YZ plane.
+
+## Arguments
+- `llx`, `lly`, `llz`: coordinates of low-left corner on the top surface
+- `dx`, `dy`, `dz`: x-, y-, z-extension
+- `nx`, `nv`: number of cells along x-, vertical-axis
+
+## KWARGS
+- `rfxstr`, `rfx`, `rfvstr`, `rfv`: the transfinite mesh parameters, see Gmsh docs.
+"""
+function gen_gmsh_mesh(::Val{:InPlaneX},
+    llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, nv::I;
+    rfxstr::S="Bump", rfx::T=1.0,
+    rfvstr::S="Progression", rfv::T=1.0,
+    filename::AbstractString="temp.msh", reg::Integer=1) where {T, I, S}
+
+    @gmsh_do begin
+        _reg = geo_rect_x(llx, lly, llz, dx, dy, dz, reg::Integer)
+        gmsh.model.geo.mesh.setTransfiniteSurface(_reg-1, "Left", [_reg-10, _reg-9, _reg-8, _reg-7])
+        @setTransfiniteCurve begin
+            _reg-6, nx+1, rfxstr, rfx
+            _reg-5, nv+1, rfvstr, rfv
+            _reg-4, nx+1, rfxstr, rfx
+            _reg-3, nv+1, rfvstr, rfv
+        end
+        gmsh.model.geo.mesh.setRecombine(2, _reg-1)
+        gmsh.model.geo.synchronize()
+        gmsh.model.mesh.generate(2)
+        gmsh.write(filename)
+    end
+end
+
+"""
+    gen_gmsh_mesh(mf::RectOkadaMesh, ::Val{:InPlaneX},
+        llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, nv::I;
+        rfxstr::S="Bump", rfx::T=1.0,
+        rfvstr::S="Progression", rfv::T=1.0,
+        filename="temp.msh", reg::Integer=1,
+        faulttag=(1, "fault"), asthenospheretag=(2, "asthenosphere")) where {T, I, S}
+
+Generate an rectangle with one side parallel to YZ plane along with a Rect Okada mesh.
+"""
+function gen_gmsh_mesh(mf::RectOkadaMesh, ::Val{:InPlaneX},
+    llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, nv::I;
+    rfxstr::S="Bump", rfx::T=1.0,
+    rfvstr::S="Progression", rfv::T=1.0,
+    filename="temp.msh", reg::Integer=1,
+    faulttag=(1, "fault"), asthenospheretag=(2, "asthenosphere")) where {T, I, S}
+
+    x, ξ = mf.Δx * mf.nx, mf.Δξ * mf.nξ
+    y, z = -ξ * cosd(mf.dip), -ξ * sind(mf.dip)
+
+    @gmsh_do begin
+        _reg = geo_okada_rect(x, y, z, mf.nx, mf.nξ, reg)
+        gmsh.model.addPhysicalGroup(2, [_reg-1], faulttag[1])
+        gmsh.model.setPhysicalName(2, faulttag...)
+        gmsh.model.geo.synchronize()
+        _reg2 = geo_rect_x(llx, lly, llz, dx, dy, dz, _reg)
+        gmsh.model.geo.mesh.setTransfiniteSurface(_reg2-1, "Left", [_reg2-10, _reg2-9, _reg2-8, _reg2-7])
+        @setTransfiniteCurve begin
+            _reg2-6, nx+1, rfxstr, rfx
+            _reg2-5, nv+1, rfvstr, rfv
+            _reg2-4, nx+1, rfxstr, rfx
+            _reg2-3, nv+1, rfvstr, rfv
+        end
+        gmsh.model.geo.mesh.setRecombine(2, _reg2-1)
+        gmsh.model.geo.synchronize()
+        gmsh.model.addPhysicalGroup(2, [_reg2-1], asthenospheretag[1])
+        gmsh.model.setPhysicalName(2, asthenospheretag...)
+        @addOption begin
+            "Mesh.SaveAll", 1 # the mesh is incorrect without this
+        end
+        gmsh.model.geo.synchronize()
+        gmsh.model.mesh.generate(2)
+        gmsh.write(filename)
+    end
+end
+
+"""
     gen_gmsh_mesh(::Val{:BoxHexByExtrude},
         llx::T, lly::T, llz::T, dx::T, dy::T, dz::T, nx::I, ny::I,
         rfx::T, rfy::T, rfzn::AbstractVector, rfzh::AbstractVector;
@@ -184,7 +269,7 @@ function gen_gmsh_mesh(mf::RectOkadaMesh, ::Val{:BoxHexExtrudeFromSurface},
         gmsh.model.setPhysicalName(2, faulttag...)
         # type of `_reg2` is tuple, each is `(dim, tag)`
         _reg2 = geo_box_extruded_from_surfaceXY(llx, lly, llz, dx, dy, dz, nx, ny, rfx, rfy, rfzn, rfzh, _reg)
-        # it is assumed that the box is the first added volume entity
+        # it is assumed that the box is the first added 3D volume entity
         volumetag = _reg2[findfirst(x -> x[1] == 3, _reg2)][2]
         gmsh.model.addPhysicalGroup(3, [volumetag], asthenospheretag[1])
         gmsh.model.setPhysicalName(3, asthenospheretag...)
@@ -289,6 +374,36 @@ macro _check_and_get_mesh_entity(f, phytag, ecode)
         entag = _get_entity_tags_in_physical_group(f, edim, phytag)
         centers = _get_centers(f, es[1][1], entag)
     end)
+end
+
+"""
+    read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, inxz::Bool=true)
+
+Read the mesh and construct mesh entity infomation for SBarbot Quad4 in-plane (x-z, no y) Green's function use.
+"""
+function read_gmsh_mesh(::Val{:InPlaneX}, f::AbstractString; phytag::Integer=2, inxz::Bool=true, rotate::Real=0.0, reverse::Bool=false)
+    !inxz && error("InPlaneX denote quad4 at X-Z plane without Y extent.")
+    @_check_and_get_mesh_entity(f, phytag, 3)
+
+    x2, x3 = centers[1: 3: end], -centers[3: 3: end] # assume y at 0
+    q2, q3, T, W = [Vector{Float64}(undef, numelements) for _ in 1: 4]
+    x1 = zeros(eltype(x2), size(x2))
+
+    @inbounds @fastmath @simd for i in 1: numelements
+        ntag1 = es[3][1][numnodes*i-numnodes+1]
+        ntag2 = es[3][1][numnodes*i-numnodes+2]
+        ntag3 = es[3][1][numnodes*i-numnodes+3]
+        reverse && begin ntag1, ntag3 = ntag3, ntag1 end
+        p1x, p1z = nodes[2][3*ntag1-2], nodes[2][3*ntag1]
+        p2x, p2z = nodes[2][3*ntag2-2], nodes[2][3*ntag2]
+        p3x, p3z = nodes[2][3*ntag3-2], nodes[2][3*ntag3]
+
+        W[i] = hypot(p1x - p2x, p1z - p2z)
+        T[i] = hypot(p2x - p3x, p2z - p3z)
+        q2[i] = x2[i] - W[i] / 2 * cosd(rotate)
+        q3[i] = x3[i] - W[i] / 2 * sind(rotate)
+    end
+    SBarbotQuad4InPlaneMeshEntity(x1, x2, x3, q2, q3, T, W, rotate, es[2][1])
 end
 
 """
