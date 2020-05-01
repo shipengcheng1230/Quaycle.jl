@@ -1,5 +1,6 @@
 using Test
 using GmshTools
+using Gmsh_SDK_jll
 using LinearAlgebra
 using Logging
 
@@ -335,4 +336,35 @@ end
     @test vcache.tag |> length == mf.nx * mf.nξ
 
     rm(tmp)
+end
+
+@testset "InPlaneX with Okada Rect" begin
+    llx, lly, llz, dx, dy, dz, nx, nv = -40., 0.0, -50., 80., 0.0, 20., 8, 4
+    rfxstr, rfvstr = "Bump", "Progression"
+    rfx, rfv = 1.2, 1.2
+    filename = "temp.msh"
+    mf = gen_mesh(Val(:RectOkada), 100.0, 20.0, 5.0, 5.0, 90.0)
+
+    gen_gmsh_mesh(mf, Val(:InPlaneX), llx, lly, llz, dx, dy, dz, nx, nv;
+        rfxstr=rfxstr, rfx=rfx, rfvstr=rfvstr, rfv=rfv, filename=filename,
+        faulttag=(15, "fault"), asthenospheretag=(23, "asthenosphere"))
+
+    @gmsh_open filename begin
+        phytag = gmsh.model.getPhysicalGroups(2)
+        @test length(phytag) == 2
+        @test phytag[1][1] == phytag[2][1] # 2D
+        @test phytag[1][2] == 15
+        @test phytag[2][2] == 23
+
+        entag1 = gmsh.model.getEntitiesForPhysicalGroup(2, phytag[1][2])
+        els1 = gmsh.model.mesh.getElements(2, entag1[1])
+        @test els1[1][1] == 3
+        @test length(els1[2][1]) == 20 * 4
+
+        entag2 = gmsh.model.getEntitiesForPhysicalGroup(2, phytag[2][2])
+        els2 = gmsh.model.mesh.getElements(2, entag2[1])
+        @test els2[1][1] == 3
+        @test length(els2[2][1]) == 8 * 4
+    end
+    rm(filename)
 end

@@ -151,6 +151,26 @@ end
         size(L) == size(T) == size(W)
 end
 
+@with_kw struct SBarbotQuad4MeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{2}
+    x2::P
+    x3::P
+    q2::P
+    q3::P
+    T::P
+    W::P
+    θ::U
+    tag::A
+
+    @assert minimum(x3) > 0
+    @assert minimum(q3) ≥ 0
+    @assert minimum(W) > 0
+    @assert minimum(T) > 0
+    @assert size(tag) ==
+        size(x2) == size(x3) ==
+        size(q2) == size(q3) ==
+        size(T) == size(W)
+end
+
 "Mesh entities of Tri3 for using dislocaiton-stress green's function"
 @with_kw struct TDTri3MeshEntity{T<:AbstractVector, V<:AbstractVector, VI<:AbstractVector} <: TriangularMesh
     x::T # centroid x
