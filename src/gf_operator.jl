@@ -3,6 +3,7 @@ abstract type AbstractAllocation{dim} end
 abstract type TractionRateAllocation{dim} <: AbstractAllocation{dim} end
 abstract type StressRateAllocation <: AbstractAllocation{-1} end
 abstract type CompositeAllocation <: AbstractAllocation{-1} end
+abstract type AllocationWrapper <: AbstractAllocation{-1} end
 
 struct TractionRateAllocMatrix{T<:AbstractVecOrMat{<:Real}} <: TractionRateAllocation{1}
     dims::Dims{1}
@@ -47,6 +48,11 @@ struct StressRateAllocMatrix{T<:AbstractMatrix, V<:AbstractVector, I<:Integer, T
     end
 end
 
+struct AllocAntiPlaneWrapper{ST<:StressRateAllocation, V<:AbstractVector} <: AllocationWrapper
+    alloc::ST
+    dτ_dt::V
+end
+
 struct ViscoelasticCompositeAlloc{A, B} <: CompositeAllocation
     e::A # traction rate allocation
     v::B # stress rate allocation
@@ -79,7 +85,16 @@ end
 
 gen_alloc(gf::AbstractMatrix{T}) where T = gen_alloc(size(gf, 1), Val(T))
 gen_alloc(gf::AbstractArray{T, 3}) where T<:Complex{U} where U = gen_alloc(size(gf, 1), size(gf, 2), Val(U))
-gen_alloc(gf::ViscoelasticCompositeGreensFunction) = ViscoelasticCompositeAlloc(gen_alloc(gf.ee), gen_alloc(gf.nume, gf.numϵ, gf.numσ, gf.ϵcomp, gf.σcomp))
+function gen_alloc(gf::ViscoelasticCompositeGreensFunction)
+    alloce = gen_alloc(gf.ee)
+    allocv = gen_alloc(gf.nume, gf.numϵ, gf.numσ, gf.ϵcomp, gf.σcomp)
+    if gf.hint == :general
+        return ViscoelasticCompositeAlloc(alloce, allocv)
+    elseif gf.hint == :antiplane
+        buffer = Vector{eltype(gf.ve)}(undef, size(gf.ve, 1))
+        return ViscoelasticCompositeAlloc(alloce, AllocAntiPlaneWrapper(allocv, buffer))
+    end
+end
 
 ## traction & stress rate operators
 @inline function relative_velocity!(alloc::TractionRateAllocMatrix, vpl::T, v::AbstractVector) where T
@@ -104,6 +119,11 @@ end
         end
     end
 end
+
+@inline function relative_strain_rate!(alloc::AllocAntiPlaneWrapper, dϵ₀::AbstractVector, dϵ::AbstractVecOrMat)
+    relative_strain_rate!(alloc.alloc, dϵ₀, dϵ)
+end
+
 
 "Traction rate within 1-D elastic plane or unstructured mesh."
 @inline function dτ_dt!(gf::AbstractArray{T, 2}, alloc::TractionRateAllocMatrix) where T<:Number
@@ -130,8 +150,15 @@ end
 end
 
 "Traction rate from (ℕ+1)-D inelastic entity to (ℕ)-D elastic entity."
-@inline function dτ_dt!(gf::AbstractMatrix{T}, alloc::ViscoelasticCompositeAlloc) where T
+@inline function dτ_dt!(gf::AbstractMatrix{T}, alloc::ViscoelasticCompositeAlloc{A, B}) where {T, A, B<:StressRateAllocation}
     BLAS.gemv!('N', one(T), gf, vec(alloc.v.reldϵ), one(T), vec(alloc.e.dτ_dt))
+end
+
+@inline function dτ_dt!(gf::AbstractMatrix{T}, alloc::ViscoelasticCompositeAlloc{A, B}) where {T, A, B<:AllocAntiPlaneWrapper}
+    BLAS.gemv!('N', one(T), gf, vec(alloc.v.alloc.reldϵ), zero(T), vec(alloc.v.dτ_dt))
+    @inbounds @threads for i ∈ 1: size(alloc.e.dτ_dt, 2)
+        alloc.e.dτ_dt[:,i] .+= alloc.v.dτ_dt[i]
+    end
 end
 
 "Stress rate from (ℕ)-D elastic entity to (ℕ+1)-D inelastic entity."
@@ -146,4 +173,8 @@ end
 "Stress rate within inelastic entity."
 @inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::StressRateAllocMatrix) where T
     BLAS.gemv!('N', one(T), gf, vec(alloc.reldϵ), one(T), vec(dσ))
+end
+
+@inline function dσ_dt!(dσ::AbstractVecOrMat, gf::AbstractMatrix{T}, alloc::AllocAntiPlaneWrapper) where T
+    dσ_dt!(dσ, gf, alloc.alloc)
 end

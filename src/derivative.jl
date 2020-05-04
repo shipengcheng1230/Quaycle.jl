@@ -74,13 +74,21 @@ end
     end
 end
 
-@inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocMatrix)
+@inline function deviatoric_stress!(σ::AbstractVecOrMat{T}, alloc::AllocAntiPlaneWrapper) where T
+    deviatoric_stress!(σ, alloc.alloc)
+end
+
+@inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::StressRateAllocation)
     @strided alloc.ς′ .^= (p.n .- 1) # precompute `ςⁿ⁻¹`
     @inbounds @fastmath for j = 1: alloc.numϵ
         @threads for i = 1: alloc.nume
             dϵ[i,j] = (p.disl[i] * alloc.ς′[i] + p.diff[i]) * alloc.σ′[i,alloc.ϵ2σ[j]]
         end
     end
+end
+
+@inline function dϵ_dt!(dϵ::AbstractArray, p::CompositePlasticDeformationProperty, alloc::AllocAntiPlaneWrapper)
+    dϵ_dt!(dϵ, p, alloc.alloc)
 end
 
 @inline function dδ_dt!(dδ::T, v::T) where T

@@ -62,6 +62,7 @@ include("gf_strain.jl")
     numσ::I
     ϵcomp::V1
     σcomp::V2
+    hint::Symbol=:general
 
     @assert ϵcomp ⊆ σcomp "Strain components must be a subset of stress components."
 end
@@ -83,18 +84,19 @@ Concatenate tuple of matrix or tuple of tuple of matrix which arrange them in
 - `ϵcomp`: strain component to be considered, must be a subset of `σcomp`
 - `σcomp`: stress component to be considered
 """
-function compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple{N, <:Tuple}, ϵcomp::NTuple, σcomp::NTuple) where N
+function compose_stress_greens_func(ee::AbstractArray, ev::NTuple, ve::NTuple, vv::NTuple{N, <:Tuple}, ϵcomp::NTuple, σcomp::NTuple, hint::Symbol=:general) where N
     # TODO this only applies for tuple-style, need to make adaption for singleton array
     numσ, numϵ = length(ev), length(ve)
     σindex, ϵindex = Base.OneTo(numσ), Base.OneTo(numϵ)
-    m, n = size(ev[1]) # number of inelastic elements, number of fault patches
-    ev′ = PseudoBlockArray{eltype(ev[1])}(undef, [m for _ in σindex], [n])
-    ve′ = PseudoBlockArray{eltype(ve[1])}(undef, [n], [m for _ in ϵindex])
-    vv′ = PseudoBlockArray{eltype(vv[1][1])}(undef, [m for _ in σindex], [m for _ in ϵindex])
+    m1, n1 = size(ev[1]) # number of inelastic elements, number of fault patches
+    m2, n2 = size(ve[1]) # in case of antiplane case, `m2` would be different than `n1`
+    ev′ = PseudoBlockArray{eltype(ev[1])}(undef, [m1 for _ in σindex], [n1])
+    ve′ = PseudoBlockArray{eltype(ve[1])}(undef, [m2], [n2 for _ in ϵindex])
+    vv′ = PseudoBlockArray{eltype(vv[1][1])}(undef, [m1 for _ in σindex], [m1 for _ in ϵindex])
     foreach(i -> setblock!(ev′, ev[i], i, 1), σindex)
     foreach(i -> setblock!(ve′, ve[i], 1, i), ϵindex)
     foreach(x -> setblock!(vv′, vv[x[2]][x[1]], x[1], x[2]), Iterators.product(σindex, ϵindex))
-    ViscoelasticCompositeGreensFunction(ee, Array(ev′), Array(ve′), Array(vv′), m, numϵ, numσ, ϵcomp, σcomp)
+    ViscoelasticCompositeGreensFunction(ee, Array(ev′), Array(ve′), Array(vv′), m1, numϵ, numσ, ϵcomp, σcomp, hint)
 end
 
 """
@@ -104,12 +106,16 @@ end
 Shortcut function for computing all 4 Green's function for viscoelastic relaxation.
     Arguments stays the same as [`stress_greens_func`](@ref).
 """
-function compose_stress_greens_func(mf::AbstractMesh{2}, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple, σcomp::NTuple) where T
+function compose_stress_greens_func(mf::AbstractMesh{2}, me::SBarbotMeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple, σcomp::NTuple, hint::Symbol=:general) where T
     ee = stress_greens_func(mf, λ, μ, ft)
     ev = stress_greens_func(mf, me, λ, μ, ft, σcomp)
     ve = stress_greens_func(me, mf, λ, μ, ft, ϵcomp)
     vv = stress_greens_func(me, λ, μ, ϵcomp, σcomp)
-    return compose_stress_greens_func(ee, ev, ve, vv, ϵcomp, σcomp)
+    return compose_stress_greens_func(ee, ev, ve, vv, ϵcomp, σcomp, hint)
+end
+
+function compose_stress_greens_func(mf::AbstractMesh{2}, me::SBarbotHex8AntiplaneMeshEntity, λ::T, μ::T, ft::PlaneFault, ϵcomp::NTuple, σcomp::NTuple) where T
+    compose_stress_greens_func(mf, me, λ, μ, ft, ϵcomp, σcomp, :antiplane)
 end
 
 include("gf_operator.jl")

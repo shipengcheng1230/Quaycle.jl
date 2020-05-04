@@ -1,5 +1,6 @@
 using Test
 using GmshTools
+using Gmsh_SDK_jll
 
 @testset "Prob Assemble" begin
     @testset "1D fault" begin
@@ -71,6 +72,37 @@ using GmshTools
         prob = assemble(gg, pc, u0, (0., 1.0))
         du = similar(u0)
         @inferred prob.f(du, u0, prob.p, 1.0)
+        rm(tmp)
+    end
+
+    @testset "Antiplane Assemble" begin
+        mf = gen_mesh(Val(:RectOkada), 10., 10., 2., 2., 90.)
+        rfzn = ones(2)
+        rfzh = [0.5, 1.0]
+        tmp = tempname() * ".msh"
+        gen_gmsh_mesh(mf,
+            Val(:BoxHexExtrudeFromSurface), -5.0, -5.0, -10.0, 10.0, 10.0, 20.0, 1, 5, 1.0, 1.2, rfzn, rfzh;
+            filename=tmp)
+        ma = read_gmsh_mesh(Val(:SBarbotHex8), tmp; phytag=1)
+        ϵcomp = (:xy, :xz)
+        σcomp = (:xy, :xz)
+        ma2 = gen_mesh(Val(:AntiPlaneHex8), ma)
+
+        gg2 = compose_stress_greens_func(mf, ma2, 1.0, 1.0, STRIKING(), ϵcomp, σcomp)
+        @test gg2.hint == :antiplane
+        pe = RateStateQuasiDynamicProperty([rand(mf.nx, mf.nξ) for _ in 1: 4]..., rand(4)...)
+        pdisl = DislocationCreepProperty([rand(length(ma.tag)) for _ in 1: 10]...)
+        pdiff = DiffusionCreepProperty([rand(length(ma.tag)) for _ in 1: 11]...)
+        pc = compose(pe, rand(length(ϵcomp)), pdisl, pdiff)
+        v0 = rand(mf.nx, mf.nξ)
+        θ0 = rand(mf.nx, mf.nξ)
+        ϵ0 = rand(length(ma.tag), length(ϵcomp))
+        σ0 = rand(length(ma.tag), length(σcomp))
+        δ0 = rand(mf.nx, mf.nξ)
+        u0 = ArrayPartition(v0, θ0, ϵ0, σ0, δ0)
+        prob2 = assemble(gg2, pc, u0, (0., 1.0))
+        du = similar(u0)
+        @inferred prob2.f(du, u0, prob2.p, 1.0)
         rm(tmp)
     end
 end

@@ -151,6 +151,31 @@ end
         size(L) == size(T) == size(W)
 end
 
+@with_kw struct SBarbotHex8AntiplaneMeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{3}
+    x1::P # centroid +y
+    x2::P # centroid +x
+    x3::P # centroid -z
+    q1::P # anchor +y
+    q2::P # anchor +x
+    q3::P # anchor -z
+    L::P # length ←y→ when θ = 0°
+    T::P # thickness ←x→ when θ = 0°
+    W::P # width ←z→, always
+    θ::U # strike, clockwise away from +y
+    tag::A # element tag
+end
+
+"""
+    gen_mesh(::Val{:AntiPlaneHex8}, ma::SBarbotHex8MeshEntity, ratio::Real=1e4)
+"""
+function gen_mesh(::Val{:AntiPlaneHex8}, ma::SBarbotHex8MeshEntity, rounddigits::Integer=3)
+    @unpack x1, x2, x3, q1, q2, q3, L, T, W, θ, tag = ma
+    @assert unique(x -> round(x; digits=rounddigits), x2) |> length == 1
+    @assert unique(x -> round(x; digits=rounddigits), T) |> length == 1
+    @assert unique(x -> round(x; digits=rounddigits), q2) |> length == 1
+    SBarbotHex8AntiplaneMeshEntity(x1, x2, x3, q1, q2, q3, L, T, W, θ, tag)
+end
+
 @with_kw struct SBarbotQuad4InPlaneMeshEntity{P<:AbstractVector, A<:AbstractVector, U<:Number} <: SBarbotMeshEntity{2}
     x1::P
     x2::P
