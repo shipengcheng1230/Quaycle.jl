@@ -1,5 +1,6 @@
 using Test
 using GmshTools
+using Gmsh_SDK_jll
 using FastGaussQuadrature
 using LinearAlgebra
 using TensorOperations
@@ -442,4 +443,80 @@ end
         E[i,j] := gf3[i,j,k,l] * relv[k,l]
     end
     @test E ≈ alloc.dτ_dt
+end
+
+@testset "Anti Plane BLAS update" begin
+    f1 = tempname() * ".msh"
+    rfzn = ones(Int64, 5)
+    rfzh = ones(5) |> cumsum
+    normalize!(rfzh, Inf)
+
+    @testset "Antiplane Mesh One Cell Along X" begin
+        gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -150.0, -75.0, -60.0, 300.0, 150.0, 100.0, 2, 5, 1.0, 2.0, rfzn, rfzh; filename=f1)
+        ma = read_gmsh_mesh(Val(:SBarbotHex8), f1)
+        @test_throws AssertionError gen_mesh(Val(:AntiPlaneHex8), ma)
+    end
+
+    gen_gmsh_mesh(Val(:BoxHexExtrudeFromSurface), -15000.0, -75.0, -60.0, 30000.0, 150.0, 100.0, 1, 5, 1.0, 2.0, rfzn, rfzh; filename=f1)
+    ma = read_gmsh_mesh(Val(:SBarbotHex8), f1)
+    mf = gen_mesh(Val(:RectOkada), 100.0, 50.0, 10.0, 10.0, 90.0)
+    ma2 = gen_mesh(Val(:AntiPlaneHex8), ma)
+
+    ϵcomp = σcomp = (:xy, :xz)
+    gfcat = compose_stress_greens_func(mf, ma, 1.0, 1.0, STRIKING(), ϵcomp, σcomp)
+    gfcat2 = compose_stress_greens_func(mf, ma2, 1.0, 1.0, STRIKING(), ϵcomp, σcomp, :antiplane)
+
+    @test size(gfcat.ve, 1) == mf.nx * mf.nξ
+    @test size(gfcat2.ve, 1) == mf.nξ
+
+    @testset "Atomic BLAS update" begin
+        ϵ = rand(length(ma.tag) * length(ϵcomp))
+        τ1 = gfcat.ve * ϵ
+        τ2 = gfcat2.ve * ϵ
+        τ1 = reshape(τ1, mf.nx, mf.nξ)
+        τ1_unique = mapslices(x -> unique(y -> round(y; digits=3), x), τ1; dims=1) |> vec
+        @test τ1_unique ≈ τ2
+    end
+
+    alos = gen_alloc(gfcat)
+    alos2 = gen_alloc(gfcat2)
+    ϵ = rand(length(ma.tag), length(ϵcomp))
+    ϵ₀ = rand(length(ϵcomp))
+    v = rand(mf.nx, mf.nξ)
+    vpl = rand()
+
+    @testset "Antiplane relative velocity" begin
+        relative_velocity!(alos.e, vpl, v)
+        relative_velocity!(alos2.e, vpl, v)
+        @test alos.e.relvnp ≈ v .- vpl
+        @test alos2.e.relvnp ≈ alos.e.relvnp
+    end
+    @testset "Antiplane relative strain rate" begin
+        relative_strain_rate!(alos.v, ϵ₀, ϵ)
+        relative_strain_rate!(alos2.v, ϵ₀, ϵ)
+        @test alos.v.reldϵ == ϵ .- ϵ₀'
+        @test alos.v.reldϵ == alos2.v.alloc.reldϵ
+    end
+    @testset "Antiplane inelastic ⟶ elastic" begin
+        alos.e.dτ_dt .= rand(size(alos.e.dτ_dt))
+        alos2.e.dτ_dt .= alos.e.dτ_dt
+        dτ_dt!(gfcat.ve, alos)
+        dτ_dt!(gfcat2.ve, alos2)
+        @test vec(alos2.e.dτ_dt) ≈ vec(alos.e.dτ_dt)
+    end
+    @testset "Antiplane elastic ⟶ inelastic" begin
+        dσ1 = rand(size(ϵ)...)
+        dσ2 = copy(dσ1)
+        dσ_dt!(dσ1, gfcat.ev, alos.e)
+        dσ_dt!(dσ2, gfcat2.ev, alos2.e)
+        @test dσ1 ≈ dσ2
+    end
+    @testset "Antiplane inelastic ⟷ inelastic" begin
+        dσ1 = rand(size(ϵ)...)
+        dσ2 = copy(dσ1)
+        dσ_dt!(dσ1, gfcat.vv, alos.v)
+        dσ_dt!(dσ2, gfcat2.vv, alos2.v)
+        @test dσ1 ≈ dσ2
+    end
+    rm(f1)
 end

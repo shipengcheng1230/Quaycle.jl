@@ -72,7 +72,9 @@ function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T
 end
 
 function stress_greens_func(ma::SBarbotMeshEntity{3}, mf::AbstractMesh{2}, λ::T, μ::T, ft::PlaneFault, ϵcomp::Symbol; kwargs...) where T
-    if isa(mf, RectOkadaMesh)
+    if isa(ma, SBarbotHex8AntiplaneMeshEntity) && isa(mf, RectOkadaMesh)
+        num_patch = mf.nξ # antiplane, only depth matters
+    elseif isa(mf, RectOkadaMesh)
         num_patch = mf.nx * mf.nξ
     elseif isa(mf, TDTri3MeshEntity)
         num_patch = length(mf.tag)
@@ -100,6 +102,9 @@ function stress_greens_func_chunk!(
             sbarbot_stress_hex8!(σ, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
         elseif isa(ma, SBarbotTet4MeshEntity)
             sbarbot_stress_tet4!(σ, quadrature, mf.y[q[2]], mf.x[q[1]], -mf.z[q[2]], ma.A[j], ma.B[j], ma.C[j], ma.D[j], uϵ..., μ, ν)
+        elseif isa(ma, SBarbotHex8AntiplaneMeshEntity)
+            # antiplane, no perception along-x, only care about depth
+            sbarbot_stress_hex8!(σ, mf.y[i], zero(T), -mf.z[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
         else
             error("Unsupported mesh entity type: $(typeof(ma)).")
         end
@@ -171,7 +176,7 @@ function stress_greens_func_chunk!(
 
     @inbounds @fastmath @simd for sub in subs
         i, j = sub[1], sub[2] # index of recv, index of src
-        if isa(ma, SBarbotHex8MeshEntity)
+        if isa(ma, SBarbotHex8MeshEntity) || isa(ma, SBarbotHex8AntiplaneMeshEntity)
             sbarbot_stress_hex8!(σ, ma.x1[i], ma.x2[i], ma.x3[i], ma.q1[j], ma.q2[j], ma.q3[j], ma.L[j], ma.T[j], ma.W[j], ma.θ, uϵ..., μ, ν)
         elseif isa(ma, SBarbotTet4MeshEntity)
             sbarbot_stress_tet4!(σ, quadrature, ma.x1[i], ma.x2[i], ma.x3[i], ma.A[j], ma.B[j], ma.C[j], ma.D[j], uϵ..., μ, ν)
