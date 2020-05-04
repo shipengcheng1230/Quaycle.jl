@@ -500,25 +500,34 @@ end
         @test alos.v.reldϵ == alos2.v.alloc.reldϵ
     end
     @testset "Antiplane inelastic ⟶ elastic" begin
-        alos.e.dτ_dt .= rand(size(alos.e.dτ_dt))
+        tmp = rand(size(alos.e.dτ_dt)...)
+        alos.e.dτ_dt .= tmp
         alos2.e.dτ_dt .= alos.e.dτ_dt
         dτ_dt!(gfcat.ve, alos)
         dτ_dt!(gfcat2.ve, alos2)
         @test vec(alos2.e.dτ_dt) ≈ vec(alos.e.dτ_dt)
+        dτ_dt!(gfcat2.ve, alos2)
+        @test vec(alos2.e.dτ_dt - tmp) ≈ 2.0 * vec(alos.e.dτ_dt - tmp)
     end
     @testset "Antiplane elastic ⟶ inelastic" begin
-        dσ1 = rand(size(ϵ)...)
+        tmp = rand(size(ϵ)...)
+        dσ1 = copy(tmp)
         dσ2 = copy(dσ1)
         dσ_dt!(dσ1, gfcat.ev, alos.e)
         dσ_dt!(dσ2, gfcat2.ev, alos2.e)
         @test dσ1 ≈ dσ2
+        dσ_dt!(dσ2, gfcat2.ev, alos2.e)
+        @test dσ1 ≈ dσ2
     end
     @testset "Antiplane inelastic ⟷ inelastic" begin
-        dσ1 = rand(size(ϵ)...)
+        tmp = rand(size(ϵ)...)
+        dσ1 = copy(tmp)
         dσ2 = copy(dσ1)
         dσ_dt!(dσ1, gfcat.vv, alos.v)
         dσ_dt!(dσ2, gfcat2.vv, alos2.v)
         @test dσ1 ≈ dσ2
+        dσ_dt!(dσ2, gfcat2.vv, alos2.v)
+        @test dσ2 - tmp ≈ 2.0 * (dσ1 - tmp)
     end
     rm(f1)
 end
