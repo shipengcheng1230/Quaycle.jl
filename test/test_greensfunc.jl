@@ -480,6 +480,8 @@ end
 
     alos = gen_alloc(gfcat)
     alos2 = gen_alloc(gfcat2)
+    @test isa(alos.v, StressRateAllocMatrix)
+    @test isa(alos2.v, AllocAntiPlaneWrapper)
     ϵ = rand(length(ma.tag), length(ϵcomp))
     ϵ₀ = rand(length(ϵcomp))
     v = rand(mf.nx, mf.nξ)
